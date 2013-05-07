@@ -85,18 +85,28 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	//////Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 
 	for (int i = 0; i < num_steps; i++) {
 		system_gpu->DoStepDynamics(timestep);
+		double TIME = system_gpu->GetChTime();
+		double STEP = system_gpu->GetTimerStep();
+		double BROD = system_gpu->GetTimerCollisionBroad();
+		double NARR = system_gpu->GetTimerCollisionNarrow();
+		double LCP = system_gpu->GetTimerLcp();
+		double UPDT = system_gpu->GetTimerUpdate();
+		int BODS = system_gpu->GetNbodies();
+		int CNTC = system_gpu->GetNcontacts();
+		int REQ_ITS = ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
 
+		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS);
 		if (i % 1000 == 0) {
 			cout << "SAVED STATE" << endl;
 			DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");

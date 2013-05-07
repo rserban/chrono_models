@@ -35,18 +35,18 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 	//=========================================================================================================
-	system_gpu->SetMaxiter(100);
-	system_gpu->SetIterLCPmaxItersSpeed(100);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(100);
+	system_gpu->SetMaxiter(45);
+	system_gpu->SetIterLCPmaxItersSpeed(45);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(45);
 	system_gpu->SetTol(1e-3);
 	system_gpu->SetTolSpeeds(1e-3);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-3);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(.6);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius.x * .1);
-	mcollisionengine->broadphase.setBinsPerAxis(R3(40, 15, 40));
-	mcollisionengine->broadphase.setBodyPerBin(100, 50);
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius.x * .05);
+	mcollisionengine->setBinsPerAxis(R3(300, 100, 150));
+	mcollisionengine->setBodyPerBin(400, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================

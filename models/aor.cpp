@@ -163,8 +163,8 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(.6);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .1);
-	mcollisionengine->broadphase.setBinsPerAxis(R3(40, 15, 40));
-	mcollisionengine->broadphase.setBodyPerBin(100, 50);
+	mcollisionengine->setBinsPerAxis(R3(40, 15, 40));
+	mcollisionengine->setBodyPerBin(100, 50);
 
 	//=========================================================================================================
 	ChMitsubaRender output(system_gpu);

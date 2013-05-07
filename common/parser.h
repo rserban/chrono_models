@@ -78,13 +78,13 @@ void ReadInputFile(string input, ChSystemGPU* m_system) {
 		if (token == "collision_BPA:") {
 			int x, y, z;
 			ifile >> x >> y >> z;
-			((ChCollisionSystemGPU *) (m_system->GetCollisionSystem()))->broadphase.setBinsPerAxis(R3(x, y, z));
+			((ChCollisionSystemGPU *) (m_system->GetCollisionSystem()))->setBinsPerAxis(R3(x, y, z));
 		}
 //--------------------------------------------------------------------------------
 		if (token == "collision_BPB:") {
 			int min_b, max_b;
 			ifile >> max_b >> min_b;
-			((ChCollisionSystemGPU *) (m_system->GetCollisionSystem()))->broadphase.setBodyPerBin(max_b, min_b);
+			((ChCollisionSystemGPU *) (m_system->GetCollisionSystem()))->setBodyPerBin(max_b, min_b);
 		}
 //--------------------------------------------------------------------------------
 	}

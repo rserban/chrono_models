@@ -24,9 +24,18 @@ set (LINK_LIBS
 	${CHRONO_LIB_GPU}
 	${CHRONO_LIB_OPENGL}
 )
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lXxf86vm  -lX11 ")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+#SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ")
 
 # Add executables
-ADD_EXECUTABLE(ball_drop ball_drop.cpp)		
+ADD_EXECUTABLE(ball_drop models/ball_drop.cpp)		
 TARGET_LINK_LIBRARIES(ball_drop	${LINK_LIBS})
+
+ADD_EXECUTABLE(convergence models/convergence.cpp)		
+TARGET_LINK_LIBRARIES(convergence	${LINK_LIBS})
+
+ADD_EXECUTABLE(aor models/aor.cpp)		
+TARGET_LINK_LIBRARIES(aor	${LINK_LIBS})
+
+ADD_EXECUTABLE(diagonal_impact models/diagonal_impact.cpp)		
+TARGET_LINK_LIBRARIES(diagonal_impact	${LINK_LIBS})

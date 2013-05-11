@@ -47,7 +47,7 @@ int num_steps = 5000000;
 int particle_grid_x = 15;
 int particle_grid_z = 15;
 
-int particles_every = 100; //add particles every n steps
+int particles_every = 50; //add particles every n steps
 int save_every = 100; //save data every n steps
 
 int particle_configuration = 0;
@@ -91,7 +91,7 @@ void RunTimeStep(T* mSys, const int frame) {
 				ChVector<> position(i * particle_radius * 2 - particle_grid_x * .5 * particle_radius * 2, start_height, j * particle_radius * 2 - particle_grid_z * .5 * particle_radius * 2);
 
 				position.x += rand() % 1000 / 100000.0;
-				position.y += rand() % 1000 / 100000.0;
+				position.y += rand() % 1000 / 1000.0;
 				position.z += rand() % 1000 / 100000.0;
 
 				if (particle_configuration == 0) {
@@ -153,9 +153,9 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 	//=========================================================================================================
-	system_gpu->SetMaxiter(100);
-	system_gpu->SetIterLCPmaxItersSpeed(100);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(100);
+	system_gpu->SetMaxiter(20);
+	system_gpu->SetIterLCPmaxItersSpeed(20);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(20);
 	system_gpu->SetTol(1e-3);
 	system_gpu->SetTolSpeeds(1e-3);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-3);
@@ -198,17 +198,28 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetStep(timestep);
 
 	//=========================================================================================================
+	real particle_plate_dim = 8;
+	real plate_particle_radius = .02;
+	int num_particle = particle_plate_dim / plate_particle_radius;
+
 	if (create_particle_plate) {
 		ChSharedBodyGPUPtr sphere;
-		for (int i = 0; i < 120; i++) {
-			for (int j = 0; j < 120; j++) {
-				sphere = ChSharedBodyGPUPtr(new ChBodyGPU);
-				ChVector<> position(i * particle_radius * 2 - 120 * particle_radius, plate_height + plate_thickness + particle_radius, j * particle_radius * 2 - 120 * particle_radius);
-				InitObject(sphere, particle_mass, position, quat, particle_friction, particle_friction, 0, true, true, -1, i);
-				AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius, particle_radius, particle_radius), Vector(0, 0, 0), quat);
-				FinalizeObject(sphere, (ChSystemGPU *) system_gpu);
+		sphere = ChSharedBodyGPUPtr(new ChBodyGPU);
+		InitObject(sphere, particle_mass, Vector(0, 0, 0), quat, plate_friction, plate_friction, 0, true, true, -1, -1);
+		for (int i = 0; i < num_particle; i++) {
+			for (int j = 0; j < num_particle; j++) {
+
+				ChVector<> position(i * plate_particle_radius * 1.2 - num_particle * plate_particle_radius * .6, plate_height + plate_thickness + plate_particle_radius,
+						j * plate_particle_radius * 1.2 - num_particle * plate_particle_radius * .6);
+
+				position.x += rand() % 10000 / 10000.0 * plate_particle_radius * .25 - plate_particle_radius * .25 * .5;
+				position.z += rand() % 10000 / 10000.0 * plate_particle_radius * .25 - plate_particle_radius * .25 * .5;
+
+				AddCollisionGeometry(sphere, SPHERE, ChVector<>(plate_particle_radius, plate_particle_radius, plate_particle_radius), position, quat);
+
 			}
 		}
+		FinalizeObject(sphere, (ChSystemGPU *) system_gpu);
 	}
 	ChSharedBodyGPUPtr PLATE = ChSharedBodyGPUPtr(new ChBodyGPU);
 	InitObject(PLATE, 1, ChVector<>(0, plate_height, 0), quat, plate_friction, plate_friction, 0, true, true, -1000, -20000);
@@ -237,13 +248,13 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	//////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 
 	int file = 0;

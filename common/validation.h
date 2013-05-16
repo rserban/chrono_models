@@ -22,7 +22,7 @@ bool operator <(const contact_dat &i, const contact_dat &j) {
 		return i.idA < j.idA;
 	}
 }
-bool validate_real3(real3 A, real3 B, string value, int i, real tolerance) {
+void  validate_real3(real3 A, real3 B, string value, int i, real tolerance) {
 	real3 diff = A - B;
 
 	if (fabs(diff.x) > tolerance) {
@@ -233,7 +233,7 @@ void printContactsBullet(btCollisionWorld* bt_collision_world, vector<contact_da
 
 	cout << "BContacts: " << contact_cpu.size() << " " << contacts << endl;
 }
-bool printContactsCPU(ChSystem* system_cpu, vector<contact_dat> & contact_cpu) {
+void printContactsCPU(ChSystem* system_cpu, vector<contact_dat> & contact_cpu) {
 
 	std::list<ChContact*> list_cpu = ((ChContactContainer*) (system_cpu->GetContactContainer()))->GetContactList();
 	contact_dat icontact;
@@ -296,7 +296,7 @@ bool printContactsCPU(ChSystem* system_cpu, vector<contact_dat> & contact_cpu) {
 
 	cout << "CContacts: " << contact_cpu.size() << endl;
 }
-bool printContactsGPU(ChSystemGPU* system_gpu, vector<contact_dat> & contact_gpu) {
+void printContactsGPU(ChSystemGPU* system_gpu, vector<contact_dat> & contact_gpu) {
 
 	system_gpu->gpu_data_manager->DeviceToHostContacts();
 	contact_dat icontact;

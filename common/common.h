@@ -1,6 +1,6 @@
 #ifndef HAMMADMODELS_COMMON_H
 #define HAMMADMODELS_COMMON_H
-
+#include <vector>
 #include "lcp/CHlcpVariablesGeneric.h"
 #include "lcp/CHlcpVariablesBody.h"
 #include "lcp/CHlcpConstraintTwoGeneric.h"
@@ -25,9 +25,14 @@
 #include "unit_OPENGL/CHopenGL.h"
 #include "unit_GPU/CHsystemGPU.h"
 #include "unit_GPU/CHlcpSystemDescriptorGPU.h"
+#include "unit_POSTPROCESS/CHmitsubaRender.h"
 using namespace chrono;
+using namespace postprocess;
+using namespace geometry;
 using namespace std;
 
+
 #define PI 3.1415
+
 
 #endif

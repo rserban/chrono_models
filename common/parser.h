@@ -14,6 +14,30 @@
  collision_BPB:			100 50
 
  */
+
+void setSolverGPU(string solver, ChSystemGPU* m_system) {
+	if (solver == "APGD") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	} else if (solver == "JACOBI") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(BLOCK_JACOBI);
+	} else if (solver == "CG") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(CONJUGATE_GRADIENT);
+	} else if (solver == "CGS") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(CONJUGATE_GRADIENT_SQUARED);
+	} else if (solver == "BICG") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(BICONJUGATE_GRADIENT);
+	} else if (solver == "BICGSTAB") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(BICONJUGATE_GRADIENT_STAB);
+	} else if (solver == "GD") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(GRADIENT_DESCENT);
+	} else if (solver == "SD") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(STEEPEST_DESCENT);
+	} else if (solver == "MINRES") {
+		((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(MINIMUM_RESIDUAL);
+	}
+}
+
+
 void ReadInputFile(string input, ChSystemGPU* m_system) {
 	ifstream ifile(input.c_str());
 	if (ifile.fail()) {
@@ -36,13 +60,7 @@ void ReadInputFile(string input, ChSystemGPU* m_system) {
 //--------------------------------------------------------------------------------
 		if (token == "solver:") {
 			ifile >> value_string;
-			if (value_string == "APGD") {
-				((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-			} else if (value_string == "BLOCK_JACOBI") {
-				((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(BLOCK_JACOBI);
-			} else if (value_string == "CONJUGATE_GRADIENT") {
-				((ChLcpSolverGPU *) (m_system->GetLcpSolverSpeed()))->SetSolverType(CONJUGATE_GRADIENT);
-			}
+			setSolverGPU(value_string,m_system);
 		}
 //--------------------------------------------------------------------------------
 		if (token == "solver_max_iterations:") {
@@ -89,3 +107,5 @@ void ReadInputFile(string input, ChSystemGPU* m_system) {
 //--------------------------------------------------------------------------------
 	}
 }
+
+

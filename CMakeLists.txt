@@ -39,3 +39,6 @@ TARGET_LINK_LIBRARIES(aor	${LINK_LIBS})
 
 ADD_EXECUTABLE(diagonal_impact models/diagonal_impact.cpp)		
 TARGET_LINK_LIBRARIES(diagonal_impact	${LINK_LIBS})
+
+ADD_EXECUTABLE(shaker models/shaker.cpp)		
+TARGET_LINK_LIBRARIES(shaker	${LINK_LIBS})

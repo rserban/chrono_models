@@ -1,26 +1,24 @@
-#include "../common/common.h"
-#include "../common/generation.h"
-#include "../common/parser.h"
-#include "../common/input_output.h"
+#include "../../common/common.h"
+#include "../../common/generation.h"
+#include "../../common/parser.h"
+#include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
 real particle_radius = .25;
 real particle_friction = .25;
-real seconds_to_simulate = timestep;
-
+real seconds_to_simulate = 30;
 
 double fstar = .27;
 double Gamma = 3.0;
 double phi = .58;
 
-double L = particle_radius*100;
+double L = particle_radius * 100;
 double D = particle_radius;
 double P = 30000;
 
-double H = 1/6.0*P*PI*D*D*D/(L*L*phi);
-double frequency = 1.624996112;//fstar/(sqrt(H/fabs(gravity)));
-double amplitude = 0.2823097471;//1/4*Gamma*fabs(gravity)/(PI*PI*frequency*frequency);
-
+double H = 1 / 6.0 * P * PI * D * D * D / (L * L * phi);
+double frequency = 1.624996112; //fstar/(sqrt(H/fabs(gravity)));
+double amplitude = 0.2823097471; //1/4*Gamma*fabs(gravity)/(PI*PI*frequency*frequency);
 
 int max_iter = 50;
 
@@ -31,10 +29,9 @@ real container_thickness = .05;
 real container_height = -5;
 real container_friction = 0;
 real current_time = 0;
-int save_every = 1.0/timestep/60.0; //save data every n steps
+int save_every = 1.0 / timestep / 60.0; //save data every n steps
 
 int3 num_per_dir = I3((container_size - R3(particle_radius) * 2) / R3(particle_radius));
-
 
 ChSharedBodyGPUPtr impactor;
 ChSharedBodyGPUPtr Bottom;
@@ -47,7 +44,14 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(3);
+
+	if (argc == 2) {
+		omp_set_num_threads(atoi(argv[1]));
+	} else {
+
+		omp_set_num_threads(1);
+	}
+
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChLcpSystemDescriptorGPU *mdescriptor = new ChLcpSystemDescriptorGPU();
@@ -77,9 +81,9 @@ int main(int argc, char* argv[]) {
 	//=========================================================================================================
 	num_per_dir.y = 10;
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0,0,0, 0, system_gpu);
+	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
 	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
-	cout<<system_gpu->GetNbodies()<<endl;
+	cout << system_gpu->GetNbodies() << endl;
 	//=========================================================================================================
 
 	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);

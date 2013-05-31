@@ -1,7 +1,7 @@
-#include "../common/common.h"
-#include "../common/generation.h"
-#include "../common/parser.h"
-#include "../common/input_output.h"
+#include "../../common/common.h"
+#include "../../common/generation.h"
+#include "../../common/parser.h"
+#include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .0005;
 real3 particle_radius = R3(.1, .05, .1);

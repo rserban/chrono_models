@@ -28,17 +28,20 @@ set (LINK_LIBS
 #SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ")
 
 # Add executables
-ADD_EXECUTABLE(ball_drop models/ball_drop.cpp)		
+ADD_EXECUTABLE(ball_drop models/gpu/ball_drop.cpp)		
 TARGET_LINK_LIBRARIES(ball_drop	${LINK_LIBS})
 
-ADD_EXECUTABLE(convergence models/convergence.cpp)		
+ADD_EXECUTABLE(convergence models/gpu/convergence.cpp)		
 TARGET_LINK_LIBRARIES(convergence	${LINK_LIBS})
 
-ADD_EXECUTABLE(aor models/aor.cpp)		
+ADD_EXECUTABLE(aor models/gpu/aor.cpp)		
 TARGET_LINK_LIBRARIES(aor	${LINK_LIBS})
 
-ADD_EXECUTABLE(diagonal_impact models/diagonal_impact.cpp)		
+ADD_EXECUTABLE(diagonal_impact models/gpu/diagonal_impact.cpp)		
 TARGET_LINK_LIBRARIES(diagonal_impact	${LINK_LIBS})
 
-ADD_EXECUTABLE(shaker models/shaker.cpp)		
+ADD_EXECUTABLE(shaker models/gpu/shaker.cpp)		
 TARGET_LINK_LIBRARIES(shaker	${LINK_LIBS})
+
+#ADD_EXECUTABLE(cylinder_drop models/gpu/cylinder_drop.cpp)		
+#TARGET_LINK_LIBRARIES(cylinder_drop	${LINK_LIBS})

@@ -1,6 +1,6 @@
-#include "../common/common.h"
-#include "../common/input_output.h"
-#include "../common/parser.h"
+#include "../../common/common.h"
+#include "../../common/input_output.h"
+#include "../../common/parser.h"
 
 ChVector<> lpos(0, 0, 0);
 ChQuaternion<> quat(1, 0, 0, 0);
@@ -116,7 +116,7 @@ void RunTimeStep(T* mSys, const int frame) {
 int main(int argc, char* argv[]) {
 	omp_set_num_threads(4);
 	cout << "Mass, Radius, Friction_Sphere, Friction_Plate, Data Folder, create_particle_plate all_three_kinds, particle configuration" << endl;
-	string solver_string = "CONJUGATE_GRADIENT";
+	string solver_string = "ACCELERATED_PROJECTED_GRADIENT_DESCENT";
 
 	if (argc == 12) {
 		particle_mass = atof(argv[1]);
@@ -227,13 +227,13 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	//////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 	stringstream ss_m;
 	ss_m << data_folder << "/" << "timing.txt";

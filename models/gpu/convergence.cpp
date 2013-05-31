@@ -1,6 +1,6 @@
-#include "../common/common.h"
-#include "../common/generation.h"
-#include "../common/parser.h"
+#include "../../common/common.h"
+#include "../../common/generation.h"
+#include "../../common/parser.h"
 
 ChVector<> lpos(0, 0, 0);
 ChQuaternion<> quat(1, 0, 0, 0);

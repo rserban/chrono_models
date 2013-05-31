@@ -3,25 +3,38 @@
 #include "../common/parser.h"
 #include "../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0001;
-real3 particle_radius = R3(.1, .1, .1);
-real seconds_to_simulate = 5.0;
+real timestep = .001;
+real particle_radius = .25;
+real particle_friction = .25;
+real seconds_to_simulate = timestep;
+
+
+double fstar = .27;
+double Gamma = 3.0;
+double phi = .58;
+
+double L = particle_radius*100;
+double D = particle_radius;
+double P = 30000;
+
+double H = 1/6.0*P*PI*D*D*D/(L*L*phi);
+double frequency = 1.624996112;//fstar/(sqrt(H/fabs(gravity)));
+double amplitude = 0.2823097471;//1/4*Gamma*fabs(gravity)/(PI*PI*frequency*frequency);
+
 
 int max_iter = 50;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(5, 1, 5);
+real3 container_size = R3(L, 10, L);
 real container_thickness = .05;
 real container_height = -5;
 real container_friction = 0;
 real current_time = 0;
 int save_every = 1.0/timestep/60.0; //save data every n steps
 
-int3 num_per_dir = I3((container_size - particle_radius * 2) / particle_radius);
+int3 num_per_dir = I3((container_size - R3(particle_radius) * 2) / R3(particle_radius));
 
-double frequency = 20;
-double amplitude = 4 * fabs(gravity) / (4 * PI * PI * frequency);
 
 ChSharedBodyGPUPtr impactor;
 ChSharedBodyGPUPtr Bottom;
@@ -34,7 +47,7 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
+	omp_set_num_threads(3);
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChLcpSystemDescriptorGPU *mdescriptor = new ChLcpSystemDescriptorGPU();
@@ -56,15 +69,17 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1.6);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius.x * .05);
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(num_per_dir.x * 2, num_per_dir.y * 2, num_per_dir.z * 2));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================
+	num_per_dir.y = 10;
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	addPerturbedLayer(R3(0, -5 + particle_radius.y + container_thickness, 0), ELLIPSOID, particle_radius, num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
-
+	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0,0,0, 0, system_gpu);
+	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
+	cout<<system_gpu->GetNbodies()<<endl;
 	//=========================================================================================================
 
 	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
@@ -103,14 +118,14 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	//////Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.render_camera->mScale = .1;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	openGLView.render_camera->mScale = .1;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 	int file = 0;
 

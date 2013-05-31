@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
-real particle_radius = .25;
+real particle_radius = .1;
 real particle_friction = .25;
 real seconds_to_simulate = 30;
 
@@ -25,8 +25,8 @@ int max_iter = 50;
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(L, 10, L);
-real container_thickness = .05;
-real container_height = -5;
+real container_thickness = .5;
+real container_height = 8;
 real container_friction = 0;
 real current_time = 0;
 int save_every = 1.0 / timestep / 60.0; //save data every n steps
@@ -70,8 +70,8 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTol(1e-8);
 	system_gpu->SetTolSpeeds(1e-8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-8);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1.6);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0,0,0);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(3);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(num_per_dir.x * 2, num_per_dir.y * 2, num_per_dir.z * 2));

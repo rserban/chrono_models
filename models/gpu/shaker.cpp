@@ -25,7 +25,7 @@ int max_iter = 50;
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(L, 10, L);
-real container_thickness = .5;
+real container_thickness = .25;
 real container_height = 8;
 real container_friction = 0;
 real current_time = 0;
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTol(1e-8);
 	system_gpu->SetTolSpeeds(1e-8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-8);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0,0,0);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(3);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -79,7 +79,9 @@ int main(int argc, char* argv[]) {
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================
+	num_per_dir.x -= 5;
 	num_per_dir.y = 10;
+	num_per_dir.z -= 5;
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
 	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
@@ -134,7 +136,7 @@ int main(int argc, char* argv[]) {
 	int file = 0;
 
 	stringstream ss_m;
-	string data_folder = "data";
+	string data_folder = "data/shaker";
 
 	ss_m << data_folder << "/" << "timing.txt";
 	string timing_file_name = ss_m.str();

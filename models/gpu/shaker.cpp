@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	//=========================================================================================================
 	num_per_dir.x -= 5;
-	num_per_dir.y = 10;
+	num_per_dir.y = 12;
 	num_per_dir.z -= 5;
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);

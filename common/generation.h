@@ -26,7 +26,7 @@ void addHCPCube(int grid_x, int grid_y, int grid_z, real mass, real radius, real
 	real height = 0;
 
 	for (int j = 0; j < grid_y; j++) {
-		height = j * (sqrt(3.0) * radius);
+		height = j * (sqrt(3.0) * radius)*1.15;
 		offset_x = offset_z = (j % 2 != 0) ? radius : 0;
 		addHCPSheet(grid_x, grid_z, height + global_y, mass, radius, mu, active, offset_x + global_x, offset_z + global_z, V, mSys);
 	}

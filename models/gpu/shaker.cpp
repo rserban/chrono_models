@@ -5,28 +5,28 @@
 real gravity = -9.80665;
 real timestep = .001;
 real particle_radius = .1;
-real particle_friction = .25;
+real particle_friction = .5;
 real seconds_to_simulate = 30;
 
 double fstar = .27;
 double Gamma = 3.0;
 double phi = .58;
 
-double L = particle_radius * 100;
-double D = particle_radius;
+double D = particle_radius * 2;
+double L = D * 100;
 double P = 30000;
 
-double H = 1 / 6.0 * P * PI * D * D * D / (L * L * phi);
-double frequency = 1.624996112; //fstar/(sqrt(H/fabs(gravity)));
-double amplitude = 0.2823097471; //1/4*Gamma*fabs(gravity)/(PI*PI*frequency*frequency);
+double H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
+double frequency = fstar / sqrtf(H / fabs(gravity));
+double amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
 
 int max_iter = 50;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(L, 10, L);
+real3 container_size = R3(L / 2, 5, L / 2);
 real container_thickness = .25;
-real container_height = 8;
+real container_height = 4;
 real container_friction = 0;
 real current_time = 0;
 int save_every = 1.0 / timestep / 60.0; //save data every n steps
@@ -37,16 +37,23 @@ ChSharedBodyGPUPtr impactor;
 ChSharedBodyGPUPtr Bottom;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-
+	//cout<<"Freq: = "<<frequency<<" Amplitude: = "<<amplitude<<endl;
 	Bottom->SetPos(Vector(0, (sin(frame * timestep * PI * 2 * frequency)) * amplitude + container_height - container_size.y, 0));
-	Bottom->SetPos_dt(Vector(0, (cos(frame * timestep * PI * 2 * frequency)) * amplitude, 0));
-
+	Bottom->SetPos_dt(Vector(0, (cos(frame * timestep * PI * 2 * frequency)) * amplitude * 2 * PI * frequency, 0));
 }
 
 int main(int argc, char* argv[]) {
 
-	if (argc == 2) {
+	if (argc == 4) {
 		omp_set_num_threads(atoi(argv[1]));
+
+		fstar = atof(argv[2]);
+		Gamma = atof(argv[3]);
+
+		H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
+		frequency = fstar / sqrtf(H / fabs(gravity));
+		amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
+		cout << "Freq: = " << frequency << " Amplitude: = " << amplitude << endl;
 	} else {
 
 		omp_set_num_threads(1);
@@ -71,7 +78,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(1e-8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(3);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(ceil(2 * PI * frequency * amplitude)); //IMPORTANT: this is the max velocity of the plate!!
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(num_per_dir.x * 2, num_per_dir.y * 2, num_per_dir.z * 2));
@@ -157,7 +164,7 @@ int main(int argc, char* argv[]) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
 			ss << data_folder << "/" << file << ".txt";
-			DumpObjects(system_gpu, ss.str());
+			DumpAllObjects(system_gpu, ss.str(), ",", true);
 			//output.ExportData(ss.str());
 			file++;
 		}

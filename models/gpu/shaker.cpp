@@ -86,14 +86,6 @@ int main(int argc, char* argv[]) {
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================
-	num_per_dir.x -= 5;
-	num_per_dir.y = 10;
-	num_per_dir.z -= 5;
-	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
-	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
-	cout << system_gpu->GetNbodies() << endl;
-	//=========================================================================================================
 
 	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
 	ChSharedBodyGPUPtr R = ChSharedBodyGPUPtr(new ChBodyGPU);
@@ -122,7 +114,14 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(F, (ChSystemGPU *) system_gpu);
 	FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
-
+	//=========================================================================================================
+	num_per_dir.x -= 5;
+	num_per_dir.y = 10;
+	num_per_dir.z -= 5;
+	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
+	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
+	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
+	//=========================================================================================================
 //	impactor = ChSharedBodyGPUPtr(new ChBodyGPU);
 //	InitObject(impactor, 1500, Vector(-container_size.x, container_height + container_size.y * 2, 0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, -1, -2);
 //	AddCollisionGeometry(impactor, SPHERE, ChVector<>(.5, 0, 0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -151,6 +150,7 @@ int main(int argc, char* argv[]) {
 	ofile.close();
 
 	for (int i = 0; i < num_steps; i++) {
+		current_time+=timestep;
 		system_gpu->DoStepDynamics(timestep);
 		cout << "step " << i;
 		cout << " Residual: " << ((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
@@ -158,6 +158,7 @@ int main(int argc, char* argv[]) {
 		cout << " OUTPUT STEP: Time= " << current_time << " bodies= " << system_gpu->GetNbodies() << " contacts= " << system_gpu->GetNcontacts() << " step time=" << system_gpu->GetTimerStep()
 				<< " lcp time=" << system_gpu->GetTimerLcp() << " CDbroad time=" << system_gpu->GetTimerCollisionBroad() << " CDnarrow time=" << system_gpu->GetTimerCollisionNarrow() << " Iterations="
 				<< ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations() << "\n";
+
 		TimingFile(system_gpu, timing_file_name, current_time);
 
 		if (i % save_every == 0) {

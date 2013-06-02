@@ -16,6 +16,14 @@ double D = particle_radius * 2;
 double L = D * 100;
 double P = 30000;
 
+real3 container_size = R3(L / 2, 5, L / 2);
+real container_thickness = .25;
+real container_height = 4;
+real container_friction = 0;
+real current_time = 0;
+int3 num_per_dir = I3((container_size.x-particle_radius-container_thickness*2)/particle_radius,10,(container_size.z-particle_radius-container_thickness*2)/particle_radius);
+int save_every = 1.0 / timestep / 60.0; //save data every n steps
+
 double H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
 double frequency = fstar / sqrtf(H / fabs(gravity));
 double amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
@@ -23,15 +31,6 @@ double amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2
 int max_iter = 50;
 
 int num_steps = seconds_to_simulate / timestep;
-
-real3 container_size = R3(L / 2, 5, L / 2);
-real container_thickness = .25;
-real container_height = 4;
-real container_friction = 0;
-real current_time = 0;
-int save_every = 1.0 / timestep / 60.0; //save data every n steps
-
-int3 num_per_dir = I3((container_size - R3(particle_radius) * 2) / R3(particle_radius));
 
 ChSharedBodyGPUPtr impactor;
 ChSharedBodyGPUPtr Bottom;
@@ -115,9 +114,6 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	//=========================================================================================================
-	num_per_dir.x -= 5;
-	num_per_dir.y = 12;
-	num_per_dir.z -= 5;
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
 	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
@@ -142,7 +138,7 @@ int main(int argc, char* argv[]) {
 	int file = 0;
 
 	stringstream ss_m;
-	string data_folder = "data/shaker";
+	string data_folder = "data/shaker2";
 
 	ss_m << data_folder << "/" << "timing.txt";
 	string timing_file_name = ss_m.str();

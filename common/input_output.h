@@ -13,8 +13,8 @@ void DumpObjects(T* mSys, string filename, string delim = ",", bool dump_vel_rot
 				ofile << delim << endl;
 			}
 			if (dump_vel_rot) {
-				ofile <<delim<< abody->GetPos_dt().x << delim << abody->GetPos_dt().y << delim << abody->GetPos_dt().z << delim;
-				ofile <<delim<< abody->GetWvel_loc().x << delim << abody->GetWvel_loc().y << delim << abody->GetWvel_loc().z << delim << endl;
+				ofile << delim << abody->GetPos_dt().x << delim << abody->GetPos_dt().y << delim << abody->GetPos_dt().z << delim;
+				ofile << abody->GetWvel_loc().x << delim << abody->GetWvel_loc().y << delim << abody->GetWvel_loc().z << delim << endl;
 			}
 		}
 	}
@@ -31,8 +31,8 @@ void DumpAllObjects(T* mSys, string filename, string delim = ",", bool dump_vel_
 			ofile << delim << endl;
 		}
 		if (dump_vel_rot) {
-			ofile <<delim<< abody->GetPos_dt().x << delim << abody->GetPos_dt().y << delim << abody->GetPos_dt().z << delim;
-			ofile <<delim<< abody->GetWvel_loc().x << delim << abody->GetWvel_loc().y << delim << abody->GetWvel_loc().z << delim << endl;
+			ofile << delim << abody->GetPos_dt().x << delim << abody->GetPos_dt().y << delim << abody->GetPos_dt().z << delim;
+			ofile << abody->GetWvel_loc().x << delim << abody->GetWvel_loc().y << delim << abody->GetWvel_loc().z << delim << endl;
 		}
 	}
 }

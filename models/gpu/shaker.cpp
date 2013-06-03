@@ -14,14 +14,15 @@ double phi = .58;
 
 double D = particle_radius * 2;
 double L = D * 100;
-double P = 30000;
+double P = 60000;
 
 real3 container_size = R3(L / 2, 5, L / 2);
 real container_thickness = .25;
 real container_height = 4;
 real container_friction = 0;
 real current_time = 0;
-int3 num_per_dir = I3((container_size.x-particle_radius-container_thickness*2)/particle_radius,10,(container_size.z-particle_radius-container_thickness*2)/particle_radius);
+//int3 num_per_dir = I3((container_size.x-particle_radius-container_thickness*2)/particle_radius,10,(container_size.z-particle_radius-container_thickness*2)/particle_radius);
+int3 num_per_dir =I3(50,24,50);
 int save_every = 1.0 / timestep / 60.0; //save data every n steps
 
 double H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
@@ -32,7 +33,6 @@ int max_iter = 50;
 
 int num_steps = seconds_to_simulate / timestep;
 
-ChSharedBodyGPUPtr impactor;
 ChSharedBodyGPUPtr Bottom;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
@@ -117,13 +117,6 @@ int main(int argc, char* argv[]) {
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
 	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
-	//=========================================================================================================
-//	impactor = ChSharedBodyGPUPtr(new ChBodyGPU);
-//	InitObject(impactor, 1500, Vector(-container_size.x, container_height + container_size.y * 2, 0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, -1, -2);
-//	AddCollisionGeometry(impactor, SPHERE, ChVector<>(.5, 0, 0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-//	FinalizeObject(impactor, (ChSystemGPU *) system_gpu);
-//	impactor->SetPos_dt(Vector(2.5, 0, 0));
-
 	//=========================================================================================================
 	//////Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();

@@ -68,6 +68,9 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(shaker models/gpu/shaker.cpp)		
     TARGET_LINK_LIBRARIES(shaker	${CHRONO_LIB} ${GPU_LIBS})
     
+    ADD_EXECUTABLE(character_walk models/gpu/character_walk.cpp)		
+    TARGET_LINK_LIBRARIES(character_walk	${CHRONO_LIB} ${GPU_LIBS})
+    
     #ADD_EXECUTABLE(cylinder_drop models/gpu/cylinder_drop.cpp)		
     #TARGET_LINK_LIBRARIES(cylinder_drop	${CHRONO_LIB} ${GPU_LIBS})
 ENDIF(ENABLE_UNIT_GPU)

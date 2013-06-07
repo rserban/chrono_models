@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
 		amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
 		cout << "Freq: = " << frequency << " Amplitude: = " << amplitude << endl;
 		seconds_to_simulate = atof(argv[4]);
+		num_steps = seconds_to_simulate / timestep;
 		data_folder = argv[5];
 	} else {
 

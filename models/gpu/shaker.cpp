@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .001;
+real timestep = .0005;
 real particle_radius = .1;
 real particle_friction = .5;
 real seconds_to_simulate = 30;
@@ -135,7 +135,6 @@ int main(int argc, char* argv[]) {
 
 	stringstream ss_m;
 
-
 	ss_m << data_folder << "/" << "timing.txt";
 	string timing_file_name = ss_m.str();
 	ofstream ofile(timing_file_name.c_str());
@@ -163,7 +162,4 @@ int main(int argc, char* argv[]) {
 		}
 		RunTimeStep(system_gpu, i);
 	}
-
-	//DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
-
 }

@@ -31,7 +31,7 @@ void addHCPCube(int grid_x, int grid_y, int grid_z, real mass, real radius, real
 		addHCPSheet(grid_x, grid_z, height + global_y, mass, radius, mu, active, offset_x + global_x, offset_z + global_z, V, mSys);
 	}
 }
-void addPerturbedLayer(real3 origin, ShapeType type, real3 r, int3 num_per_dir, real3 percent_perturbation, real mass, real mu, real3 vel, ChSystemGPU* mSys) {
+void addPerturbedLayer(real3 origin, ShapeType type, real3 r, int3 num_per_dir, real3 percent_perturbation, real mass, real mu,real cohesion,  real3 vel, ChSystemGPU* mSys) {
 	real3 a = r * percent_perturbation;
 	real3 d = a + 2 * r; //compute cell length
 	real3 dp, pos;
@@ -57,6 +57,7 @@ void addPerturbedLayer(real3 origin, ShapeType type, real3 r, int3 num_per_dir, 
 				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), mu, mu, 0, true, false, -1, counter);
 				AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 				FinalizeObject(body, (ChSystemGPU *) mSys);
+				body->SetCohesion(cohesion);
 				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
 				counter++;
 

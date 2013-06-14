@@ -77,8 +77,8 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(20, 20, 20));
-	mcollisionengine->setBodyPerBin(100, 50);
+	mcollisionengine->setBinsPerAxis(R3(30, 30, 15));
+	mcollisionengine->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 //=========================================================================================================
@@ -152,11 +152,12 @@ int main(int argc, char* argv[]) {
 		double NARR = system_gpu->GetTimerCollisionNarrow();
 		double LCP = system_gpu->GetTimerLcp();
 		double UPDT = system_gpu->GetTimerUpdate();
+		double RESID = ((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
 		int BODS = system_gpu->GetNbodies();
 		int CNTC = system_gpu->GetNcontacts();
 		int REQ_ITS = ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
 
-		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS);
+		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
 		int save_every = 1.0 / timestep / 60.0; //save data every n steps
 		if (i % save_every == 0) {

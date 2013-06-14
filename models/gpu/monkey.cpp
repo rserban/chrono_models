@@ -6,11 +6,11 @@ real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 30;
 
-int max_iter = 20;
+int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(3, 3, 1.5);
+real3 container_size = R3(10, 3, 10);
 real container_thickness = .05;
 real container_height = 0;
 real container_friction = 0;
@@ -29,24 +29,35 @@ ChSharedBodyGPUPtr impactor;
 
 bool stream = false;
 
+void createOBJ(ChSystemGPU* system_gpu) {
+	for (int i = 0; i < 100; i++) {
+		Vector position;
+		position.x = rand() % 1000 / 100.0-5;
+		position.y = rand() % 1000 / 1000.0-.5;
+		position.z = rand() % 1000 / 100.0-5;
+		ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBodyGPU);
+		InitObject(Bunny, 27.5, position, Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, 1, 2);
+		AddCollisionGeometryTriangleMesh(Bunny, "monkey.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+		ChSharedPtr<ChAsset> asset = Bunny->GetAssets().at(0);
+		ChTriangleMeshShape * trimesh_shape = ((ChTriangleMeshShape *) (asset.get_ptr()));
+		ChTriangleMeshConnected trimesh = trimesh_shape->GetMesh();
+		std::vector<ChVector<double> > verts = trimesh.m_vertices;
+		ChSharedBodyGPUPtr sphere;
+		for (int i = 0; i < verts.size(); i++) {
+			AddCollisionGeometry(Bunny, SPHERE, ChVector<>(particle_radius, particle_radius, particle_radius), verts[i], Quaternion(1, 0, 0, 0));
+		}
+		FinalizeObject(Bunny, (ChSystemGPU *) system_gpu);
+		real mass = 1;
+		Vector r = ChVector<>(1, 1, 1);
+		Vector inertia = Vector(18.69360, 24.15231, 19.92739) / 10.0;
+		Bunny->SetInertiaXX(inertia);
+
+	}
+}
+
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-	if (stream) {
-		if (mSys->GetNbodies() < 1071630) {
-			ChSharedBodyGPUPtr sphere;
-			real3 rad = R3(particle_radius, particle_radius, particle_radius);
-			real3 size = container_size;
-			size.y = container_size.y / 3.0;
 
-			int3 num_per_dir = I3(10, 1, 10);
-
-			if (frame % 8 == 0) {
-				addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), .333, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
-				addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), .666, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
-				addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), .999, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
-			}
-		}
-	}
 }
 
 int main(int argc, char* argv[]) {
@@ -77,8 +88,8 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(30, 30, 15));
-	mcollisionengine->setBodyPerBin(200, 100);
+	mcollisionengine->setBinsPerAxis(R3(20, 20, 20));
+	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 //=========================================================================================================
@@ -118,30 +129,19 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
+	createOBJ(system_gpu);
 //
-	if (!stream) {
-		real3 rad = R3(particle_radius, particle_radius, particle_radius);
-		real3 size = container_size;
-		size.y = container_size.y / 3.0;
 
-		int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
-		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
-		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
-
-		addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, R3(0, 0, 0), system_gpu);
-		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, R3(0, 0, 0), system_gpu);
-		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, R3(0, 0, 0), system_gpu);
-	}
 //=========================================================================================================
 ////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
@@ -160,17 +160,17 @@ int main(int argc, char* argv[]) {
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
 		int save_every = 1.0 / timestep / 60.0; //save data every n steps
-		if (i % save_every == 0) {
-			stringstream ss;
-			cout << "Frame: " << file << endl;
-			ss << "data/density/" << "/" << file << ".txt";
-			DumpAllObjects(system_gpu, ss.str(), ",", true);
-			//output.ExportData(ss.str());
-			file++;
-		}
+//		if (i % save_every == 0) {
+//			stringstream ss;
+//			cout << "Frame: " << file << endl;
+//			ss << "data/density/" << "/" << file << ".txt";
+//			DumpAllObjects(system_gpu, ss.str(), ",", true);
+//			//output.ExportData(ss.str());
+//			file++;
+//		}
 		RunTimeStep(system_gpu, i);
 	}
 
-	DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
+//	DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
 
 }

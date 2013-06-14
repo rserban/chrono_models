@@ -74,8 +74,11 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(trough models/gpu/trough.cpp)		
     TARGET_LINK_LIBRARIES(trough	${CHRONO_LIB} ${GPU_LIBS})
 
- ADD_EXECUTABLE(density models/gpu/density.cpp)		
+    ADD_EXECUTABLE(density models/gpu/density.cpp)		
     TARGET_LINK_LIBRARIES(density	${CHRONO_LIB} ${GPU_LIBS})
+
+    ADD_EXECUTABLE(monkey models/gpu/monkey)		
+    TARGET_LINK_LIBRARIES(monkey	${CHRONO_LIB} ${GPU_LIBS})
 
     #ADD_EXECUTABLE(cylinder_drop models/gpu/cylinder_drop.cpp)		
     #TARGET_LINK_LIBRARIES(cylinder_drop	${CHRONO_LIB} ${GPU_LIBS})

@@ -36,6 +36,67 @@ void DumpAllObjects(T* mSys, string filename, string delim = ",", bool dump_vel_
 		}
 	}
 }
+
+void DumpAllObjectsWithGeometry(ChSystemGPU* mSys, string filename, string delim = ",") {
+	ofstream ofile(filename.c_str());
+
+	for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
+		ChBodyGPU* abody = (ChBodyGPU*) mSys->Get_bodylist()->at(i);
+		const Vector pos = abody->GetPos();
+		Quaternion rot = abody->GetRot();
+		Vector pos_final, rad_final;
+		int type;
+
+		for (int j = 0; j < abody->GetAssets().size(); j++) {
+			ChSharedPtr<ChAsset> asset = abody->GetAssets().at(j);
+			if (asset.IsType<ChSphereShape>()) {
+				ChSphereShape * sphere_shape = ((ChSphereShape *) (asset.get_ptr()));
+				float radius = sphere_shape->GetSphereGeometry().rad;
+				Vector center = sphere_shape->GetSphereGeometry().center;
+				center = rot.Rotate(center);
+				pos_final = pos + center;
+				rad_final.x = radius;
+				rad_final.y = radius;
+				rad_final.z = radius;
+				type = 1;
+
+			}
+
+			else if (asset.IsType<ChEllipsoidShape>()) {
+
+				ChEllipsoidShape * ellipsoid_shape = ((ChEllipsoidShape *) (asset.get_ptr()));
+				rad_final = ellipsoid_shape->GetEllipsoidGeometry().rad;
+				Vector center = ellipsoid_shape->GetEllipsoidGeometry().center;
+				center = rot.Rotate(center);
+
+				pos_final = pos + center;
+
+				type = 2;
+			} else if (asset.IsType<ChBoxShape>()) {
+				ChBoxShape * box_shape = ((ChBoxShape *) (asset.get_ptr()));
+				rad_final = box_shape->GetBoxGeometry().Size;
+				pos_final = pos;
+				type = 3;
+			} else if (asset.IsType<ChCylinderShape>()) {
+				ChCylinderShape * cylinder_shape = ((ChCylinderShape *) (asset.get_ptr()));
+				double rad = cylinder_shape->GetCylinderGeometry().rad;
+				rad_final.x = rad;
+				rad_final.y = cylinder_shape->GetCylinderGeometry().p2.y - cylinder_shape->GetCylinderGeometry().p1.y;
+
+				rad_final.z = rad;
+
+				pos_final = pos;
+				type = 4;
+
+			}
+
+			ofile << type << delim << pos_final.x << delim << pos_final.y << delim << pos_final.z << delim;
+			ofile << rot.e0 << delim << rot.e1 << delim << rot.e2 << delim << rot.e3 << delim;
+			ofile << rad_final.x << delim << rad_final.y << delim << rad_final.z<<delim<<endl;
+		}
+	}
+}
+
 template<class T>
 void TimingFile(T* mSys, string filename, real current_time) {
 	ofstream ofile(filename.c_str(), std::ofstream::out | std::ofstream::app);

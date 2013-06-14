@@ -24,8 +24,8 @@
 using namespace chrono;
 
 double timestep(0.01);
-double simDuration(6);
-double fps(30);
+double simDuration(20);
+int everyFrame(10);
 
 double chassisL(15.0);
 double chassisW(2.0);
@@ -124,38 +124,54 @@ int main(int argc, char* argv[])
 		foot_RR->SetMass(0.1);
 		foot_RL->SetMass(0.1);
 
+		// Create collision models
+		floor->GetCollisionModel()->AddBox(50,1/2.0,200, &VNULL);
+		floor->SetCollide(true);
 
-		// using &VNULL rather than &body->GetPos() because definition said pos==VNULL is
-		// centered => probably centered about body position (relative) rather than absolute origin
-
-		floor->GetCollisionModel()->AddBox(40,1,400, &VNULL);
-
-		chassis->GetCollisionModel()->AddBox(chassisW,1.0,chassisL, &VNULL);
+		chassis->GetCollisionModel()->AddBox(chassisW/2.0,1.0/2.0,chassisL/2.0, &VNULL);
+		chassis->SetCollide(true);
 		chassis->GetCollisionModel()->SetFamily(1);
 		// Do not collide axles with chassis
 		chassis->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(2);
+		
 
-		axle_F->GetCollisionModel()->AddCylinder(1.0, axleL, 1.0, &VNULL, &ChMatrix33<double>(Q_from_AngZ(CH_C_PI/2.0)) );
-		axle_C->GetCollisionModel()->AddCylinder(1.0, axleL, 1.0, &VNULL, &ChMatrix33<double>(Q_from_AngZ(CH_C_PI/2.0)) );
-		axle_R->GetCollisionModel()->AddCylinder(1.0, axleL, 1.0, &VNULL, &ChMatrix33<double>(Q_from_AngZ(CH_C_PI/2.0)) );
+		axle_F->GetCollisionModel()->AddCylinder(0.5/2.0, axleL/2.0, 0.5/2.0, &VNULL, &ChMatrix33<double>(Q_from_AngZ(CH_C_PI/2.0)) );
+		axle_C->GetCollisionModel()->AddCylinder(0.5/2.0, axleL/2.0, 0.5/2.0, &VNULL, &ChMatrix33<double>(Q_from_AngZ(CH_C_PI/2.0)) );
+		axle_R->GetCollisionModel()->AddCylinder(0.5/2.0, axleL/2.0, 0.5/2.0, &VNULL, &ChMatrix33<double>(Q_from_AngZ(CH_C_PI/2.0)) );
+		axle_F->SetCollide(true);
+		axle_C->SetCollide(true);
+		axle_R->SetCollide(true);
 		// Chassis will not collide with the family of axles
 		axle_F->GetCollisionModel()->SetFamily(2);
 		axle_C->GetCollisionModel()->SetFamily(2);
 		axle_R->GetCollisionModel()->SetFamily(2);
 
-		leg_FR->GetCollisionModel()->AddBox(legW, legL, 0.5, &VNULL);
-		leg_FL->GetCollisionModel()->AddBox(legW, legL, 0.5, &VNULL);
-		leg_CR->GetCollisionModel()->AddBox(legW, legL, 0.5, &VNULL);
-		leg_CL->GetCollisionModel()->AddBox(legW, legL, 0.5, &VNULL);
-		leg_RR->GetCollisionModel()->AddBox(legW, legL, 0.5, &VNULL);
-		leg_RL->GetCollisionModel()->AddBox(legW, legL, 0.5, &VNULL);
+		leg_FR->GetCollisionModel()->AddBox(legW/2.0, legL/2.0, 0.5/2.0, &VNULL);
+		leg_FL->GetCollisionModel()->AddBox(legW/2.0, legL/2.0, 0.5/2.0, &VNULL);
+		leg_CR->GetCollisionModel()->AddBox(legW/2.0, legL/2.0, 0.5/2.0, &VNULL);
+		leg_CL->GetCollisionModel()->AddBox(legW/2.0, legL/2.0, 0.5/2.0, &VNULL);
+		leg_RR->GetCollisionModel()->AddBox(legW/2.0, legL/2.0, 0.5/2.0, &VNULL);
+		leg_RL->GetCollisionModel()->AddBox(legW/2.0, legL/2.0, 0.5/2.0, &VNULL);
+		leg_FR->SetCollide(true);
+		leg_FL->SetCollide(true);
+		leg_CR->SetCollide(true);
+		leg_CL->SetCollide(true);
+		leg_RR->SetCollide(true);
+		leg_RL->SetCollide(true);
 
-		foot_FR->GetCollisionModel()->AddBox(footW, footH, footL, &VNULL);
-		foot_FL->GetCollisionModel()->AddBox(footW, footH, footL, &VNULL);
-		foot_CR->GetCollisionModel()->AddBox(footW, footH, footL, &VNULL);
-		foot_CL->GetCollisionModel()->AddBox(footW, footH, footL, &VNULL);
-		foot_RR->GetCollisionModel()->AddBox(footW, footH, footL, &VNULL);
-		foot_RL->GetCollisionModel()->AddBox(footW, footH, footL, &VNULL);
+
+		foot_FR->GetCollisionModel()->AddBox(footW/2.0, footH/2.0, footL/2.0, &VNULL);
+		foot_FL->GetCollisionModel()->AddBox(footW/2.0, footH/2.0, footL/2.0, &VNULL);
+		foot_CR->GetCollisionModel()->AddBox(footW/2.0, footH/2.0, footL/2.0, &VNULL);
+		foot_CL->GetCollisionModel()->AddBox(footW/2.0, footH/2.0, footL/2.0, &VNULL);
+		foot_RR->GetCollisionModel()->AddBox(footW/2.0, footH/2.0, footL/2.0, &VNULL);
+		foot_RL->GetCollisionModel()->AddBox(footW/2.0, footH/2.0, footL/2.0, &VNULL);
+		foot_FR->SetCollide(true);
+		foot_FL->SetCollide(true);
+		foot_CR->SetCollide(true);
+		foot_CL->SetCollide(true);
+		foot_RR->SetCollide(true);
+		foot_RL->SetCollide(true);
 
 
 
@@ -238,12 +254,12 @@ int main(int argc, char* argv[])
 		axle_RL->Initialize(leg_RL, axle_R, ChCoordsys<>(VNULL));
 		my_system.AddLink(axle_RL);
 
-		// Create engine between axles and chasses
+		// Create engine between axles and chassis
 		GetLog() << "Creating Motors\n";
 
 		ChSharedPtr<ChLinkEngine> eng_F(new ChLinkEngine);
 		eng_F->Initialize(axle_F, chassis, 
-			ChCoordsys<>(ChVector<>(0, 0, 7) , Q_from_AngY(CH_C_PI/2) ) );
+			ChCoordsys<>(ChVector<>(0, 0, chassisL/2) , Q_from_AngY(CH_C_PI/2) ) );
 		eng_F->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK); // also works as revolute support
 		eng_F->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct()))
@@ -261,7 +277,7 @@ int main(int argc, char* argv[])
 
 		ChSharedPtr<ChLinkEngine> eng_R(new ChLinkEngine);
 		eng_R->Initialize(axle_R, chassis, 
-			ChCoordsys<>(ChVector<>(0, 0, -7) , Q_from_AngY(CH_C_PI/2) ) );
+			ChCoordsys<>(ChVector<>(0, 0, -chassisL/2) , Q_from_AngY(CH_C_PI/2) ) );
 		eng_R->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK); // also works as revolute support
 		eng_R->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_R->Get_spe_funct()))
@@ -295,7 +311,7 @@ int main(int argc, char* argv[])
 
 		// A very simple simulation loop..
 		double simTime(0);
-		int currFrame(1);
+		int currFrame(0);
 
 		while (simTime < simDuration)
 		{
@@ -304,13 +320,14 @@ int main(int argc, char* argv[])
 			// PERFORM SIMULATION UP TO chronoTime
 			my_system.DoFrameDynamics(simTime);
 
-			if (currFrame%int(1/(fps*timestep)) == 0 )
+			if (currFrame%everyFrame == 0 )
 			{
 				
 				// Output data to files
 				char padnumber[256];
-				sprintf(padnumber, "%d", (currFrame/int(1/(fps*timestep)) + 10000));
+				sprintf(padnumber, "%d", (currFrame/everyFrame + 10000));
 				char filename[256];
+				// filepath (/walkerdata) must exist before executing
 				sprintf(filename, "%s/pos%s.txt", "walkerdata", padnumber + 1);
 
 				// create output file
@@ -318,7 +335,14 @@ int main(int argc, char* argv[])
 
 				// create pointer to system
 				ChSystem* mSys = (ChSystem*)&my_system;
+				
+				/*
+				for (int i = 0; i < my_system.Get_bodylist()->size(); i++) {
+					ChBody* abody = (ChBody*) my_system.Get_bodylist()->at(i);
 
+				}
+				*/
+				
 				// body iterator
 				std::vector<ChBody*>::iterator abody = mSys->Get_bodylist()->begin();
 				
@@ -330,16 +354,16 @@ int main(int argc, char* argv[])
 				{
 					if (ChBody* bod = dynamic_cast<ChBody*>(*abody))
 					{
-						ChVector<> bodpos = bod->GetPos();
+						ChVector<> bodPos = bod->GetPos();
 						ChQuaternion<> bodRot = bod->GetRot();
-						ChVector<> bodAngs = bodRot.Q_to_NasaAngles();
-						
-						output << (float)bodpos.x << ", ";
-						output << (float)bodpos.y << ", ";
-						output << (float)bodpos.z << ", ";
-						output << (float)bodAngs.x << ", ";
-						output << (float)bodAngs.y << ", ";
-						output << (float)bodAngs.z << ",\n";
+
+						output << (float)bodPos.x << ",";
+						output << (float)bodPos.y << ",";
+						output << (float)bodPos.z << ",";
+						output << (float)bodRot.e0 << ",";
+						output << (float)bodRot.e1 << ",";
+						output << (float)bodRot.e2 << ",";
+						output << (float)bodRot.e3 << ",\n";
 					}
 					abody++;
 				}

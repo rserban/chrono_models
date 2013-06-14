@@ -106,13 +106,14 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 //
 
-	real3 rad = R3(.025, .025, .025);
+	real3 rad = R3(.02, .02, .02);
 	real3 size = container_size;
 	size.y = container_size.y / 3.0;
 
 	int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
-	//int3 num_per_dir = I3(size.x / rad.x *.9, size.y / rad.y /4,  size.z / rad.z*.85);
-	cout << num_per_dir.x * num_per_dir.y << num_per_dir.z * 3 << endl;
+	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
+	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
+
 	addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, system_gpu);
 	addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, system_gpu);
 	addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, system_gpu);

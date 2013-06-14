@@ -15,7 +15,7 @@ real container_thickness = .05;
 real container_height = 0;
 real container_friction = 0;
 
-real particle_radius = .025;
+real particle_radius = .02;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -29,17 +29,18 @@ ChSharedBodyGPUPtr impactor;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
+
 //	ChSharedBodyGPUPtr sphere;
-//	real3 rad = R3(.05, .05, .05);
+//	real3 rad = R3(particle_radius, particle_radius, particle_radius);
 //	real3 size = container_size;
-//	size.y = container_size.y/3.0;
+//	size.y = container_size.y / 3.0;
 //
-//	int3 num_per_dir = I3(size.x/rad.x/2.0,size.y/rad.y/2.0,size.y/rad.y/2.0);
+//	int3 num_per_dir = I3(10, 1, 10);
 //
-//
-//
-//	if (frame % 50 == 0) {
-//		addPerturbedLayer(R3(0, -5, 0), SPHERE, rad, num_per_dir, R3(1, 1, 1), 1, 0, (ChSystemGPU*) mSys);
+//	if (frame % 8 == 0) {
+//		addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), .333, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
+//		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), .666, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
+//		addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), .999, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
 //	}
 }
 
@@ -64,7 +65,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(5);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(20, 20, 20));
@@ -105,8 +106,8 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 //
-
-	real3 rad = R3(.02, .02, .02);
+//	/*
+	real3 rad = R3(particle_radius, particle_radius, particle_radius);
 	real3 size = container_size;
 	size.y = container_size.y / 3.0;
 
@@ -114,10 +115,10 @@ int main(int argc, char* argv[]) {
 	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
 	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
 
-	addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, system_gpu);
-	addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, system_gpu);
-	addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, system_gpu);
-
+	addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, R3(0, 0, 0), system_gpu);
+	addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, R3(0, 0, 0), system_gpu);
+	addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, R3(0, 0, 0), system_gpu);
+//  */
 //=========================================================================================================
 ////Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();

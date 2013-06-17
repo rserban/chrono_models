@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .001;
 real seconds_to_simulate = 30;
 
 int max_iter = 10;
@@ -13,9 +13,9 @@ int num_steps = seconds_to_simulate / timestep;
 real3 container_size = R3(3, 3, 1.5);
 real container_thickness = .08;
 real container_height = 0;
-real container_friction = 0;
+real container_friction = 1;
 
-real particle_radius = .02;
+real particle_radius = .1;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -30,8 +30,8 @@ ChSharedBodyGPUPtr impactor;
 bool stream = false;
 
 real3 mass = R3(1, 1, 1);
-real3 friction = R3(0, 0, 0);
-real3 cohesion = R3(0, 0, 0);
+real3 friction = R3(0, .1, 0);
+real3 cohesion = R3(0, .25, 0);
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
@@ -42,12 +42,12 @@ void RunTimeStep(T* mSys, const int frame) {
 			real3 size = container_size;
 			size.y = container_size.y / 3.0;
 
-			int3 num_per_dir = I3(10, 1, 10);
+			int3 num_per_dir = I3(5, 2, 5);
 
 			if (frame % 16 == 0) {
-				addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
-				addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.y, friction.y, cohesion.y, R3(0, 5, 0), (ChSystemGPU*) mSys);
-				addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
+				//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
+				addPerturbedLayer(R3(-3.5, 4, 1), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.y, .1, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
+				//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 			}
 		}
 	}
@@ -128,27 +128,41 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	FinalizeObject(L, (ChSystemGPU *) system_gpu);
-	FinalizeObject(R, (ChSystemGPU *) system_gpu);
-	FinalizeObject(F, (ChSystemGPU *) system_gpu);
-	FinalizeObject(B, (ChSystemGPU *) system_gpu);
-	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
-	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
+//	FinalizeObject(L, (ChSystemGPU *) system_gpu);
+//	FinalizeObject(R, (ChSystemGPU *) system_gpu);
+//	FinalizeObject(F, (ChSystemGPU *) system_gpu);
+//	FinalizeObject(B, (ChSystemGPU *) system_gpu);
+//	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
+//	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
+
+		ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBodyGPU);
+	//
+		InitObject(Bunny, 1, Vector(0, -3, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	//	//AddCollisionGeometry(Bunny, BOX, Vector(1, 1, 1),  Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+		AddCollisionGeometryTriangleMesh(Bunny, "bunny_low.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+		FinalizeObject(Bunny, (ChSystemGPU *) system_gpu);
+
+	//	real mass = 1;
+	//	Vector r = ChVector<>(1, 1, 1);
+	//	Vector inertia = Vector((1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.y * r.y)));
+
+		//Bunny->SetInertiaXX(inertia);
+
 
 //
-	if (!stream) {
-		real3 rad = R3(particle_radius, particle_radius, particle_radius);
-		real3 size = container_size;
-		size.y = container_size.y / 3.0;
-
-		int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
-		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
-		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
-
-		addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
-		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, 0, R3(0, 0, 0), system_gpu);
-		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
-	}
+//	if (!stream) {
+//		real3 rad = R3(particle_radius, particle_radius, particle_radius);
+//		real3 size = container_size;
+//		size.y = container_size.y / 3.0;
+//
+//		int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
+//		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
+//		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
+//
+//		addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
+//		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, 0, R3(0, 0, 0), system_gpu);
+//		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
+//	}
 //=========================================================================================================
 ////Rendering specific stuff:
 	ChOpenGLManager * window_manager = new ChOpenGLManager();
@@ -180,7 +194,7 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/density/" << "/" << file << ".txt";
+			ss << "data/sticky/" << "/" << file << ".txt";
 			DumpAllObjects(system_gpu, ss.str(), ",", true);
 			//output.ExportData(ss.str());
 			file++;

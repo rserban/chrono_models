@@ -83,8 +83,8 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(sticky models/gpu/sticky.cpp)		
     TARGET_LINK_LIBRARIES(sticky	${CHRONO_LIB} ${GPU_LIBS})
     
-    ADD_EXECUTABLE(walker models/generic/demo_walker_nonIrr.cpp)		
-    TARGET_LINK_LIBRARIES(walker	${CHRONO_LIB} ${GPU_LIBS})
+   # ADD_EXECUTABLE(walker models/generic/demo_walker_nonIrr.cpp)		
+    #TARGET_LINK_LIBRARIES(walker	${CHRONO_LIB} ${GPU_LIBS})
 
     #ADD_EXECUTABLE(cylinder_drop models/gpu/cylinder_drop.cpp)		
     #TARGET_LINK_LIBRARIES(cylinder_drop	${CHRONO_LIB} ${GPU_LIBS})

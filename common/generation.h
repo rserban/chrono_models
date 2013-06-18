@@ -31,16 +31,23 @@ void addHCPCube(int grid_x, int grid_y, int grid_z, real mass, real radius, real
 		addHCPSheet(grid_x, grid_z, height + global_y, mass, radius, mu, active, offset_x + global_x, offset_z + global_z, V, mSys);
 	}
 }
-void addPerturbedLayer(real3 origin, ShapeType type, real3 r, int3 num_per_dir, real3 percent_perturbation, real mass, real mu,real cohesion,  real3 vel, ChSystemGPU* mSys) {
-	real3 a = r * percent_perturbation;
-	real3 d = a + 2 * r; //compute cell length
-	real3 dp, pos;
+void addPerturbedLayer(real3 origin, ShapeType type, real3 rad, int3 num_per_dir, real3 percent_perturbation, real mass, real mu, real cohesion, real3 vel, ChSystemGPU* mSys, bool random = false) {
+
 	ChSharedBodyGPUPtr body;
 	int counter = 0;
 
 	for (int i = 0; i < num_per_dir.x; i++) {
 		for (int j = 0; j < num_per_dir.y; j++) {
 			for (int k = 0; k < num_per_dir.z; k++) {
+				real3 r = rad;
+//				if (random) {
+//					r.x += r.x * ((rand() % 1000) / 1000.0 - .5);
+//					r.y += r.y * ((rand() % 1000) / 1000.0 - .5);
+//					r.z += r.z * ((rand() % 1000) / 1000.0 - .5);
+//				}
+				real3 a = r * percent_perturbation;
+				real3 d = a + 2 * r; //compute cell length
+				real3 dp, pos;
 
 				body = ChSharedBodyGPUPtr(new ChBodyGPU);
 
@@ -55,6 +62,10 @@ void addPerturbedLayer(real3 origin, ShapeType type, real3 r, int3 num_per_dir, 
 				pos += dp + origin + r;
 
 				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), mu, mu, 0, true, false, -1, counter);
+				if (random){
+					type = ShapeType(rand()%4);
+					//cout<<type<<endl;
+				}
 				AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 				FinalizeObject(body, (ChSystemGPU *) mSys);
 				body->SetCohesion(cohesion);

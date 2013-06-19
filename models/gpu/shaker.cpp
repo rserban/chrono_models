@@ -29,7 +29,7 @@ double H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
 double frequency = fstar / sqrtf(H / fabs(gravity));
 double amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
 
-int max_iter = 50;
+int max_iter = 25;
 string data_folder = "data/shaker2";
 int num_steps = seconds_to_simulate / timestep;
 

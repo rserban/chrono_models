@@ -27,7 +27,6 @@ real start_height = 1;
 
 ChSharedBodyGPUPtr impactor;
 
-bool stream = false;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
@@ -35,34 +34,24 @@ real cohesion = 0;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-	if (stream) {
-		if (mSys->GetNbodies() < 1071630) {
-			ChSharedBodyGPUPtr sphere;
-			real3 rad = R3(particle_radius, particle_radius, particle_radius);
-			real3 size = container_size;
-			size.y = container_size.y / 3.0;
+	if (mSys->GetNbodies() < 1071630) {
+		ChSharedBodyGPUPtr sphere;
+		real3 rad = R3(particle_radius, particle_radius, particle_radius);
+		real3 size = container_size;
+		size.y = container_size.y / 3.0;
 
-			int3 num_per_dir = I3(1, 10, 10);
+		int3 num_per_dir = I3(1, 10, 10);
 
-			if (frame % 16 == 0) {
-				//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
-				addPerturbedLayer(R3(5, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.y, 1, 5, R3(-5, 0, 0), (ChSystemGPU*) mSys, 1);
-				//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
-			}
+		if (frame % 20 == 0) {
+			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
+			addPerturbedLayer(R3(5, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.y, 1, 5, R3(-5, 0, 0), (ChSystemGPU*) mSys, 1);
+			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 		}
 	}
 }
 
 int main(int argc, char* argv[]) {
 	omp_set_num_threads(8);
-	if (argc == 2) {
-		stream = atoi(argv[1]);
-	}
-	if (argc == 3) {
-		stream = atoi(argv[1]);
-		cohesion = atof(argv[2]);
-
-	}
 //=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChLcpSystemDescriptorGPU *mdescriptor = new ChLcpSystemDescriptorGPU();
@@ -85,8 +74,8 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(6);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(30, 30, 15));
-	mcollisionengine->setBodyPerBin(200, 100);
+	mcollisionengine->setBinsPerAxis(R3(30, 30, 30));
+	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 //=========================================================================================================
@@ -115,7 +104,6 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-
 
 	L->SetCohesion(5);
 	R->SetCohesion(5);

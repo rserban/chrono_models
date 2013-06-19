@@ -6,12 +6,12 @@ real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 40;
 
-int max_iter = 10;
+int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(6, 6, 6);
-real container_thickness = .08;
+real container_thickness = .2;
 real container_height = 0;
 real container_friction = 1;
 

@@ -62,11 +62,18 @@ void addPerturbedLayer(real3 origin, ShapeType type, real3 rad, int3 num_per_dir
 				pos += dp + origin + r;
 
 				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), mu, mu, 0, true, false, -1, counter);
-				if (random){
-					type = ShapeType(rand()%4);
-					//cout<<type<<endl;
+				if (random) {
+					type = ShapeType(rand() % 4);
+					//cout << type << endl;
+					if (type == ELLIPSOID) {
+						AddCollisionGeometry(body, type, ChVector<>(r.x, r.y * 2, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+					} else {
+						AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+					}
+				} else {
+					AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 				}
-				AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+
 				FinalizeObject(body, (ChSystemGPU *) mSys);
 				body->SetCohesion(cohesion);
 				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));

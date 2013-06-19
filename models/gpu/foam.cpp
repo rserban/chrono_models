@@ -6,12 +6,12 @@ real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 30;
 
-int max_iter = 10;
+int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(6, 6, 6);
-real container_thickness = .08;
+real container_thickness = .4;
 real container_height = 0;
 real container_friction = 1;
 
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(5);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(6);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(30, 30, 15));
@@ -115,6 +115,14 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+
+
+	L->SetCohesion(5);
+	R->SetCohesion(5);
+	F->SetCohesion(5);
+	B->SetCohesion(5);
+	Bottom->SetCohesion(5);
+	Top->SetCohesion(5);
 
 	FinalizeObject(L, (ChSystemGPU *) system_gpu);
 	FinalizeObject(R, (ChSystemGPU *) system_gpu);

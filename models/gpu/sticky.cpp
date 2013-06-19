@@ -52,6 +52,7 @@ void RunTimeStep(T* mSys, const int frame) {
 			}
 		} else if (frame * timestep > 10&&frame * timestep < 20) {
 			Bunny->SetCollide(false);
+			Bunny->SetPos(Vector(0,20,0));
 			for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
 				ChBodyGPU* abody = (ChBodyGPU*) mSys->Get_bodylist()->at(i);
 				abody->SetCohesion(5);

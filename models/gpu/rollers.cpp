@@ -4,14 +4,14 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
-real seconds_to_simulate = 30;
+real seconds_to_simulate = 20;
 
-int max_iter = 30;
+int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(6, 6, 6);
-real container_thickness = .4;
+real3 container_size = R3(4, 4, 4);
+real container_thickness = .2;
 real container_height = 0;
 real container_friction = 1;
 
@@ -50,8 +50,8 @@ void RunTimeStep(T* mSys, const int frame) {
 		}
 	}
 
-	axle_F->SetPos(Vector(0, 0, .8));
-	axle_R->SetPos(Vector(0, 0, -.8));
+	axle_F->SetPos(Vector(0, 0, .6));
+	axle_R->SetPos(Vector(0, 0, -.6));
 	axle_F->SetPos_dt(Vector(0, 0, 0));
 	axle_R->SetPos_dt(Vector(0, 0, 0));
 
@@ -154,8 +154,8 @@ int main(int argc, char* argv[]) {
 
 	AddCollisionGeometry(axle_F, ELLIPSOID, ChVector<>(4 / 2.0, 1 / 2.0, 1 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(axle_R, ELLIPSOID, ChVector<>(4 / 2.0, 1 / 2.0, 1 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	axle_F->SetCohesion(.1);
-	axle_R->SetCohesion(.1);
+	axle_F->SetCohesion(-.1);
+	axle_R->SetCohesion(-.1);
 	FinalizeObject(chassis, (ChSystemGPU *) system_gpu);
 	FinalizeObject(axle_F, (ChSystemGPU *) system_gpu);
 	FinalizeObject(axle_R, (ChSystemGPU *) system_gpu);
@@ -164,25 +164,26 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr axle_F_ptr = ChSharedBodyPtr(axle_F);
 	ChSharedBodyPtr axle_R_ptr = ChSharedBodyPtr(axle_R);
 
-	ChSharedBodyGPUPtr wallL(new ChBodyGPU);
-	ChSharedBodyGPUPtr wallR(new ChBodyGPU);
-	InitObject(wallL, 1.0, ChVector<>(-.75, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, 0, 1);
-	InitObject(wallR, 1.0, ChVector<>(.75, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, 0, 1);
-	AddCollisionGeometry(wallL, BOX, ChVector<>(.1, 2, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(wallR, BOX, ChVector<>(.1, 2, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	FinalizeObject(wallL, (ChSystemGPU *) system_gpu);
-	FinalizeObject(wallR, (ChSystemGPU *) system_gpu);
+	ChSharedBodyGPUPtr wall(new ChBodyGPU);
+	InitObject(wall, 1.0, ChVector<>(0, 1, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, 0, 1);
+	AddCollisionGeometry(wall, BOX, ChVector<>(.1, 3, 1), Vector(-.75, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(wall, BOX, ChVector<>(.1, 3, 1), Vector(.75, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(wall, BOX, ChVector<>(1, 3, .1), Vector(0, 0, -.75), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(wall, BOX, ChVector<>(1, 3, .1), Vector(0, 0, .75), Quaternion(1, 0, 0, 0));
+
+	FinalizeObject(wall, (ChSystemGPU *) system_gpu);
+
 
 //=========================================================================================================
 //Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.render_camera->mScale = .5;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	openGLView.render_camera->mScale = .5;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
@@ -204,7 +205,7 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/foam/" << "/" << file << ".txt";
+			ss << "data/rollers/" << "/" << file << ".txt";
 			//DumpAllObjects(system_gpu, ss.str(), ",", true);
 			DumpAllObjectsWithGeometry(system_gpu, ss.str(), ",");
 			//output.ExportData(ss.str());

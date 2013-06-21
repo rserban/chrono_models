@@ -10,15 +10,15 @@ int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(1, 2, 5);
+real3 container_size = R3(1, 1, 5);
 real container_thickness = .1;
 real container_height = 0;
 real container_friction = 1;
 
-real particle_radius = .003;
+real particle_radius = .005;
 real particle_mass = .05;
 real particle_density = .5;
-real particle_friction = 0;
+real particle_friction =.1;
 Vector particle_initial_vel = Vector(0, -5.5, 0); //initial velocity
 
 int particle_grid_x = 14;
@@ -125,12 +125,12 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(4);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(5);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	//BLOCK_JACOBI
 	//ACCELERATED_PROJECTED_GRADIENT_DESCENT
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(20, 50, 200));
+	mcollisionengine->setBinsPerAxis(R3(40, 40, 200));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 	real wheel_mass = 60;
 
 	wheel = ChSharedBodyGPUPtr(new ChBodyGPU);
-	InitObject(wheel, wheel_mass, ChVector<>(0, -.5, 4), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	InitObject(wheel, wheel_mass, ChVector<>(0, .3, 0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
 	createWheel(wheel);
 	//AddCollisionGeometry(wheel, CYLINDER, Vector(.7,.2,.7), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(wheel, (ChSystemGPU *) system_gpu);
@@ -180,9 +180,9 @@ int main(int argc, char* argv[]) {
 	size.y = container_size.y / 3.0;
 
 	int3 num_per_dir;
-	num_per_dir.x = (size.x - container_thickness * 2.5 - rad.x * 2) / rad.x;
-	num_per_dir.y = 20;
-	num_per_dir.z = (size.z - container_thickness * 2.5 - rad.z * 2) / rad.z;
+	num_per_dir.x = (size.x - container_thickness * 2 - rad.x * 2) / rad.x;
+	num_per_dir.y = 30;
+	num_per_dir.z = (size.z - container_thickness * 2 - rad.z * 2) / rad.z;
 	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z  << endl;
 	//num_per_dir = I3(10, 10,(size.z-container_thickness*3-rad.z*2) / rad.z);
 
@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "Density " << density << " mass " << mass << " volume " << v << endl;
 
-	addPerturbedLayer(R3(0, -1.7, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), mass, .1, .01, R3(0, 0, 0), system_gpu);
+	addPerturbedLayer(R3(0, -num_per_dir.y*rad.z+rad.z*2-.5, 0), SPHERE, rad, num_per_dir, R3(0,0,0), mass, .1, .01, R3(0, 0, 0), system_gpu);
 
 //	impactor = ChSharedBodyGPUPtr(new ChBodyGPU);
 //	InitObject(impactor, 1500, Vector(-container_size.x,container_height + container_size.y*2,0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, -1, -2);
@@ -314,7 +314,7 @@ int main(int argc, char* argv[]) {
 //	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
 //	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
 //	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
+//	openGLView.render_camera->mScale = .1;
 //	openGLView.SetCustomCallback(RunTimeStep);
 //	openGLView.StartSpinning(window_manager);
 //	window_manager->CallGlutMainLoop();

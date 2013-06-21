@@ -15,7 +15,7 @@ real container_thickness = .1;
 real container_height = 0;
 real container_friction = 1;
 
-real particle_radius = .005;
+real particle_radius = .003;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 	//BLOCK_JACOBI
 	//ACCELERATED_PROJECTED_GRADIENT_DESCENT
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(20, 50, 50));
+	mcollisionengine->setBinsPerAxis(R3(20, 50, 200));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
 	num_per_dir.x = (size.x - container_thickness * 2.5 - rad.x * 2) / rad.x;
 	num_per_dir.y = 20;
 	num_per_dir.z = (size.z - container_thickness * 2.5 - rad.z * 2) / rad.z;
-	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
+	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z  << endl;
 	//num_per_dir = I3(10, 10,(size.z-container_thickness*3-rad.z*2) / rad.z);
 
 	real density = 1250;
@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "Density " << density << " mass " << mass << " volume " << v << endl;
 
-	//addPerturbedLayer(R3(0, -1.7, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), mass, .1, .01, R3(0, 0, 0), system_gpu);
+	addPerturbedLayer(R3(0, -1.7, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), mass, .1, .01, R3(0, 0, 0), system_gpu);
 
 //	impactor = ChSharedBodyGPUPtr(new ChBodyGPU);
 //	InitObject(impactor, 1500, Vector(-container_size.x,container_height + container_size.y*2,0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, -1, -2);

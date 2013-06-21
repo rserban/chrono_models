@@ -3,19 +3,19 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .004;
-real seconds_to_simulate = timestep * 10;
+real timestep = .001;
+real seconds_to_simulate = 9;
 
-int max_iter = 30;
+int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(2, 2, 5);
+real3 container_size = R3(1, 2, 5);
 real container_thickness = .1;
-real container_height = -1;
-real container_friction = .1;
+real container_height = 0;
+real container_friction = 1;
 
-real particle_radius = .05;
+real particle_radius = .005;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -34,8 +34,8 @@ double footW(1.5);
 double footL(2.0);
 double axleL(1.2);
 
-ChSharedBodyGPUPtr impactor;
-
+ChSharedBodyGPUPtr wheel;
+real ang = 0;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 //	ChSharedBodyGPUPtr sphere;
@@ -62,6 +62,22 @@ void RunTimeStep(T* mSys, const int frame) {
 //			}
 //		}
 //	}
+
+	ang += CH_C_PI * timestep*.5;
+	if (ang >= 2 * CH_C_PI) {
+		ang = 0;
+	}
+
+	Quaternion q1;
+	q1 = Q_from_AngZ(CH_C_PI / 2.0);
+	q1 = q1 % Q_from_AngY(ang);
+
+	q1.Normalize();
+	Vector pos = wheel->GetPos();
+	wheel->SetPos(Vector(0, pos.y, pos.z));
+	wheel->SetRot(q1);
+	wheel->SetWvel_loc(Vector(0, CH_C_PI*.5, 0));
+
 }
 
 void createWheel(ChSharedBodyGPUPtr &body) {
@@ -83,13 +99,13 @@ void createWheel(ChSharedBodyGPUPtr &body) {
 	//
 	//	InitObject(Bunny, 1, Vector(-3, 0, 50), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 	//	//AddCollisionGeometry(Bunny, BOX, Vector(1, 1, 1),  Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometryTriangleMesh(body, "wheel_low.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometryTriangleMesh(body, "wheel_low.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//	FinalizeObject(Bunny, (ChSystemGPU *) system_gpu);
 
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(4);
+	omp_set_num_threads(8);
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChLcpSystemDescriptorGPU *mdescriptor = new ChLcpSystemDescriptorGPU();
@@ -109,12 +125,12 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(4);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	//BLOCK_JACOBI
 	//ACCELERATED_PROJECTED_GRADIENT_DESCENT
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(50, 50, 200));
+	mcollisionengine->setBinsPerAxis(R3(20, 50, 50));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -130,14 +146,10 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyGPUPtr B = ChSharedBodyGPUPtr(new ChBodyGPU);
 	ChSharedBodyGPUPtr Bottom = ChSharedBodyGPUPtr(new ChBodyGPU);
 
-	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true,
-			-20, -20);
-	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20,
-			-20);
-	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true,
-			-20, -20);
-	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20,
-			-20);
+	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, -20, -20);
+	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, -20, -20);
+	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, -20, -20);
+	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, -20, -20);
 	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -151,17 +163,36 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(F, (ChSystemGPU *) system_gpu);
 	FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
+	real wheel_mass = 60;
 
+	wheel = ChSharedBodyGPUPtr(new ChBodyGPU);
+	InitObject(wheel, wheel_mass, ChVector<>(0, -.5, 4), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	createWheel(wheel);
+	//AddCollisionGeometry(wheel, CYLINDER, Vector(.7,.2,.7), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	FinalizeObject(wheel, (ChSystemGPU *) system_gpu);
+
+	Vector inertia = Vector(1 / 12.0 * wheel_mass * (3 * .7 * .7 + .2 * .2), 1 / 2.0 * wheel_mass * (.7 * .7), 1 / 12.0 * wheel_mass * (3 * .7 * .7 + .2 * .2));
+
+	wheel->SetInertiaXX(inertia);
+	wheel->SetCohesion(-.01);
 	real3 rad = R3(particle_radius, particle_radius, particle_radius);
 	real3 size = container_size;
 	size.y = container_size.y / 3.0;
 
-	int3 num_per_dir = I3(size.x / rad.x * .85, 15, size.z / rad.z * .85);
+	int3 num_per_dir;
+	num_per_dir.x = (size.x - container_thickness * 2.5 - rad.x * 2) / rad.x;
+	num_per_dir.y = 20;
+	num_per_dir.z = (size.z - container_thickness * 2.5 - rad.z * 2) / rad.z;
 	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
-	//num_per_dir = I3(size.x / rad.x * .85, size.y / rad.y * .85, 1);
+	//num_per_dir = I3(10, 10,(size.z-container_thickness*3-rad.z*2) / rad.z);
 
-	addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .05, .1,.01, R3(0, 0, 0), system_gpu);
+	real density = 1250;
+	real v = 4 / 3.0 * CH_C_PI * pow(particle_radius, 3);
+	real mass = density * v;
 
+	cout << "Density " << density << " mass " << mass << " volume " << v << endl;
+
+	//addPerturbedLayer(R3(0, -1.7, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), mass, .1, .01, R3(0, 0, 0), system_gpu);
 
 //	impactor = ChSharedBodyGPUPtr(new ChBodyGPU);
 //	InitObject(impactor, 1500, Vector(-container_size.x,container_height + container_size.y*2,0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, -1, -2);
@@ -182,114 +213,113 @@ int main(int argc, char* argv[]) {
 //
 //	Bunny->SetInertiaXX(inertia);
 
+	/*
+
+	 ChSharedBodyGPUPtr floor(new ChBodyGPU);
+	 ChSharedBodyGPUPtr chassis(new ChBodyGPU);
+	 ChSharedBodyGPUPtr axle_F(new ChBodyGPU);
+	 ChSharedBodyGPUPtr axle_R(new ChBodyGPU);
+	 ChSharedBodyGPUPtr leg_FR(new ChBodyGPU);
+	 ChSharedBodyGPUPtr leg_FL(new ChBodyGPU);
+	 ChSharedBodyGPUPtr leg_RR(new ChBodyGPU);
+	 ChSharedBodyGPUPtr leg_RL(new ChBodyGPU);
 
 
-	ChSharedBodyGPUPtr floor(new ChBodyGPU);
-	ChSharedBodyGPUPtr chassis(new ChBodyGPU);
-	ChSharedBodyGPUPtr axle_F(new ChBodyGPU);
-	ChSharedBodyGPUPtr axle_R(new ChBodyGPU);
-	ChSharedBodyGPUPtr leg_FR(new ChBodyGPU);
-	ChSharedBodyGPUPtr leg_FL(new ChBodyGPU);
-	ChSharedBodyGPUPtr leg_RR(new ChBodyGPU);
-	ChSharedBodyGPUPtr leg_RL(new ChBodyGPU);
+	 //InitObject(floor, 1.0, ChVector<>(0, -3.5, 0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, true, -20, -20);
+	 InitObject(chassis, 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, false, 0, 1);
+	 InitObject(axle_F, .1, ChVector<>(0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
+	 InitObject(axle_R, .1, ChVector<>(0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
+	 InitObject(leg_FR, 5, ChVector<>((axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 InitObject(leg_FL, 5, ChVector<>(-(axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 InitObject(leg_RR, 5, ChVector<>((axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 InitObject(leg_RL, 5, ChVector<>(-(axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+
+	 //AddCollisionGeometry(floor, BOX, ChVector<>(10, 1 / 2.0, 50), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .1, chassisL / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometry(axle_F, BOX, ChVector<>(0.5 / 2.0, axleL / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometry(axle_R, BOX, ChVector<>(0.5 / 2.0, axleL / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 createWheel(leg_FR);
+	 createWheel(leg_FL);
+	 createWheel(leg_RR);
+	 createWheel(leg_RL);
+
+	 //FinalizeObject(floor, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(chassis, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(axle_F, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(axle_R, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(leg_FR, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(leg_FL, (ChSystemGPU *) system_gpu);
+
+	 FinalizeObject(leg_RR, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(leg_RL, (ChSystemGPU *) system_gpu);
+
+	 floor->SetInertiaXX(Vector(1, 1, 1));
+	 chassis->SetInertiaXX(Vector(1, 1, 1));
+	 axle_F->SetInertiaXX(Vector(1, 1, 1));
+	 axle_R->SetInertiaXX(Vector(1, 1, 1));
+	 leg_FR->SetInertiaXX(Vector(1, 1, 1));
+	 leg_FL->SetInertiaXX(Vector(1, 1, 1));
+	 leg_RR->SetInertiaXX(Vector(1, 1, 1));
+	 leg_RL->SetInertiaXX(Vector(1, 1, 1));
+
+	 ChSharedBodyPtr chassis_ptr = ChSharedBodyPtr(chassis);
+	 ChSharedBodyPtr axle_F_ptr = ChSharedBodyPtr(axle_F);
+	 ChSharedBodyPtr axle_R_ptr = ChSharedBodyPtr(axle_R);
+	 ChSharedBodyPtr leg_FR_ptr = ChSharedBodyPtr(leg_FR);
+	 ChSharedBodyPtr leg_FL_ptr = ChSharedBodyPtr(leg_FL);
+	 ChSharedBodyPtr leg_RR_ptr = ChSharedBodyPtr(leg_RR);
+	 ChSharedBodyPtr leg_RL_ptr = ChSharedBodyPtr(leg_RL);
+
+	 //	// attach legs to axles
+	 ChSharedPtr<ChLinkLockLock> axle_FR(new ChLinkLockLock);
+	 axle_FR->Initialize(leg_FR_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_FR);
+
+	 ChSharedPtr<ChLinkLockLock> axle_FL(new ChLinkLockLock);
+	 axle_FL->Initialize(leg_FL_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_FL);
+
+	 ChSharedPtr<ChLinkLockLock> axle_RR(new ChLinkLockLock);
+	 axle_RR->Initialize(leg_RR_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_RR);
+
+	 ChSharedPtr<ChLinkLockLock> axle_RL(new ChLinkLockLock);
+	 axle_RL->Initialize(leg_RL_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_RL);
 
 
-	//InitObject(floor, 1.0, ChVector<>(0, -3.5, 0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, true, -20, -20);
-	InitObject(chassis, 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, false, 0, 1);
-	InitObject(axle_F, .1, ChVector<>(0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
-	InitObject(axle_R, .1, ChVector<>(0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
-	InitObject(leg_FR, 5, ChVector<>((axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	InitObject(leg_FL, 5, ChVector<>(-(axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	InitObject(leg_RR, 5, ChVector<>((axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	InitObject(leg_RL, 5, ChVector<>(-(axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 ChSharedPtr<ChLinkEngine> eng_F(new ChLinkEngine);
+	 eng_F->Initialize(axle_F_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, 0, chassisL / 2), Q_from_AngY(CH_C_PI / 2)));
+	 eng_F->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK); // also works as revolute support
+	 eng_F->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
+	 if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct()))
+	 mfun->Set_yconst(1); // rad/s  angular speed
+	 system_gpu->AddLink(eng_F);
 
-	//AddCollisionGeometry(floor, BOX, ChVector<>(10, 1 / 2.0, 50), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .1, chassisL / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(axle_F, BOX, ChVector<>(0.5 / 2.0, axleL / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(axle_R, BOX, ChVector<>(0.5 / 2.0, axleL / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	createWheel(leg_FR);
-	createWheel(leg_FL);
-	createWheel(leg_RR);
-	createWheel(leg_RL);
+	 ChSharedPtr<ChLinkEngine> eng_R(new ChLinkEngine);
+	 eng_R->Initialize(axle_R_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, 0, -chassisL / 2), Q_from_AngY(CH_C_PI / 2)));
+	 eng_R->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK); // also works as revolute support
+	 eng_R->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
+	 if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_R->Get_spe_funct()))
+	 mfun->Set_yconst(1); // rad/s  angular speed
+	 system_gpu->AddLink(eng_R);
 
-	//FinalizeObject(floor, (ChSystemGPU *) system_gpu);
-	FinalizeObject(chassis, (ChSystemGPU *) system_gpu);
-	FinalizeObject(axle_F, (ChSystemGPU *) system_gpu);
-	FinalizeObject(axle_R, (ChSystemGPU *) system_gpu);
-	FinalizeObject(leg_FR, (ChSystemGPU *) system_gpu);
-	FinalizeObject(leg_FL, (ChSystemGPU *) system_gpu);
-
-	FinalizeObject(leg_RR, (ChSystemGPU *) system_gpu);
-	FinalizeObject(leg_RL, (ChSystemGPU *) system_gpu);
-
-	floor->SetInertiaXX(Vector(1, 1, 1));
-	chassis->SetInertiaXX(Vector(1, 1, 1));
-	axle_F->SetInertiaXX(Vector(1, 1, 1));
-	axle_R->SetInertiaXX(Vector(1, 1, 1));
-	leg_FR->SetInertiaXX(Vector(1, 1, 1));
-	leg_FL->SetInertiaXX(Vector(1, 1, 1));
-	leg_RR->SetInertiaXX(Vector(1, 1, 1));
-	leg_RL->SetInertiaXX(Vector(1, 1, 1));
-
-	ChSharedBodyPtr chassis_ptr = ChSharedBodyPtr(chassis);
-	ChSharedBodyPtr axle_F_ptr = ChSharedBodyPtr(axle_F);
-	ChSharedBodyPtr axle_R_ptr = ChSharedBodyPtr(axle_R);
-	ChSharedBodyPtr leg_FR_ptr = ChSharedBodyPtr(leg_FR);
-	ChSharedBodyPtr leg_FL_ptr = ChSharedBodyPtr(leg_FL);
-	ChSharedBodyPtr leg_RR_ptr = ChSharedBodyPtr(leg_RR);
-	ChSharedBodyPtr leg_RL_ptr = ChSharedBodyPtr(leg_RL);
-
-//	// attach legs to axles
-	ChSharedPtr<ChLinkLockLock> axle_FR(new ChLinkLockLock);
-	axle_FR->Initialize(leg_FR_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_FR);
-
-	ChSharedPtr<ChLinkLockLock> axle_FL(new ChLinkLockLock);
-	axle_FL->Initialize(leg_FL_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_FL);
-
-	ChSharedPtr<ChLinkLockLock> axle_RR(new ChLinkLockLock);
-	axle_RR->Initialize(leg_RR_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_RR);
-
-	ChSharedPtr<ChLinkLockLock> axle_RL(new ChLinkLockLock);
-	axle_RL->Initialize(leg_RL_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_RL);
-
-
-	ChSharedPtr<ChLinkEngine> eng_F(new ChLinkEngine);
-	eng_F->Initialize(axle_F_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, 0, chassisL / 2), Q_from_AngY(CH_C_PI / 2)));
-	eng_F->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK); // also works as revolute support
-	eng_F->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
-	if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct()))
-		mfun->Set_yconst(0); // rad/s  angular speed
-	system_gpu->AddLink(eng_F);
-
-	ChSharedPtr<ChLinkEngine> eng_R(new ChLinkEngine);
-	eng_R->Initialize(axle_R_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, 0, -chassisL / 2), Q_from_AngY(CH_C_PI / 2)));
-	eng_R->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK); // also works as revolute support
-	eng_R->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
-	if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_R->Get_spe_funct()))
-		mfun->Set_yconst(0); // rad/s  angular speed
-	system_gpu->AddLink(eng_R);
-
-
+	 */
 	//system_gpu->DoStepDynamics(timestep);
 	//system_gpu->DoStepDynamics(timestep);
-
 	//exit(0);
 	//=========================================================================================================
 	////Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.render_camera->mScale = .5;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	openGLView.render_camera->mScale = .5;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
-
+	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
 		system_gpu->DoStepDynamics(timestep);
 		double TIME = system_gpu->GetChTime();
@@ -303,10 +333,16 @@ int main(int argc, char* argv[]) {
 		int REQ_ITS = ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS);
-//		if (i % 1000 == 0) {
-//			cout << "SAVED STATE" << endl;
-//			DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
-//		}
+		int save_every = 1.0 / timestep / 60.0; //save data every n steps
+		if (i % save_every == 0) {
+			stringstream ss;
+			cout << "Frame: " << file << endl;
+			ss << "data/trough/" << "/" << file << ".txt";
+			DumpAllObjects(system_gpu, ss.str(), ",", true);
+			//DumpAllObjectsWithGeometry(system_gpu, ss.str(), ",");
+			//output.ExportData(ss.str());
+			file++;
+		}
 		RunTimeStep(system_gpu, i);
 	}
 

@@ -45,7 +45,8 @@ void DumpAllObjectsWithGeometry(ChSystemGPU* mSys, string filename, string delim
 		const Vector pos = abody->GetPos();
 		Quaternion rot = abody->GetRot();
 		Vector pos_final, rad_final;
-		int type;
+		string type = "sphere";
+		string group = "g0";
 
 		for (int j = 0; j < abody->GetAssets().size(); j++) {
 			ChSharedPtr<ChAsset> asset = abody->GetAssets().at(j);
@@ -58,8 +59,8 @@ void DumpAllObjectsWithGeometry(ChSystemGPU* mSys, string filename, string delim
 				rad_final.x = radius;
 				rad_final.y = radius;
 				rad_final.z = radius;
-				type = 1;
-
+				type = "sphere";
+				group = "g1";
 			}
 
 			else if (asset.IsType<ChEllipsoidShape>()) {
@@ -71,12 +72,14 @@ void DumpAllObjectsWithGeometry(ChSystemGPU* mSys, string filename, string delim
 
 				pos_final = pos + center;
 
-				type = 2;
+				type = "ellipsoid";
+				group = "g2";
 			} else if (asset.IsType<ChBoxShape>()) {
 				ChBoxShape * box_shape = ((ChBoxShape *) (asset.get_ptr()));
 				rad_final = box_shape->GetBoxGeometry().Size;
 				pos_final = pos;
-				type = 3;
+				type = "box";
+				group = "g3";
 			} else if (asset.IsType<ChCylinderShape>()) {
 				ChCylinderShape * cylinder_shape = ((ChCylinderShape *) (asset.get_ptr()));
 				double rad = cylinder_shape->GetCylinderGeometry().rad;
@@ -84,15 +87,27 @@ void DumpAllObjectsWithGeometry(ChSystemGPU* mSys, string filename, string delim
 				rad_final.y = cylinder_shape->GetCylinderGeometry().p2.y - cylinder_shape->GetCylinderGeometry().p1.y;
 
 				rad_final.z = rad;
-
 				pos_final = pos;
-				type = 4;
-
+				type = "cylinder";
+				group = "g4";
 			}
 
-			ofile << type << delim << pos_final.x << delim << pos_final.y << delim << pos_final.z << delim;
+
+
+			ofile << group << delim << i << delim << pos_final.x << delim << pos_final.y << delim << pos_final.z << delim;
+			//ofile << type << delim << pos_final.x << delim << pos_final.y << delim << pos_final.z << delim;
 			ofile << rot.e0 << delim << rot.e1 << delim << rot.e2 << delim << rot.e3 << delim;
-			ofile << rad_final.x << delim << rad_final.y << delim << rad_final.z<<delim<<endl;
+			//ofile <<type<< delim<< rad_final.x << delim << rad_final.y << delim << rad_final.z<<delim<<endl;
+
+			if (asset.IsType<ChSphereShape>()) {
+				ofile <<type<< delim<< rad_final.x << delim<<endl;
+			}else if (asset.IsType<ChEllipsoidShape>()) {
+				ofile <<type<< delim<< rad_final.x << delim << rad_final.y << delim << rad_final.z<<delim<<endl;
+			} else if (asset.IsType<ChBoxShape>()) {
+				ofile <<type<< delim<< rad_final.x << delim << rad_final.y << delim << rad_final.z<<delim<<endl;
+			} else if (asset.IsType<ChCylinderShape>()) {
+				ofile <<type<< delim<< rad_final.x << delim << rad_final.y << delim <<endl;
+			}
 		}
 	}
 }

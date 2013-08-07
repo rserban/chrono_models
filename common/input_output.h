@@ -5,7 +5,7 @@ void DumpObjects(T* mSys, string filename, string delim = ",", bool dump_vel_rot
 	ofstream ofile(filename.c_str());
 
 	for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
-		ChBody* abody = (ChBody*) mSys->Get_bodylist()->at(i);
+		ChBody* abody =  mSys->Get_bodylist()->at(i);
 		if (abody->IsActive() == true) {
 			ofile << abody->GetPos().x << delim << abody->GetPos().y << delim << abody->GetPos().z << delim;
 			ofile << abody->GetRot().e0 << delim << abody->GetRot().e1 << delim << abody->GetRot().e2 << delim << abody->GetRot().e3;
@@ -24,7 +24,7 @@ void DumpAllObjects(T* mSys, string filename, string delim = ",", bool dump_vel_
 	ofstream ofile(filename.c_str());
 
 	for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
-		ChBody* abody = (ChBody*) mSys->Get_bodylist()->at(i);
+		ChBody* abody =  mSys->Get_bodylist()->at(i);
 		ofile << abody->GetPos().x << delim << abody->GetPos().y << delim << abody->GetPos().z << delim;
 		ofile << abody->GetRot().e0 << delim << abody->GetRot().e1 << delim << abody->GetRot().e2 << delim << abody->GetRot().e3;
 		if (!dump_vel_rot) {
@@ -41,7 +41,7 @@ void DumpAllObjectsWithGeometry(ChSystemGPU* mSys, string filename, string delim
 	ofstream ofile(filename.c_str());
 
 	for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
-		ChBodyGPU* abody = (ChBodyGPU*) mSys->Get_bodylist()->at(i);
+		ChBody* abody =  mSys->Get_bodylist()->at(i);
 		const Vector pos = abody->GetPos();
 		Quaternion rot = abody->GetRot();
 		Vector pos_final, rad_final;

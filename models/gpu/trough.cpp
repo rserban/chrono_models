@@ -10,7 +10,7 @@ int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(1, 1, 5);
+real3 container_size = R3(2, 1, 5);
 real container_thickness = .1;
 real container_height = 0;
 real container_friction = 1;
@@ -34,15 +34,29 @@ double footW(1.5);
 double footL(2.0);
 double axleL(1.2);
 
-ChSharedBodyGPUPtr wheel;
+ChSharedBodyPtr wheel;
 real ang = 0;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
+
+		double TIME = mSys->GetChTime();
+		double STEP = mSys->GetTimerStep();
+		double BROD = mSys->GetTimerCollisionBroad();
+		double NARR = mSys->GetTimerCollisionNarrow();
+		double LCP = mSys->GetTimerLcp();
+		double UPDT = mSys->GetTimerUpdate();
+		int BODS = mSys->GetNbodies();
+		int CNTC = mSys->GetNcontacts();
+		int REQ_ITS = ((ChLcpSolverGPU*) (mSys->GetLcpSolverSpeed()))->GetTotalIterations();
+		real RESID = ((ChLcpSolverGPU*) (mSys->GetLcpSolverSpeed()))->GetResidual();
+
+		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS,RESID);
+
 //	ChSharedBodyGPUPtr sphere;
 //	if (frame % 50 == 0) {
 //		for (int i = 0; i < particle_grid_x; i++) {
 //			for (int j = 0; j < particle_grid_z; j++) {
-//				sphere = ChSharedBodyGPUPtr(new ChBodyGPU);
+//				sphere = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
 //				Quaternion q;
 //				q.Q_from_NasaAngles(Vector(rand() % 1000 / 1000.0, rand() % 1000 / 1000.0, rand() % 1000 / 1000.0));
 //				q.Normalize();
@@ -63,24 +77,24 @@ void RunTimeStep(T* mSys, const int frame) {
 //		}
 //	}
 
-	ang += CH_C_PI * timestep*.5;
-	if (ang >= 2 * CH_C_PI) {
-		ang = 0;
-	}
-
-	Quaternion q1;
-	q1 = Q_from_AngZ(CH_C_PI / 2.0);
-	q1 = q1 % Q_from_AngY(ang);
-
-	q1.Normalize();
-	Vector pos = wheel->GetPos();
-	wheel->SetPos(Vector(0, pos.y, pos.z));
-	wheel->SetRot(q1);
-	wheel->SetWvel_loc(Vector(0, CH_C_PI*.5, 0));
+//	ang += CH_C_PI * timestep*.5;
+//	if (ang >= 2 * CH_C_PI) {
+//		ang = 0;
+//	}
+//
+//	Quaternion q1;
+//	q1 = Q_from_AngZ(CH_C_PI / 2.0);
+//	q1 = q1 % Q_from_AngY(ang);
+//
+//	q1.Normalize();
+//	Vector pos = wheel->GetPos();
+//	wheel->SetPos(Vector(0, pos.y, pos.z));
+//	wheel->SetRot(q1);
+//	wheel->SetWvel_loc(Vector(0, CH_C_PI*.5, 0));
 
 }
 
-void createWheel(ChSharedBodyGPUPtr &body) {
+void createWheel(ChSharedBodyPtr &body) {
 
 //	AddCollisionGeometry(body, ELLIPSOID, ChVector<>(legW / 2.0, .1, legW / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 //
@@ -95,10 +109,10 @@ void createWheel(ChSharedBodyGPUPtr &body) {
 //	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(-legW / 2.0/sqrt(3), 0, legW / 2.0/sqrt(3)), Quaternion(1, 0, 0, 0));
 //	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(-legW / 2.0/sqrt(3), 0, -legW / 2.0/sqrt(3)), Quaternion(1, 0, 0, 0));
 
-	//	ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBodyGPU);
+	//	ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
 	//
 	//	InitObject(Bunny, 1, Vector(-3, 0, 50), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-	//	//AddCollisionGeometry(Bunny, BOX, Vector(1, 1, 1),  Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(body, CYLINDER, Vector(.5, .1, .1),  Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometryTriangleMesh(body, "wheel_low.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//	FinalizeObject(Bunny, (ChSystemGPU *) system_gpu);
 
@@ -127,6 +141,9 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(5);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	//((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(CONJUGATE_GRADIENT);
+	//((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(MINIMUM_RESIDUAL);
+	//((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(STEEPEST_DESCENT);
 	//BLOCK_JACOBI
 	//ACCELERATED_PROJECTED_GRADIENT_DESCENT
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -140,11 +157,11 @@ int main(int argc, char* argv[]) {
 	//addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius.x, 1, true, 0,  -6 +container_thickness+particle_radius.y, 0, 0, system_gpu);
 	//=========================================================================================================
 
-	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr R = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr B = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr Bottom = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, -20, -20);
@@ -158,23 +175,23 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	FinalizeObject(L, (ChSystemGPU *) system_gpu);
-	FinalizeObject(R, (ChSystemGPU *) system_gpu);
-	FinalizeObject(F, (ChSystemGPU *) system_gpu);
-	FinalizeObject(B, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(L, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(R, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(F, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	real wheel_mass = 60;
 
-	wheel = ChSharedBodyGPUPtr(new ChBodyGPU);
-	InitObject(wheel, wheel_mass, ChVector<>(0, .3, 0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	createWheel(wheel);
+	//wheel = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	//InitObject(wheel, wheel_mass, ChVector<>(0, .3, 0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	//createWheel(wheel);
 	//AddCollisionGeometry(wheel, CYLINDER, Vector(.7,.2,.7), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	FinalizeObject(wheel, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(wheel, (ChSystemGPU *) system_gpu);
 
-	Vector inertia = Vector(1 / 12.0 * wheel_mass * (3 * .7 * .7 + .2 * .2), 1 / 2.0 * wheel_mass * (.7 * .7), 1 / 12.0 * wheel_mass * (3 * .7 * .7 + .2 * .2));
+	//Vector inertia = Vector(1 / 12.0 * wheel_mass * (3 * .7 * .7 + .2 * .2), 1 / 2.0 * wheel_mass * (.7 * .7), 1 / 12.0 * wheel_mass * (3 * .7 * .7 + .2 * .2));
 
-	wheel->SetInertiaXX(inertia);
-	wheel->SetCohesion(-.01);
+	//wheel->SetInertiaXX(inertia);
+	//wheel->GetMaterialSurface()->SetCohesion(-.01);
 	real3 rad = R3(particle_radius, particle_radius, particle_radius);
 	real3 size = container_size;
 	size.y = container_size.y / 3.0;
@@ -192,15 +209,15 @@ int main(int argc, char* argv[]) {
 
 	cout << "Density " << density << " mass " << mass << " volume " << v << endl;
 
-	addPerturbedLayer(R3(0, -num_per_dir.y*rad.z+rad.z*2-.5, 0), SPHERE, rad, num_per_dir, R3(0,0,0), mass, .1, .01, R3(0, 0, 0), system_gpu);
+	//addPerturbedLayer(R3(0, -num_per_dir.y*rad.z+rad.z*2-.5, 0), SPHERE, rad, num_per_dir, R3(0,0,0), mass, .1, .01, R3(0, 0, 0), system_gpu);
 
-//	impactor = ChSharedBodyGPUPtr(new ChBodyGPU);
+//	impactor = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
 //	InitObject(impactor, 1500, Vector(-container_size.x,container_height + container_size.y*2,0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, -1, -2);
 //	AddCollisionGeometry(impactor, SPHERE, ChVector<>(.5,0,0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 //	FinalizeObject(impactor, (ChSystemGPU *) system_gpu);
 //	impactor->SetPos_dt(Vector(2.5,0,0));
 
-//	ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBodyGPU);
+//	ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
 ////
 //	InitObject(Bunny, 1, Vector(0, 5, 50), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 ////	//AddCollisionGeometry(Bunny, BOX, Vector(1, 1, 1),  Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -213,26 +230,26 @@ int main(int argc, char* argv[]) {
 //
 //	Bunny->SetInertiaXX(inertia);
 
-	/*
 
-	 ChSharedBodyGPUPtr floor(new ChBodyGPU);
-	 ChSharedBodyGPUPtr chassis(new ChBodyGPU);
-	 ChSharedBodyGPUPtr axle_F(new ChBodyGPU);
-	 ChSharedBodyGPUPtr axle_R(new ChBodyGPU);
-	 ChSharedBodyGPUPtr leg_FR(new ChBodyGPU);
-	 ChSharedBodyGPUPtr leg_FL(new ChBodyGPU);
-	 ChSharedBodyGPUPtr leg_RR(new ChBodyGPU);
-	 ChSharedBodyGPUPtr leg_RL(new ChBodyGPU);
+
+	 ChSharedBodyPtr floor(new ChBody(new ChCollisionModelGPU));
+	 ChSharedBodyPtr chassis(new ChBody(new ChCollisionModelGPU));
+	 ChSharedBodyPtr axle_F(new ChBody(new ChCollisionModelGPU));
+	 ChSharedBodyPtr axle_R(new ChBody(new ChCollisionModelGPU));
+	 ChSharedBodyPtr leg_FR(new ChBody(new ChCollisionModelGPU));
+	 ChSharedBodyPtr leg_FL(new ChBody(new ChCollisionModelGPU));
+	 ChSharedBodyPtr leg_RR(new ChBody(new ChCollisionModelGPU));
+	 ChSharedBodyPtr leg_RL(new ChBody(new ChCollisionModelGPU));
 
 
 	 //InitObject(floor, 1.0, ChVector<>(0, -3.5, 0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, true, -20, -20);
-	 InitObject(chassis, 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, false, 0, 1);
-	 InitObject(axle_F, .1, ChVector<>(0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
-	 InitObject(axle_R, .1, ChVector<>(0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
-	 InitObject(leg_FR, 5, ChVector<>((axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	 InitObject(leg_FL, 5, ChVector<>(-(axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	 InitObject(leg_RR, 5, ChVector<>((axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	 InitObject(leg_RL, 5, ChVector<>(-(axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 InitObject(chassis, 2500, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, false, 0, 1);
+	 InitObject(axle_F, 250, ChVector<>(0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
+	 InitObject(axle_R, 250, ChVector<>(0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
+	 InitObject(leg_FR, 60, ChVector<>((axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 InitObject(leg_FL, 60, ChVector<>(-(axleL + legW) / 2.0, 0, chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 InitObject(leg_RR, 60, ChVector<>((axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	 InitObject(leg_RL, 60, ChVector<>(-(axleL + legW) / 2.0, 0, -chassisL / 2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
 
 	 //AddCollisionGeometry(floor, BOX, ChVector<>(10, 1 / 2.0, 50), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	 AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .1, chassisL / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -253,14 +270,14 @@ int main(int argc, char* argv[]) {
 	 FinalizeObject(leg_RR, (ChSystemGPU *) system_gpu);
 	 FinalizeObject(leg_RL, (ChSystemGPU *) system_gpu);
 
-	 floor->SetInertiaXX(Vector(1, 1, 1));
-	 chassis->SetInertiaXX(Vector(1, 1, 1));
-	 axle_F->SetInertiaXX(Vector(1, 1, 1));
-	 axle_R->SetInertiaXX(Vector(1, 1, 1));
-	 leg_FR->SetInertiaXX(Vector(1, 1, 1));
-	 leg_FL->SetInertiaXX(Vector(1, 1, 1));
-	 leg_RR->SetInertiaXX(Vector(1, 1, 1));
-	 leg_RL->SetInertiaXX(Vector(1, 1, 1));
+//	 floor->SetInertiaXX(Vector(1, 1, 1));
+//	 chassis->SetInertiaXX(Vector(1, 1, 1));
+//	 axle_F->SetInertiaXX(Vector(1, 1, 1));
+//	 axle_R->SetInertiaXX(Vector(1, 1, 1));
+//	 leg_FR->SetInertiaXX(Vector(1, 1, 1));
+//	 leg_FL->SetInertiaXX(Vector(1, 1, 1));
+//	 leg_RR->SetInertiaXX(Vector(1, 1, 1));
+//	 leg_RL->SetInertiaXX(Vector(1, 1, 1));
 
 	 ChSharedBodyPtr chassis_ptr = ChSharedBodyPtr(chassis);
 	 ChSharedBodyPtr axle_F_ptr = ChSharedBodyPtr(axle_F);
@@ -304,20 +321,20 @@ int main(int argc, char* argv[]) {
 	 mfun->Set_yconst(1); // rad/s  angular speed
 	 system_gpu->AddLink(eng_R);
 
-	 */
+
 	//system_gpu->DoStepDynamics(timestep);
 	//system_gpu->DoStepDynamics(timestep);
 	//exit(0);
 	//=========================================================================================================
 	////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .1;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .1;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

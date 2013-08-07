@@ -25,7 +25,7 @@ int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
-ChSharedBodyGPUPtr Bottom;
+ChSharedBodyPtr Bottom;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
@@ -70,11 +70,11 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================
 
-	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr R = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr B = ChSharedBodyGPUPtr(new ChBodyGPU);
-	Bottom = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBodyGPU);
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBodyGPU);
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBodyGPU);
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBodyGPU);
+	Bottom = ChSharedBodyPtr(new ChBodyGPU);
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true,
 			-20, -20);

@@ -55,10 +55,10 @@ real start_height = 1;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (frame % particles_every == 0&& frame*timestep<.4) {
-		ChSharedBodyGPUPtr sphere;
+		ChSharedBodyPtr sphere;
 		for (int i = 0; i < particle_grid_x; i++) {
 			for (int j = 0; j < particle_grid_z; j++) {
-				sphere = ChSharedBodyGPUPtr(new ChBodyGPU);
+				sphere = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 				Quaternion q;
 				q.Q_from_NasaAngles(Vector(rand() % 1000 / 1000.0, rand() % 1000 / 1000.0, rand() % 1000 / 1000.0));
 				q.Normalize();
@@ -197,8 +197,8 @@ int main(int argc, char* argv[]) {
 	int num_particle = particle_plate_dim / plate_particle_radius;
 
 	if (create_particle_plate) {
-		ChSharedBodyGPUPtr sphere;
-		sphere = ChSharedBodyGPUPtr(new ChBodyGPU);
+		ChSharedBodyPtr sphere;
+		sphere = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 		InitObject(sphere, particle_mass, Vector(0, 0, 0), quat, plate_friction, plate_friction, 0, true, true, -1, -1);
 		for (int i = 0; i < num_particle; i++) {
 			for (int j = 0; j < num_particle; j++) {
@@ -214,15 +214,15 @@ int main(int argc, char* argv[]) {
 		}
 		FinalizeObject(sphere, (ChSystemGPU *) system_gpu);
 	}
-	ChSharedBodyGPUPtr PLATE = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr PLATE = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	InitObject(PLATE, 1, ChVector<>(0, plate_height, 0), quat, plate_friction, plate_friction, 0, true, true, -1000, -20000);
 	AddCollisionGeometry(PLATE, BOX, ChVector<>(plate_radius, plate_thickness, plate_radius), lpos, quat);
 	FinalizeObject(PLATE, (ChSystemGPU *) system_gpu);
 
-	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr R = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr B = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 	InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height+container_height, 0), quat, plate_friction, plate_friction, 0, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_width - container_thickness, plate_height+container_height, 0), quat, plate_friction, plate_friction, 0, true, true, -20, -20);
@@ -246,15 +246,15 @@ int main(int argc, char* argv[]) {
 	real funnel_width = 2;
 	real funnel_h = 4;
 	real funnel_offset = funnel_width; //.5*sqrt(2)*funnel_width-funnel_thickness*6+particle_radius*3;
-	ChSharedBodyGPUPtr Lt = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr Rt = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr Ft = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr Bt = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr Lt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Rt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Ft = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Bt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
-	ChSharedBodyGPUPtr F1 = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F2 = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F3 = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F4 = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr F1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F2 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F3 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F4 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 	ChQuaternion<> quat_r;
 	quat_r.Q_from_AngX(45);

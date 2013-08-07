@@ -25,7 +25,7 @@ int particle_grid_x = 14;
 int particle_grid_z = 14;
 real start_height = 1;
 
-ChSharedBodyGPUPtr impactor;
+ChSharedBodyPtr impactor;
 
 bool stream = false;
 
@@ -35,14 +35,14 @@ void createOBJ(ChSystemGPU* system_gpu) {
 		position.x = rand() % 1000 / 100.0-5;
 		position.y = rand() % 1000 / 1000.0-.5;
 		position.z = rand() % 1000 / 100.0-5;
-		ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBodyGPU);
+		ChSharedBodyPtr Bunny = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 		InitObject(Bunny, 27.5, position, Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, 1, 2);
 		AddCollisionGeometryTriangleMesh(Bunny, "monkey.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 		ChSharedPtr<ChAsset> asset = Bunny->GetAssets().at(0);
 		ChTriangleMeshShape * trimesh_shape = ((ChTriangleMeshShape *) (asset.get_ptr()));
 		ChTriangleMeshConnected trimesh = trimesh_shape->GetMesh();
 		std::vector<ChVector<double> > verts = trimesh.m_vertices;
-		ChSharedBodyGPUPtr sphere;
+		ChSharedBodyPtr sphere;
 		for (int i = 0; i < verts.size(); i++) {
 			AddCollisionGeometry(Bunny, SPHERE, ChVector<>(particle_radius, particle_radius, particle_radius), verts[i], Quaternion(1, 0, 0, 0));
 		}
@@ -98,12 +98,12 @@ int main(int argc, char* argv[]) {
 //addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius.x, 1, true, 0,  -6 +container_thickness+particle_radius.y, 0, 0, system_gpu);
 //=========================================================================================================
 
-	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr R = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr B = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr Bottom = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr Top = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true,
 			-20, -20);

@@ -3,10 +3,10 @@
 void addHCPSheet(int grid_x, int grid_z, real height, real mass, real radius, real mu, bool active, real global_x, real global_z, Vector vel, ChSystemGPU* mSys) {
 	real offset = 0;
 	real x = 0, y = height, z = 0;
-	ChSharedBodyGPUPtr body;
+	ChSharedBodyPtr body;
 	for (int i = 0; i < grid_x; i++) {
 		for (int k = 0; k < grid_z; k++) {
-			body = ChSharedBodyGPUPtr(new ChBodyGPU);
+			body = ChSharedBodyPtr(new ChBody);
 
 			offset = (k % 2 != 0) ? radius : 0;
 			x = i * 2 * radius + offset - grid_x * 2 * radius / 2.0 + global_x;
@@ -33,7 +33,7 @@ void addHCPCube(int grid_x, int grid_y, int grid_z, real mass, real radius, real
 }
 void addPerturbedLayer(real3 origin, ShapeType type, real3 rad, int3 num_per_dir, real3 percent_perturbation, real mass, real mu, real cohesion, real3 vel, ChSystemGPU* mSys, bool random = false) {
 
-	ChSharedBodyGPUPtr body;
+	ChSharedBodyPtr body;
 	int counter = 0;
 
 	for (int i = 0; i < num_per_dir.x; i++) {
@@ -49,7 +49,7 @@ void addPerturbedLayer(real3 origin, ShapeType type, real3 rad, int3 num_per_dir
 				real3 d = a + 2 * r; //compute cell length
 				real3 dp, pos;
 
-				body = ChSharedBodyGPUPtr(new ChBodyGPU);
+				body = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 				dp.x = rand() % 10000 / 10000.0 * a.x - a.x / 2.0;
 				dp.y = rand() % 10000 / 10000.0 * a.y - a.y / 2.0;
@@ -75,7 +75,7 @@ void addPerturbedLayer(real3 origin, ShapeType type, real3 rad, int3 num_per_dir
 				}
 
 				FinalizeObject(body, (ChSystemGPU *) mSys);
-				body->SetCohesion(cohesion);
+				body->GetMaterialSurface()->SetCohesion(cohesion);
 				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
 				counter++;
 

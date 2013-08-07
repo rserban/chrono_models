@@ -55,8 +55,8 @@
 //#define CHSOLVER ChLcpIterativeJacobi
 //#define CHMODEL ChModelBullet
 //#define CHSYS ChSystem
-#define CHBODYSHAREDPTR ChSharedBodyGPUPtr
-#define CHBODY ChBodyGPU
+#define CHBODYSHAREDPTR ChSharedBodyPtr
+#define CHBODY ChBody(new ChCollisionModelGPU)
 #define CHCOLLISIONSYS ChCollisionSystemGPU
 #define CHLCPDESC ChLcpSystemDescriptorGPU
 #define CHCONTACTCONT ChContactContainerGPU

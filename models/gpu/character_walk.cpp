@@ -21,7 +21,7 @@ int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
-ChSharedBodyGPUPtr Bottom;
+ChSharedBodyPtr Bottom;
 
 real char_fps = 30;
 int char_load_every = 1.0 / timestep / char_fps; //load data every n steps
@@ -36,7 +36,7 @@ const int char_objects = 66;
 
 string prefix = "aape/ape";
 string char_init_file = "aape/ape_init.txt";
-ChSharedBodyGPUPtr Character[char_objects];
+ChSharedBodyPtr Character[char_objects];
 
 vector<real3> char_pos[char_objects];
 vector<real4> char_rot[char_objects];
@@ -131,11 +131,11 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================
 
-	ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr R = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr F = ChSharedBodyGPUPtr(new ChBodyGPU);
-	ChSharedBodyGPUPtr B = ChSharedBodyGPUPtr(new ChBodyGPU);
-	Bottom = ChSharedBodyGPUPtr(new ChBodyGPU);
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true,
 			-20, -20);
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 			//ss >> local_pos.x >> local_pos.y >> local_pos.z;
 			size = size * char_scale;
 			local_pos = local_pos * char_scale;
-			Character[i] = ChSharedBodyGPUPtr(new ChBodyGPU);
+			Character[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 			InitObject(Character[i], 10, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 			AddCollisionGeometry(Character[i], BOX, Vector(size.x, size.y, size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 			FinalizeObject(Character[i], (ChSystemGPU *) system_gpu);

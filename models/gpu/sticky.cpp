@@ -25,20 +25,20 @@ int particle_grid_x = 2;
 int particle_grid_z = 2;
 real start_height = 1;
 
-ChSharedBodyGPUPtr impactor;
+ChSharedBodyPtr impactor;
 
 bool stream = false;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
-ChSharedBodyGPUPtr Bunny;
+ChSharedBodyPtr Bunny;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (stream) {
 		if (frame * timestep < 9) {
-			ChSharedBodyGPUPtr sphere;
+			ChSharedBodyPtr sphere;
 			real3 rad = R3(particle_radius, particle_radius, particle_radius);
 			real3 size = container_size;
 			size.y = container_size.y / 3.0;
@@ -54,18 +54,18 @@ void RunTimeStep(T* mSys, const int frame) {
 			Bunny->SetCollide(false);
 			Bunny->SetPos(Vector(0,20,0));
 			for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
-				ChBodyGPU* abody = (ChBodyGPU*) mSys->Get_bodylist()->at(i);
-				abody->SetCohesion(5);
+				ChBody* abody = (ChBody*) mSys->Get_bodylist()->at(i);
+				abody->GetMaterialSurface()->SetCohesion(5);
 			}
 		} else if (frame * timestep >= 20&&frame * timestep < 30) {
 			for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
-				ChBodyGPU* abody = (ChBodyGPU*) mSys->Get_bodylist()->at(i);
-				abody->SetCohesion(.5);
+				ChBody* abody = (ChBody*) mSys->Get_bodylist()->at(i);
+				abody->GetMaterialSurface()->SetCohesion(.5);
 			}
 		} else if (frame * timestep >= 30) {
 			for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
-				ChBodyGPU* abody = (ChBodyGPU*) mSys->Get_bodylist()->at(i);
-				abody->SetCohesion(0);
+				ChBody* abody = (ChBody*) mSys->Get_bodylist()->at(i);
+				abody->GetMaterialSurface()->SetCohesion(0);
 			}
 		}
 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 
 	if (stream) {
-		Bunny = ChSharedBodyGPUPtr(new ChBodyGPU);
+		Bunny = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 		//
 		InitObject(Bunny, 1, Vector(0, -3, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 		//	//AddCollisionGeometry(Bunny, BOX, Vector(1, 1, 1),  Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -133,12 +133,12 @@ int main(int argc, char* argv[]) {
 //
 //	if (!stream) {
 
-		ChSharedBodyGPUPtr L = ChSharedBodyGPUPtr(new ChBodyGPU);
-		ChSharedBodyGPUPtr R = ChSharedBodyGPUPtr(new ChBodyGPU);
-		ChSharedBodyGPUPtr F = ChSharedBodyGPUPtr(new ChBodyGPU);
-		ChSharedBodyGPUPtr B = ChSharedBodyGPUPtr(new ChBodyGPU);
-		ChSharedBodyGPUPtr Bottom = ChSharedBodyGPUPtr(new ChBodyGPU);
-		ChSharedBodyGPUPtr Top = ChSharedBodyGPUPtr(new ChBodyGPU);
+		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 		InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 		InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
 //				Vector pos;
 //				Vector vel;
 //				ss >> pos.x >> pos.y >> pos.z >> vel.x >> vel.y >> vel.z;
-//				ChSharedBodyGPUPtr sphere = ChSharedBodyGPUPtr(new ChBodyGPU);
+//				ChSharedBodyGPUPtr sphere = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
 //				InitObject(sphere, 1, pos, Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, 1, 0);
 //				AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius, particle_radius, particle_radius), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 //				FinalizeObject(sphere, (ChSystemGPU *) system_gpu);

@@ -19,7 +19,7 @@ real roller_length = 10;			//length of the roller
 real roller_radius = 76.2/2.0;			//radius of roller
 real roller_omega = 1;
 real roller_mass = 1;
-real roller_friction = 0;
+real roller_friction = .2;
 real roller_cohesion = 0;
 real particle_radius = .1;
 

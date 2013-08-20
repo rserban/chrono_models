@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .002;
+real timestep = .001;
 real seconds_to_simulate = 17;
 
 int max_iter = 10;
@@ -536,15 +536,15 @@ int main(int argc, char* argv[]) {
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-		//int save_every = 1.0 / timestep / 60.0; //save data every n steps
-//		//if (i % save_every == 0) {
-//		stringstream ss;
-//		cout << "Frame: " << file << endl;
-//		ss << "data/fording/" << "/" << file << ".txt";
-//		DumpAllObjects(system_gpu, ss.str(), ",", true);
-//		//output.ExportData(ss.str());
-//		file++;
-//		//}
+		int save_every = 1.0 / timestep / 60.0; //save data every n steps
+		if (i % save_every == 0) {
+		stringstream ss;
+		cout << "Frame: " << file << endl;
+		ss << "data/fording_full/" << "/" << file << ".txt";
+		DumpAllObjects(system_gpu, ss.str(), ",", false);
+		//output.ExportData(ss.str());
+		file++;
+}
 		RunTimeStep(system_gpu, i);
 	}
 

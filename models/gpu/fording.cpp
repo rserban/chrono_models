@@ -521,7 +521,7 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/fording/" << "/" << file << ".txt";
+			ss << "data/fording_full/" << "/" << file << ".txt";
 			DumpAllObjects(system_gpu, ss.str(), ",", false);
 			//output.ExportData(ss.str());
 			file++;

@@ -16,7 +16,7 @@ real container_height = -1.5;
 Vector container_pos = Vector(0, container_height, 8);
 real container_friction = 1;
 
-real particle_radius = .02;
+real particle_radius = .03;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -51,44 +51,25 @@ ChSharedBodyPtr leg_RL;
 int read_file = 0;
 void createWheel(ChSharedBodyPtr &body) {
 
-//	AddCollisionGeometry(body, ELLIPSOID, ChVector<>(legW / 2.0, .1, legW / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-//
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(0, 0, legW / 2.0), Quaternion(1, 0, 0, 0));
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(0, 0, -legW / 2.0), Quaternion(1, 0, 0, 0));
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(legW / 2.0, 0, 0), Quaternion(1, 0, 0, 0));
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(-legW / 2.0, 0, 0), Quaternion(1, 0, 0, 0));
-//
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(legW / 2.0/sqrt(3), 0, legW / 2.0/sqrt(3)), Quaternion(1, 0, 0, 0));
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(legW / 2.0/sqrt(3), 0, -legW / 2.0/sqrt(3)), Quaternion(1, 0, 0, 0));
-//
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(-legW / 2.0/sqrt(3), 0, legW / 2.0/sqrt(3)), Quaternion(1, 0, 0, 0));
-//	AddCollisionGeometry(body, BOX, ChVector<>(.1, legL / 2.0, .1), Vector(-legW / 2.0/sqrt(3), 0, -legW / 2.0/sqrt(3)), Quaternion(1, 0, 0, 0));
-
-	//	ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
-	//
-	//	InitObject(Bunny, 1, Vector(-3, 0, 50), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-	AddCollisionGeometry(body, ELLIPSOID, Vector(.4, .1, .4), Vector(0, .05, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(body, ELLIPSOID, Vector(.4, .1, .4), Vector(0, -.05, 0), Quaternion(1, 0, 0, 0));
-	//AddCollisionGeometryTriangleMesh(body, "wheel_low.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//	FinalizeObject(Bunny, (ChSystemGPU *) system_gpu);
+	//AddCollisionGeometry(body, ELLIPSOID, Vector(.4, .1, .4), Vector(0, .05, 0), Quaternion(1, 0, 0, 0));
+	//AddCollisionGeometry(body, ELLIPSOID, Vector(.4, .1, .4), Vector(0, -.05, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometryTriangleMesh(body, "wheel_low_scaled.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
 }
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (stream) {
-		if (((ChSystemGPU*) mSys)->GetNbodies()< 50000) {
-
-			;
+		if (((ChSystemGPU*) mSys)->GetNbodies() < 100000) {
 
 			ChSharedBodyPtr sphere;
 			real3 rad = R3(particle_radius, particle_radius, particle_radius);
 			real3 size = container_size;
 			size.y = container_size.y / 3.0;
 
-			int3 num_per_dir = I3(20, 20, 1);
+			int3 num_per_dir = I3(30, 20, 1);
 
-			if (frame % 40 == 0) {
+			if (frame % 80 == 0) {
 				//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, 1e-2, R3(0, 5, 0), (ChSystemGPU*) mSys);
 				addPerturbedLayer(
 						R3(0, -1, 10),
@@ -121,65 +102,65 @@ void RunTimeStep(T* mSys, const int frame) {
 	}
 
 	if (frame > 5000) {
-	stringstream ss;
-	ss << "data/fording/" << "/" << read_file << ".txt";
+		stringstream ss;
+		ss << "data/fording/" << "/" << read_file << ".txt";
 
-	ifstream ifile(ss.str().c_str());
-	string temp;
-	for (int i = 0; i < 14; i++) {
-		getline(ifile, temp);
+		ifstream ifile(ss.str().c_str());
+		string temp;
+		for (int i = 0; i < 14; i++) {
+			getline(ifile, temp);
 
-		std::replace(temp.begin(), temp.end(), ',', '\t');
-		//cout<<temp<<endl;;
-		stringstream st(temp);
-		Vector pos, vel, omg;
-		Quaternion rot;
+			std::replace(temp.begin(), temp.end(), ',', '\t');
+			//cout<<temp<<endl;;
+			stringstream st(temp);
+			Vector pos, vel, omg;
+			Quaternion rot;
 
-		st >> pos.x >> pos.y >> pos.z >> rot.e0 >> rot.e1 >> rot.e2 >> rot.e3 >> vel.x >> vel.y >> vel.z >> omg.x >> omg.y >> omg.z;
-		if (i == 7) {
-			chassis->SetPos(pos);
-			chassis->SetRot(rot);
-			chassis->SetPos_dt(vel);
-			chassis->SetWvel_loc(omg);
+			st >> pos.x >> pos.y >> pos.z >> rot.e0 >> rot.e1 >> rot.e2 >> rot.e3 >> vel.x >> vel.y >> vel.z >> omg.x >> omg.y >> omg.z;
+			if (i == 7) {
+				chassis->SetPos(pos);
+				chassis->SetRot(rot);
+				chassis->SetPos_dt(vel);
+				chassis->SetWvel_loc(omg);
+			}
+			if (i == 8) {
+				axle_F->SetPos(pos);
+				axle_F->SetRot(rot);
+				axle_F->SetPos_dt(vel);
+				axle_F->SetWvel_loc(omg);
+			}
+			if (i == 9) {
+				axle_R->SetPos(pos);
+				axle_R->SetRot(rot);
+				axle_R->SetPos_dt(vel);
+				axle_R->SetWvel_loc(omg);
+			}
+			if (i == 10) {
+				leg_FR->SetPos(pos);
+				leg_FR->SetRot(rot);
+				leg_FR->SetPos_dt(vel);
+				leg_FR->SetWvel_loc(omg);
+			}
+			if (i == 11) {
+				leg_FL->SetPos(pos);
+				leg_FL->SetRot(rot);
+				leg_FL->SetPos_dt(vel);
+				leg_FL->SetWvel_loc(omg);
+			}
+			if (i == 12) {
+				leg_RR->SetPos(pos);
+				leg_RR->SetRot(rot);
+				leg_RR->SetPos_dt(vel);
+				leg_RR->SetWvel_loc(omg);
+			}
+			if (i == 13) {
+				leg_RL->SetPos(pos);
+				leg_RL->SetRot(rot);
+				leg_RL->SetPos_dt(vel);
+				leg_RL->SetWvel_loc(omg);
+			}
 		}
-		if (i == 8) {
-			axle_F->SetPos(pos);
-			axle_F->SetRot(rot);
-			axle_F->SetPos_dt(vel);
-			axle_F->SetWvel_loc(omg);
-		}
-		if (i == 9) {
-			axle_R->SetPos(pos);
-			axle_R->SetRot(rot);
-			axle_R->SetPos_dt(vel);
-			axle_R->SetWvel_loc(omg);
-		}
-		if (i == 10) {
-			leg_FR->SetPos(pos);
-			leg_FR->SetRot(rot);
-			leg_FR->SetPos_dt(vel);
-			leg_FR->SetWvel_loc(omg);
-		}
-		if (i == 11) {
-			leg_FL->SetPos(pos);
-			leg_FL->SetRot(rot);
-			leg_FL->SetPos_dt(vel);
-			leg_FL->SetWvel_loc(omg);
-		}
-		if (i == 12) {
-			leg_RR->SetPos(pos);
-			leg_RR->SetRot(rot);
-			leg_RR->SetPos_dt(vel);
-			leg_RR->SetWvel_loc(omg);
-		}
-		if (i == 13) {
-			leg_RL->SetPos(pos);
-			leg_RL->SetRot(rot);
-			leg_RL->SetPos_dt(vel);
-			leg_RL->SetWvel_loc(omg);
-		}
-	}
-	read_file++;
+		read_file++;
 	}
 
 }
@@ -538,13 +519,13 @@ int main(int argc, char* argv[]) {
 
 		int save_every = 1.0 / timestep / 60.0; //save data every n steps
 		if (i % save_every == 0) {
-		stringstream ss;
-		cout << "Frame: " << file << endl;
-		ss << "data/fording_full/" << "/" << file << ".txt";
-		DumpAllObjects(system_gpu, ss.str(), ",", false);
-		//output.ExportData(ss.str());
-		file++;
-}
+			stringstream ss;
+			cout << "Frame: " << file << endl;
+			ss << "data/fording/" << "/" << file << ".txt";
+			DumpAllObjects(system_gpu, ss.str(), ",", false);
+			//output.ExportData(ss.str());
+			file++;
+		}
 		RunTimeStep(system_gpu, i);
 	}
 

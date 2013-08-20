@@ -86,7 +86,18 @@ void addPerturbedLayer(real3 origin, ShapeType type, real3 rad, int3 num_per_dir
 }
 
 void addPerturbedLayer(
-		real3 origin, ShapeType type, real3 rad, int3 num_per_dir, real3 percent_perturbation, real mass, real mu, real cohesion, real compliance, real3 vel, ChSystemGPU* mSys, bool random = false) {
+		real3 origin,
+		ShapeType type,
+		real3 rad,
+		int3 num_per_dir,
+		real3 percent_perturbation,
+		real mass,
+		real mu,
+		real cohesion,
+		real compliance,
+		real3 vel,
+		ChSystemGPU* mSys,
+		bool random = false) {
 
 	ChSharedBodyPtr body;
 	int counter = 0;
@@ -113,7 +124,7 @@ void addPerturbedLayer(
 				dp.x = rand() % 10000 / 10000.0 * a.x - a.x / 2.0;
 				dp.y = rand() % 10000 / 10000.0 * a.y - a.y / 2.0;
 				dp.z = rand() % 10000 / 10000.0 * a.z - a.z / 2.0;
-				d = d * .6;
+				//d = d * .6;
 				pos.x = i * d.x - num_per_dir.x * d.x * .5;
 				pos.y = j * d.y - num_per_dir.y * d.y * .5;
 				pos.z = k * d.z - num_per_dir.z * d.z * .5;
@@ -137,6 +148,57 @@ void addPerturbedLayer(
 				//body->GetMaterialSurface()->SetCohesion(cohesion);
 				//body->GetMaterialSurface()->SetCompliance(compliance);
 				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
+				counter++;
+
+			}
+		}
+	}
+}
+
+void addPerturbedFluidLayer(
+		real3 origin,
+		ShapeType type,
+		real3 rad,
+		int3 num_per_dir,
+		real3 percent_perturbation,
+		real mass,
+		real mu,
+		real cohesion,
+		real compliance,
+		real3 vel,
+		ChSystemGPU* mSys,
+		bool random = false) {
+
+	ChFluidBodyPtr body;
+	int counter = 0;
+
+	for (int i = 0; i < num_per_dir.x; i++) {
+		for (int j = 0; j < num_per_dir.y; j++) {
+			for (int k = 0; k < num_per_dir.z; k++) {
+				real3 r = rad;
+
+				real3 a = r * percent_perturbation;
+				real3 d = a + 2 * r; //compute cell length
+				real3 dp, pos;
+
+				body = ChFluidBodyPtr(new ChBodyFluid);
+
+				dp.x = rand() % 10000 / 10000.0 * a.x - a.x / 2.0;
+				dp.y = rand() % 10000 / 10000.0 * a.y - a.y / 2.0;
+				dp.z = rand() % 10000 / 10000.0 * a.z - a.z / 2.0;
+				//d = d * .3;
+				pos.x = i * d.x - num_per_dir.x * d.x * .5;
+				pos.y = j * d.y - num_per_dir.y * d.y * .5;
+				pos.z = k * d.z - num_per_dir.z * d.z * .5;
+
+				pos += dp + origin + r;
+//				body->SetPos(ChVector<>(pos.x,pos.y,pos.z));
+//				body->SetKernelRadius(rad.x);
+//				body->SetMass(mass);
+//				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
+//				mSys->AddBodySPH(body);
+
+
 				counter++;
 
 			}

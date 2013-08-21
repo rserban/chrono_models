@@ -16,7 +16,7 @@ real container_height = -1;
 Vector container_pos = Vector(0, container_height, 2.8);
 real container_friction = 1;
 
-real particle_radius = .01;
+real particle_radius = .015;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -460,7 +460,7 @@ int main(int argc, char* argv[]) {
 		int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
 		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
 		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
-		num_per_dir = I3(66*2, 6*2, 215*2);
+		num_per_dir = I3(66*1.5, 6*1.5, 215*1.5);
 		//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
 
 		addPerturbedLayer(

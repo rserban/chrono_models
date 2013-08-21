@@ -16,7 +16,7 @@ real container_height = -1.5;
 Vector container_pos = Vector(0, container_height, 8);
 real container_friction = 1;
 
-real particle_radius = .03;
+real particle_radius = .015;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -67,7 +67,7 @@ void RunTimeStep(T* mSys, const int frame) {
 			real3 size = container_size;
 			size.y = container_size.y / 3.0;
 
-			int3 num_per_dir = I3(30, 20, 1);
+			int3 num_per_dir = I3(30*2, 20*2, 1);
 
 			if (frame % 80 == 0) {
 				//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, 1e-2, R3(0, 5, 0), (ChSystemGPU*) mSys);

@@ -169,7 +169,7 @@ void addPerturbedFluidLayer(
 		ChSystemGPU* mSys,
 		bool random = false) {
 
-	ChFluidBodyPtr body;
+	//ChFluidBodyPtr body;
 	int counter = 0;
 
 	for (int i = 0; i < num_per_dir.x; i++) {
@@ -181,7 +181,7 @@ void addPerturbedFluidLayer(
 				real3 d = a + 2 * r; //compute cell length
 				real3 dp, pos;
 
-				body = ChFluidBodyPtr(new ChBodyFluid);
+				//body = ChFluidBodyPtr(new ChBodyFluid);
 
 				dp.x = rand() % 10000 / 10000.0 * a.x - a.x / 2.0;
 				dp.y = rand() % 10000 / 10000.0 * a.y - a.y / 2.0;

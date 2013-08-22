@@ -16,7 +16,7 @@ real container_height = -1.5;
 Vector container_pos = Vector(0, container_height, 8);
 real container_friction = 1;
 
-real particle_radius = .015;
+real particle_radius = .01;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -60,32 +60,32 @@ void createWheel(ChSharedBodyPtr &body) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (stream) {
-		if (((ChSystemGPU*) mSys)->GetNbodies() < 100000) {
+		if (((ChSystemGPU*) mSys)->GetNbodies() < 700000) {
 
 			ChSharedBodyPtr sphere;
 			real3 rad = R3(particle_radius, particle_radius, particle_radius);
 			real3 size = container_size;
 			size.y = container_size.y / 3.0;
 
-			int3 num_per_dir = I3(30*2, 20*2, 1);
+			int3 num_per_dir = I3(30*3, 1, 60*3);
 
-			if (frame % 80 == 0) {
+			if (frame % 40 == 0) {
 				//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, 1e-2, R3(0, 5, 0), (ChSystemGPU*) mSys);
-				addPerturbedLayer(
-						R3(0, -1, 10),
-						SPHERE,
-						rad,
-						num_per_dir,
-						R3(1, 0, 1),
-						mass.y,
-						0,
-						cohesion.y,
-						1e-3,
-						R3(0, 0, -.5),
-						(ChSystemGPU*) mSys);
+//				addPerturbedLayer(
+//						R3(0, -1, 10),
+//						SPHERE,
+//						rad,
+//						num_per_dir,
+//						R3(1, 0, 1),
+//						mass.y,
+//						0,
+//						cohesion.y,
+//						1e-3,
+//						R3(0, 0, -.5),
+//						(ChSystemGPU*) mSys);
 
 				addPerturbedLayer(
-						R3(0, -1, 6),
+						R3(0, -1, 8),
 						SPHERE,
 						rad,
 						num_per_dir,
@@ -94,7 +94,7 @@ void RunTimeStep(T* mSys, const int frame) {
 						0,
 						cohesion.y,
 						1e-3,
-						R3(0, 0, .5),
+						R3(0, -1, 0),
 						(ChSystemGPU*) mSys);
 				//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, 1e-2, R3(0, 5, 0), (ChSystemGPU*) mSys);
 			}

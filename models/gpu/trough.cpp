@@ -6,17 +6,17 @@ real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 6;
 
-int max_iter = 20;
+int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(1.75, 1, 4.7);
 real container_thickness = .04;
-real container_height = -1;
+real container_height = -1.1;
 Vector container_pos = Vector(0, container_height, 2.8);
 real container_friction = 1;
 
-real particle_radius = .01;
+real particle_radius = .02;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -178,7 +178,7 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(4);
+	omp_set_num_threads(6);
 	if (argc == 2) {
 		stream = atoi(argv[1]);
 	}
@@ -302,8 +302,17 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(F, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	//AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//AddCollisionGeometryTriangleMesh(Bottom, "ground.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+
+	//ChSharedPtr<ChAsset> asset = Bottom->GetAssets().at(0);
+	ChTriangleMeshConnected trimesh;
+	trimesh.LoadWavefrontMesh("ground.obj", false, false);
+	std::vector<ChVector<double> > verts = trimesh.m_vertices;
+	ChSharedBodyPtr sphere;
+	for (int i = 0; i < verts.size(); i++) {
+		AddCollisionGeometry(Bottom, ELLIPSOID, ChVector<>(.08, .03, .08), verts[i], Quaternion(1, 0, 0, 0));
+	}
 
 	FinalizeObject(L, (ChSystemGPU *) system_gpu);
 	FinalizeObject(R, (ChSystemGPU *) system_gpu);
@@ -376,12 +385,12 @@ int main(int argc, char* argv[]) {
 	leg_RR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	leg_RL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
-	InitObject(chassis, 2500 / 10.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, false, false, 0, 1);
-	InitObject(axle_F, 250 / 10.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
-	InitObject(axle_R, 250 / 10.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
+	InitObject(chassis, 2500 / 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, false, false, 0, 1);
+	InitObject(axle_F, 250 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
+	InitObject(axle_R, 250 / 1.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, false, false, -2, -2);
 	InitObject(
 			leg_FR,
-			60 / 10.0,
+			60 / 1.0,
 			ChVector<>((axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2),
 			Q_from_AngZ(CH_C_PI / 2.0),
 			1,
@@ -393,7 +402,7 @@ int main(int argc, char* argv[]) {
 			2);
 	InitObject(
 			leg_FL,
-			60 / 10.0,
+			60 / 1.0,
 			ChVector<>(-(axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2),
 			Q_from_AngZ(CH_C_PI / 2.0),
 			1,
@@ -403,11 +412,12 @@ int main(int argc, char* argv[]) {
 			false,
 			2,
 			2);
-	InitObject(leg_RR, 60 / 10.0, ChVector<>((axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
-	InitObject(leg_RL, 60 / 10.0, ChVector<>(-(axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	InitObject(leg_RR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
+	InitObject(leg_RL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, false, 2, 2);
 
 	AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .1, chassisL / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//AddCollisionGeometryTriangleMesh(chassis, "humvee.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+
 	AddCollisionGeometry(axle_F, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(axle_R, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
@@ -482,7 +492,7 @@ int main(int argc, char* argv[]) {
 		int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
 		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
 		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
-		num_per_dir = I3(66*2, 6*2, 215*2);
+		num_per_dir = I3(66, 12, 215);
 		//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
 
 		addPerturbedLayer(

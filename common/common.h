@@ -26,7 +26,7 @@
 #include "unit_GPU/CHsystemGPU.h"
 #include "unit_GPU/CHlcpSystemDescriptorGPU.h"
 #include "unit_POSTPROCESS/CHmitsubaRender.h"
-#include "unit_GPU/CHbodyFluid.h"
+//#include "unit_GPU/CHbodyFluid.h"
 using namespace chrono;
 using namespace postprocess;
 using namespace geometry;

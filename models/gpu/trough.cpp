@@ -178,7 +178,7 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(6);
+	//omp_set_num_threads(6);
 	if (argc == 2) {
 		stream = atoi(argv[1]);
 	}

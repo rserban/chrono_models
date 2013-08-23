@@ -3,8 +3,8 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .001;
-real seconds_to_simulate = 17;
+real timestep = .002;
+real seconds_to_simulate = 14;
 
 int max_iter = 10;
 
@@ -37,7 +37,7 @@ double axleL(.8);
 
 bool stream = false;
 
-real3 mass = R3(.034, .034, .034);
+real3 mass = R3(.005, .005, .005);
 real3 friction = R3(0, 0, 0);
 real3 cohesion = R3(0, 0, 0);
 
@@ -101,7 +101,7 @@ void RunTimeStep(T* mSys, const int frame) {
 		}
 	}
 
-	if (frame > 5000) {
+	if (frame > 1000) {
 		stringstream ss;
 		ss << "data/fording/" << "/" << read_file << ".txt";
 
@@ -160,7 +160,7 @@ void RunTimeStep(T* mSys, const int frame) {
 				leg_RL->SetWvel_loc(omg);
 			}
 		}
-		read_file++;
+		read_file+=2;
 	}
 
 }

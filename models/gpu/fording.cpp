@@ -69,7 +69,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 			int3 num_per_dir = I3(30*3, 1, 60*3);
 
-			if (frame % 40 == 0) {
+			if (frame % 20 == 0) {
 				//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, 1e-2, R3(0, 5, 0), (ChSystemGPU*) mSys);
 //				addPerturbedLayer(
 //						R3(0, -1, 10),

@@ -54,7 +54,7 @@ ChSharedPtr<ChLinkEngine> eng_F, eng_R;
 
 void createWheel(ChSharedBodyPtr &body) {
 
-	//AddCollisionGeometry(body, ELLIPSOID, Vector(.35, .1, .35), Vector(0, .05, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(body, ELLIPSOID, Vector(.35, .1, .35), Vector(0, .05, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(body, ELLIPSOID, Vector(.35, .1, .35), Vector(0, -.05, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometryTriangleMesh(body, "wheel_low_scaled.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	body->GetMaterialSurface()->SetCohesion(-25);
@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(5);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(true);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -484,7 +484,6 @@ int main(int argc, char* argv[]) {
 
 	system_gpu->AddLink(eng_R);
 
-//
 	if (!stream) {
 		real3 rad = R3(particle_radius, particle_radius, particle_radius);
 		real3 size = container_size - R3(container_thickness * 2);

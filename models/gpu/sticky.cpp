@@ -3,8 +3,8 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .001;
-real seconds_to_simulate = 40;
+real timestep = .0005;
+real seconds_to_simulate = timestep * 1000;
 
 int max_iter = 20;
 
@@ -15,11 +15,11 @@ real container_thickness = .2;
 real container_height = 0;
 real container_friction = 1;
 
-real particle_radius = .1;
+real particle_radius = .025;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
-Vector particle_initial_vel = Vector(0, -5.5, 0); //initial velocity
+Vector particle_initial_vel = Vector(0, -5.5, 0);     //initial velocity
 
 int particle_grid_x = 2;
 int particle_grid_z = 2;
@@ -50,14 +50,14 @@ void RunTimeStep(T* mSys, const int frame) {
 				addPerturbedLayer(R3(-3.5, 4, 1), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.y, .1, 0, R3(0, -5, 0), (ChSystemGPU*) mSys);
 				//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 			}
-		} else if (frame * timestep > 10&&frame * timestep < 20) {
+		} else if (frame * timestep > 10 && frame * timestep < 20) {
 			Bunny->SetCollide(false);
-			Bunny->SetPos(Vector(0,20,0));
+			Bunny->SetPos(Vector(0, 20, 0));
 			for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
 				ChBody* abody = (ChBody*) mSys->Get_bodylist()->at(i);
 				abody->GetMaterialSurface()->SetCohesion(5);
 			}
-		} else if (frame * timestep >= 20&&frame * timestep < 30) {
+		} else if (frame * timestep >= 20 && frame * timestep < 30) {
 			for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
 				ChBody* abody = (ChBody*) mSys->Get_bodylist()->at(i);
 				abody->GetMaterialSurface()->SetCohesion(.5);
@@ -74,7 +74,7 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
+	omp_set_num_threads(4);
 	if (argc == 2) {
 		stream = atoi(argv[1]);
 	}
@@ -102,10 +102,10 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(30, 30, 15));
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
+	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -133,34 +133,106 @@ int main(int argc, char* argv[]) {
 //
 //	if (!stream) {
 
-		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
-		InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-		InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-		InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-		InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-		InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-		InitObject(Top, 100000, Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	InitObject(
+			L,
+			100000,
+			Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
+			Quaternion(1, 0, 0, 0),
+			container_friction,
+			container_friction,
+			0,
+			true,
+			true,
+			-20,
+			-20);
+	InitObject(
+			R,
+			100000,
+			Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
+			Quaternion(1, 0, 0, 0),
+			container_friction,
+			container_friction,
+			0,
+			true,
+			true,
+			-20,
+			-20);
+	InitObject(
+			F,
+			100000,
+			Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
+			Quaternion(1, 0, 0, 0),
+			container_friction,
+			container_friction,
+			0,
+			true,
+			true,
+			-20,
+			-20);
+	InitObject(
+			B,
+			100000,
+			Vector(0, container_height - container_thickness, container_size.z - container_thickness),
+			Quaternion(1, 0, 0, 0),
+			container_friction,
+			container_friction,
+			0,
+			true,
+			true,
+			-20,
+			-20);
+	InitObject(
+			Bottom,
+			100000,
+			Vector(0, container_height - container_size.y, 0),
+			Quaternion(1, 0, 0, 0),
+			container_friction,
+			container_friction,
+			0,
+			true,
+			true,
+			-20,
+			-20);
+	InitObject(
+			Top,
+			100000,
+			Vector(0, container_height + container_size.y, 0),
+			Quaternion(1, 0, 0, 0),
+			container_friction,
+			container_friction,
+			0,
+			true,
+			true,
+			-20,
+			-20);
 
-		AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(F, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(F, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-		FinalizeObject(L, (ChSystemGPU *) system_gpu);
-		FinalizeObject(R, (ChSystemGPU *) system_gpu);
-		FinalizeObject(F, (ChSystemGPU *) system_gpu);
-		FinalizeObject(B, (ChSystemGPU *) system_gpu);
-		FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
-		FinalizeObject(Top, (ChSystemGPU *) system_gpu);
+	FinalizeObject(L, (ChSystemGPU *) system_gpu);
+	FinalizeObject(R, (ChSystemGPU *) system_gpu);
+	FinalizeObject(F, (ChSystemGPU *) system_gpu);
+	FinalizeObject(B, (ChSystemGPU *) system_gpu);
+	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
+	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
 
+	L->GetMaterialSurface()->SetCohesion(100);
+	R->GetMaterialSurface()->SetCohesion(100);
+	F->GetMaterialSurface()->SetCohesion(100);
+	B->GetMaterialSurface()->SetCohesion(100);
+	Bottom->GetMaterialSurface()->SetCohesion(100);
+	Top->GetMaterialSurface()->SetCohesion(100);
 //		ifstream ifile("bunny_init.txt");
 //		string temp;
 //
@@ -181,28 +253,30 @@ int main(int argc, char* argv[]) {
 //			}
 //		}
 
-//		real3 rad = R3(particle_radius, particle_radius, particle_radius);
+	real3 rad = R3(particle_radius, particle_radius, particle_radius);
 //		real3 size = container_size;
 //		size.y = container_size.y / 3.0;
 //
-//		int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
+	int3 num_per_dir;
 //		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
-//		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
+	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
 //
-//		addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
+	num_per_dir = I3(40, 40, 40);
+	addPerturbedLayer(R3(2, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 1, rand() % 20, R3(-44, 0, 0), system_gpu);
+	//addPerturbedLayer(R3(-2, -2, 0), SPHERE, rad, num_per_dir, R3(.1,.1,.1), .333, .01, rand()%5, R3(44, 0, 0), system_gpu);
 //		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, 0, R3(0, 0, 0), system_gpu);
 //		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
 //	}
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

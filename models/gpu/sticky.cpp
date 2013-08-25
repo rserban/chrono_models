@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .0005;
-real seconds_to_simulate = timestep * 1000;
+real seconds_to_simulate = 5;
 
 int max_iter = 20;
 
@@ -269,14 +269,14 @@ int main(int argc, char* argv[]) {
 //	}
 //=========================================================================================================
 //Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.render_camera->mScale = .5;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	openGLView.render_camera->mScale = .5;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
@@ -294,7 +294,7 @@ int main(int argc, char* argv[]) {
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-		int save_every = 1.0 / timestep / 60.0; //save data every n steps
+		int save_every = 1.0 / timestep / 600.0; //save data every n steps
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;

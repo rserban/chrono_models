@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
 	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
 //
 	num_per_dir = I3(40, 40, 40);
-	addPerturbedLayer(R3(2, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 1, rand() % 20, R3(-44, 0, 0), system_gpu);
+	addPerturbedLayer(R3(2, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 1, rand() % 20, R3(-22, 0, 0), system_gpu);
 	//addPerturbedLayer(R3(-2, -2, 0), SPHERE, rad, num_per_dir, R3(.1,.1,.1), .333, .01, rand()%5, R3(44, 0, 0), system_gpu);
 //		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, 0, R3(0, 0, 0), system_gpu);
 //		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);

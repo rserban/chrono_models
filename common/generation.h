@@ -86,9 +86,9 @@ class ParticleGenerator {
 						pos += dp + origin + r;
 
 						if (use_normal_dist) {
-							r.x = distribution(generator);
-							r.y = distribution(generator);
-							r.z = distribution(generator);
+							r.x = fmaxf(fminf(distribution(generator),radius.x),mean-2*std_dev);
+							r.y = fmaxf(fminf(distribution(generator),radius.y),mean-2*std_dev);
+							r.z = fmaxf(fminf(distribution(generator),radius.z),mean-2*std_dev);
 						}
 						if (use_density) {
 							if (type == SPHERE) {

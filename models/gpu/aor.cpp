@@ -34,7 +34,7 @@ int particle_grid_z = 14;
 int particles_every = 50;     //add particles every n steps
 int save_every = 100;     //save data every n steps
 
-int max_iteration = 50;
+int max_iteration = 20;
 int tolerance = 1e-3;
 
 int particle_configuration = 0;
@@ -45,7 +45,7 @@ int particle_configuration = 0;
 bool create_particle_plate = true;
 real particle_plate_dim = 8;
 real plate_particle_radius = .075;
-bool all_three_kinds = false;
+bool all_three_kinds = true;
 
 GPUSOLVERTYPE solver = ACCELERATED_PROJECTED_GRADIENT_DESCENT;
 
@@ -54,9 +54,11 @@ real start_height = 1;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-	ChSharedPtr<ChMaterialSurface> material;
-	material->SetFriction(particle_friction);
 
+	ChSharedPtr<ChMaterialSurface> material;
+	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material->SetFriction(particle_friction);
+	material->SetCohesion(.1);
 	if (frame % particles_every == 0 && frame * timestep < .4) {
 		ChSharedBodyPtr sphere;
 		for (int i = 0; i < particle_grid_x; i++) {
@@ -66,10 +68,7 @@ void RunTimeStep(T* mSys, const int frame) {
 				q.Q_from_NasaAngles(Vector(rand() % 1000 / 1000.0, rand() % 1000 / 1000.0, rand() % 1000 / 1000.0));
 				q.Normalize();
 
-				ChVector<> position(
-						i * particle_radius * 2 - particle_grid_x * .5 * particle_radius * 2,
-						start_height,
-						j * particle_radius * 2 - particle_grid_z * .5 * particle_radius * 2);
+				ChVector<> position(i * particle_radius * 2 - particle_grid_x * .5 * particle_radius * 2, start_height, j * particle_radius * 2 - particle_grid_z * .5 * particle_radius * 2);
 
 				position.x += rand() % 1000 / 100000.0;
 				position.y += rand() % 1000 / 1000.0;
@@ -87,27 +86,15 @@ void RunTimeStep(T* mSys, const int frame) {
 					InitObject(sphere, particle_mass, position, q, material, true, false, -1, i);
 					real percent = (rand() % 10000 / 10000.0 - .5) / 2.0;
 
-					AddCollisionGeometry(
-							sphere,
-							SPHERE,
-							ChVector<>(particle_radius + particle_radius * percent, particle_radius * .75, particle_radius * .75),
-							Vector(-.025, 0, 0),
-							quat);
+					AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius + particle_radius * percent, particle_radius * .75, particle_radius * .75), Vector(-.025, 0, 0), quat);
 					percent = (rand() % 10000 / 10000.0 - .5) / 2.0;
-					AddCollisionGeometry(
-							sphere,
-							SPHERE,
-							ChVector<>(particle_radius + particle_radius * percent, particle_radius * .75, particle_radius * .75),
-							Vector(.025, 0, 0),
-							quat);
+					AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius + particle_radius * percent, particle_radius * .75, particle_radius * .75), Vector(.025, 0, 0), quat);
 					real rho = particle_density;
 
 					//Vector inertia = Vector(3.47e-6 * rho, 2.62e-7 * rho, 3.47e-6 * rho);
 					real mass = particle_mass;
 					Vector r = ChVector<>(particle_radius, particle_radius, particle_radius);
-					Vector inertia = Vector(
-							(1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass
-									* (r.x * r.x + r.y * r.y)));
+					Vector inertia = Vector((1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.y * r.y)));
 
 					sphere->SetInertiaXX(inertia);
 				}
@@ -122,9 +109,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 					real mass = particle_mass;
 					Vector r = ChVector<>(radius1, radius2, radius3);
-					Vector inertia = Vector(
-							(1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass
-									* (r.x * r.x + r.y * r.y)));
+					Vector inertia = Vector((1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.y * r.y)));
 					sphere->SetInertiaXX(inertia);
 
 				}
@@ -146,6 +131,8 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 int main(int argc, char* argv[]) {
 	omp_set_num_threads(4);
+	srand(1);
+
 	cout << "Mass, Radius, Friction_Sphere, Friction_Plate, Data Folder, create_particle_plate all_three_kinds, particle configuration" << endl;
 	string solver_string = "ACCELERATED_PROJECTED_GRADIENT_DESCENT";
 	if (argc == 3) {
@@ -166,8 +153,8 @@ int main(int argc, char* argv[]) {
 		max_iteration = atoi(argv[11]);
 	}
 
-	cout << particle_mass << " " << particle_radius << " " << particle_friction << " " << plate_friction << " " << data_folder << " "
-			<< create_particle_plate << " " << all_three_kinds << " " << particle_configuration << solver_string << endl;
+	cout << particle_mass << " " << particle_radius << " " << particle_friction << " " << plate_friction << " " << data_folder << " " << create_particle_plate << " " << all_three_kinds << " "
+			<< particle_configuration << solver_string << endl;
 	//=========================================================================================================
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
@@ -190,26 +177,13 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
-	setSolverGPU(solver_string, system_gpu);     //reads a string and sets the solver
-	//((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(solver);
+	//setSolverGPU(solver_string, system_gpu);     //reads a string and sets the solver
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(solver);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .1);
 	mcollisionengine->setBinsPerAxis(R3(40, 15, 40));
 	mcollisionengine->setBodyPerBin(100, 50);
 
 	//=========================================================================================================
-	ChMitsubaRender output(system_gpu);
-	output.SetIntegrator("photonmapper");
-	output.SetIntegratorOption("integer", "maxDepth", "32");
-	output.SetFilm("ldrfilm");
-	output.SetFilmOption("integer", "height", "1200");
-	output.SetFilmOption("integer", "width", "1920");
-	output.camera_target = ChVector<>(0, -5, 0);
-	output.camera_origin = ChVector<>(0, -5, -40);
-	output.camera_up = ChVector<>(0, 1, 0);
-	output.SetDataFolder(data_folder);
-	output.ExportScript("test.xml");
-	//=========================================================================================================
-
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================
@@ -217,13 +191,14 @@ int main(int argc, char* argv[]) {
 	int num_particle = particle_plate_dim / plate_particle_radius;
 
 	ChSharedPtr<ChMaterialSurface> material;
+	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(plate_friction);
 
 	if (create_particle_plate) {
 
 		ChSharedBodyPtr sphere;
 		sphere = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		InitObject(sphere, particle_mass, Vector(0, 0, 0), quat, material, true, true, -1, -1);
+		InitObject(sphere, particle_mass, Vector(0, 0, 0), quat, material, true, true, -20, -20);
 		for (int i = 0; i < num_particle; i++) {
 			for (int j = 0; j < num_particle; j++) {
 
@@ -319,13 +294,13 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	//////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 	stringstream ss_m;
 	ss_m << data_folder << "/" << "timing.txt";
@@ -337,9 +312,8 @@ int main(int argc, char* argv[]) {
 		cout << "step " << i;
 		cout << " Residual: " << ((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
 		cout << " ITER: " << ((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
-		cout << " OUTPUT STEP: Time= " << current_time << " bodies= " << system_gpu->GetNbodies() << " contacts= " << system_gpu->GetNcontacts()
-				<< " step time=" << system_gpu->GetTimerStep() << " lcp time=" << system_gpu->GetTimerLcp() << " CDbroad time="
-				<< system_gpu->GetTimerCollisionBroad() << " CDnarrow time=" << system_gpu->GetTimerCollisionNarrow() << " Iterations="
+		cout << " OUTPUT STEP: Time= " << current_time << " bodies= " << system_gpu->GetNbodies() << " contacts= " << system_gpu->GetNcontacts() << " step time=" << system_gpu->GetTimerStep()
+				<< " lcp time=" << system_gpu->GetTimerLcp() << " CDbroad time=" << system_gpu->GetTimerCollisionBroad() << " CDnarrow time=" << system_gpu->GetTimerCollisionNarrow() << " Iterations="
 				<< ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations() << "\n";
 		//TimingFile(system_gpu, timing_file_name, current_time);
 		system_gpu->DoStepDynamics(timestep);
@@ -350,7 +324,6 @@ int main(int argc, char* argv[]) {
 //			cout << "Frame: " << file << endl;
 //			ss << data_folder << "/" << file << ".txt";
 //			DumpObjects(system_gpu, ss.str());
-//			//output.ExportData(ss.str());
 //			file++;
 //		}
 		current_time += timestep;

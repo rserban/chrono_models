@@ -75,22 +75,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 int main(int argc, char* argv[]) {
 	omp_set_num_threads(7);
-	if (argc == 2) {
-		stream = atoi(argv[1]);
-	}
-	if (argc == 3) {
-		stream = atoi(argv[1]);
-		int sim = atoi(argv[2]);
-		if (sim == 0) {
-			mass = R3(.333, .666, .999);
-		}
-		if (sim == 1) {
-			friction = R3(0, .5, 1);
-		}
-		if (sim == 3) {
-			cohesion = R3(0, .5, 1.5);
-		}
-	}
+
 //=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChLcpSystemDescriptorGPU *mdescriptor = new ChLcpSystemDescriptorGPU();
@@ -184,38 +169,12 @@ int main(int argc, char* argv[]) {
 	size.y = container_size.y / 3.0;
 
 	int3 num_per_dir;
-	num_per_dir.x = (size.x - container_thickness * 2 - rad.x * 2) / rad.x;
-	num_per_dir.y = 30;
-	num_per_dir.z = (size.z - container_thickness * 2 - rad.z * 2) / rad.z;
-	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	//num_per_dir = I3(10, 10,(size.z-container_thickness*3-rad.z*2) / rad.z);
 
 	real density = 1250;
 	real v = 4 / 3.0 * CH_C_PI * pow(particle_radius, 3);
 	real mass = density * v;
 
 	cout << "Density " << density << " mass " << mass << " volume " << v << endl;
-
-	//addPerturbedLayer(R3(0, -num_per_dir.y*rad.z+rad.z*2-.5, 0), SPHERE, rad, num_per_dir, R3(0,0,0), mass, .1, .01, R3(0, 0, 0), system_gpu);
-
-	//	impactor = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
-	//	InitObject(impactor, 1500, Vector(-container_size.x,container_height + container_size.y*2,0), Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, -1, -2);
-	//	AddCollisionGeometry(impactor, SPHERE, ChVector<>(.5,0,0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//	FinalizeObject(impactor, (ChSystemGPU *) system_gpu);
-	//	impactor->SetPos_dt(Vector(2.5,0,0));
-
-	//	ChSharedBodyGPUPtr Bunny = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
-	////
-	//	InitObject(Bunny, 1, Vector(0, 5, 50), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
-	////	//AddCollisionGeometry(Bunny, BOX, Vector(1, 1, 1),  Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//	AddCollisionGeometryTriangleMesh(Bunny, "trough.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//	FinalizeObject(Bunny, (ChSystemGPU *) system_gpu);
-	//
-	//	real mass = 1;
-	//	Vector r = ChVector<>(1, 1, 1);
-	//	Vector inertia = Vector((1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.y * r.y)));
-	//
-	//	Bunny->SetInertiaXX(inertia);
 
 	real offsety = -.4;
 
@@ -323,8 +282,8 @@ int main(int argc, char* argv[]) {
 
 		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
 		num_per_dir = I3(66, 12, 215);
-		//num_per_dir = I3(10, 10, 10);
-		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z  << endl;
+		//num_per_dir = I3(10, 12, 10);
+		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 		//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
 
 		ParticleGenerator layer_gen(system_gpu);
@@ -333,21 +292,23 @@ int main(int argc, char* argv[]) {
 		layer_gen.SetNormalDistribution(particle_radius - particle_radius / 4.0, particle_radius / 4.0);
 		layer_gen.material->SetFriction(1);
 		layer_gen.material->SetCohesion(25);
-		layer_gen. addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);
-
+		layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);
+		layer_gen.SetRadius(R3(particle_radius * 4));
+		layer_gen.SetNormalDistribution(particle_radius * 2, particle_radius / 2.0);
+		layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y + particle_radius * 16, 0 + container_pos.z + 2), BOX, I3(13, 1, 20), R3(1, 1, 1), R3(0, 0, 0), false);
 		//addPerturbedLayer(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, rad, num_per_dir, R3(.1, .1, .1), mass, 1, 25, 0, R3(0, 0, 0), system_gpu);
 		//addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
 	}
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
@@ -370,7 +331,7 @@ int main(int argc, char* argv[]) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
 			ss << "data/trough/" << "/" << file << ".txt";
-			DumpAllObjects(system_gpu, ss.str(), ",", false);
+			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
 			//output.ExportData(ss.str());
 			file++;
 		}

@@ -9,17 +9,14 @@ real particle_mass = .088;
 real particle_friction = .5;
 real seconds_to_simulate = 3;
 
-
-
-real3 container_size = R3(.08,.08,.08);
+real3 container_size = R3(.08, .08, .08);
 real container_thickness = .001;
 real container_height = 0;
 real container_friction = 1;
 real current_time = 0;
 //int3 num_per_dir = I3((container_size.x-particle_radius-container_thickness*2)/particle_radius,10,(container_size.z-particle_radius-container_thickness*2)/particle_radius);
-int3 num_per_dir =I3(12,1,12);
-int save_every = 1.0 / timestep / 60.0; //save data every n steps
-
+int3 num_per_dir = I3(12, 1, 12);
+int save_every = 1.0 / timestep / 60.0;     //save data every n steps
 
 int max_iter = 20;
 
@@ -61,7 +58,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(1e-8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(.01); //IMPORTANT: this is the max velocity of the plate!!
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(.01);     //IMPORTANT: this is the max velocity of the plate!!
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(num_per_dir.x * 2, num_per_dir.y * 2, num_per_dir.z * 2));
@@ -76,21 +73,67 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBodyGPU);
 	Bottom = ChSharedBodyPtr(new ChBodyGPU);
 
-	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true,
-			-20, -20);
-	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20,
+	ChSharedPtr<ChMaterialSurface> material;
+	material->SetFriction(container_friction);
+
+	InitObject(
+			L,
+			100000,
+			Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
+			Quaternion(1, 0, 0, 0),
+			material,
+			true,
+			true,
+			-20,
 			-20);
-	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true,
-			-20, -20);
-	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20,
+	InitObject(
+			R,
+			100000,
+			Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
+			Quaternion(1, 0, 0, 0),
+			material,
+			true,
+			true,
+			-20,
 			-20);
-	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	InitObject(
+			F,
+			100000,
+			Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
+			Quaternion(1, 0, 0, 0),
+			material,
+			true,
+			true,
+			-20,
+			-20);
+	InitObject(
+			B,
+			100000,
+			Vector(0, container_height - container_thickness, container_size.z - container_thickness),
+			Quaternion(1, 0, 0, 0),
+			material,
+			true,
+			true,
+			-20,
+			-20);
+	InitObject(
+			Bottom,
+			100000,
+			Vector(0, container_height - container_size.y, 0),
+			Quaternion(1, 0, 0, 0),
+			container_friction,
+			container_friction,
+			0,
+			true,
+			true,
+			-20,
+			-20);
 
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y * 1.5, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y * 1.5, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(F, BOX, Vector(container_size.x, container_size.y * 1.5, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y * 1.5, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness*4, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness * 4, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
 	FinalizeObject(L, (ChSystemGPU *) system_gpu);
 	FinalizeObject(R, (ChSystemGPU *) system_gpu);
@@ -99,7 +142,10 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	//=========================================================================================================
 	//cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, particle_mass, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
+	ParticleGenerator gen(system_gpu);
+	gen.SetMass(particle_mass);
+	gen.SetRadius(particle_radius);
+	gen.addHCPCube(num_per_dir, true, R3(0, 0, 0), R3(0));
 	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
 	//=========================================================================================================
 	//////Rendering specific stuff:
@@ -126,7 +172,7 @@ int main(int argc, char* argv[]) {
 	total_timer.start();
 
 	for (int i = 0; i < num_steps; i++) {
-		current_time+=timestep;
+		current_time += timestep;
 		system_gpu->DoStepDynamics(timestep);
 //		cout << "step " << i;
 //		cout << " Residual: " << ((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
@@ -149,7 +195,7 @@ int main(int argc, char* argv[]) {
 		RunTimeStep(system_gpu, i);
 	}
 	total_timer.stop();
-	cout<<total_timer()<<endl;
+	cout << total_timer() << endl;
 	//DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
 
 }

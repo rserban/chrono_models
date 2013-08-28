@@ -53,50 +53,50 @@ include_directories(${INC_DIRS})
 
 # Add executables
 IF (ENABLE_UNIT_GPU)
-    ADD_EXECUTABLE(ball_drop models/gpu/ball_drop.cpp)		
-    TARGET_LINK_LIBRARIES(ball_drop	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(ball_drop models/gpu/ball_drop.cpp)		
+    #TARGET_LINK_LIBRARIES(ball_drop	${CHRONO_LIB} ${GPU_LIBS})
     
-    ADD_EXECUTABLE(convergence models/gpu/convergence.cpp)		
-    TARGET_LINK_LIBRARIES(convergence	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(convergence models/gpu/convergence.cpp)		
+    #TARGET_LINK_LIBRARIES(convergence	${CHRONO_LIB} ${GPU_LIBS})
     
     ADD_EXECUTABLE(aor models/gpu/aor.cpp)		
     TARGET_LINK_LIBRARIES(aor	${CHRONO_LIB} ${GPU_LIBS})
     
-    ADD_EXECUTABLE(diagonal_impact models/gpu/diagonal_impact.cpp)		
-    TARGET_LINK_LIBRARIES(diagonal_impact	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(diagonal_impact models/gpu/diagonal_impact.cpp)		
+    #TARGET_LINK_LIBRARIES(diagonal_impact	${CHRONO_LIB} ${GPU_LIBS})
     
-    ADD_EXECUTABLE(shaker models/gpu/shaker.cpp)		
-    TARGET_LINK_LIBRARIES(shaker	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(shaker models/gpu/shaker.cpp)		
+    #TARGET_LINK_LIBRARIES(shaker	${CHRONO_LIB} ${GPU_LIBS})
     
-    ADD_EXECUTABLE(character_walk models/gpu/character_walk.cpp)		
-    TARGET_LINK_LIBRARIES(character_walk	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(character_walk models/gpu/character_walk.cpp)		
+    #TARGET_LINK_LIBRARIES(character_walk	${CHRONO_LIB} ${GPU_LIBS})
 
     ADD_EXECUTABLE(trough models/gpu/trough.cpp)		
     TARGET_LINK_LIBRARIES(trough	${CHRONO_LIB} ${GPU_LIBS})
 
-    ADD_EXECUTABLE(density models/gpu/density.cpp)		
-    TARGET_LINK_LIBRARIES(density	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(density models/gpu/density.cpp)		
+    #TARGET_LINK_LIBRARIES(density	${CHRONO_LIB} ${GPU_LIBS})
 
-    ADD_EXECUTABLE(fluid_tank models/gpu/fluid_tank.cpp)		
-    TARGET_LINK_LIBRARIES(fluid_tank	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(fluid_tank models/gpu/fluid_tank.cpp)		
+    #TARGET_LINK_LIBRARIES(fluid_tank	${CHRONO_LIB} ${GPU_LIBS})
 
-    ADD_EXECUTABLE(monkey models/gpu/monkey.cpp)		
-    TARGET_LINK_LIBRARIES(monkey	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(monkey models/gpu/monkey.cpp)		
+    #TARGET_LINK_LIBRARIES(monkey	${CHRONO_LIB} ${GPU_LIBS})
     
-    ADD_EXECUTABLE(sticky models/gpu/sticky.cpp)		
-    TARGET_LINK_LIBRARIES(sticky	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(sticky models/gpu/sticky.cpp)		
+    #TARGET_LINK_LIBRARIES(sticky	${CHRONO_LIB} ${GPU_LIBS})
 
-    ADD_EXECUTABLE(foam models/gpu/foam.cpp)		
-    TARGET_LINK_LIBRARIES(foam	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(foam models/gpu/foam.cpp)		
+    #TARGET_LINK_LIBRARIES(foam	${CHRONO_LIB} ${GPU_LIBS})
     
-    ADD_EXECUTABLE(rollers models/gpu/rollers.cpp)		
-    TARGET_LINK_LIBRARIES(rollers	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(rollers models/gpu/rollers.cpp)		
+    #TARGET_LINK_LIBRARIES(rollers	${CHRONO_LIB} ${GPU_LIBS})
 
-    ADD_EXECUTABLE(sls models/gpu/sls.cpp)		
-    TARGET_LINK_LIBRARIES(sls	${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(sls models/gpu/sls.cpp)		
+    #TARGET_LINK_LIBRARIES(sls	${CHRONO_LIB} ${GPU_LIBS})
 
-    ADD_EXECUTABLE(fording models/gpu/fording.cpp)      
-    TARGET_LINK_LIBRARIES(fording   ${CHRONO_LIB} ${GPU_LIBS})
+    #ADD_EXECUTABLE(fording models/gpu/fording.cpp)      
+    #TARGET_LINK_LIBRARIES(fording   ${CHRONO_LIB} ${GPU_LIBS})
 
 
     ADD_EXECUTABLE(cones models/gpu/cones)      
@@ -113,3 +113,5 @@ IF (ENABLE_UNIT_MPI)
     ADD_EXECUTABLE(rover_enormous models/mpi/rover_enormous.cpp)
     TARGET_LINK_LIBRARIES(rover_enormous ${CHRONO_LIB} ${MPI_LIBS})
 ENDIF()
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

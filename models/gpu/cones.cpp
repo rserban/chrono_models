@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 30;
 
-int max_iter = 20;
+int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -19,16 +19,21 @@ real particle_radius = .1;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
+
+	ChSharedPtr<ChMaterialSurface> material;
+	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material->SetFriction(1);
+
 	if (mSys->GetNbodies() < 10000) {
 		ChSharedBodyPtr sphere;
-		real3 rad = R3(particle_radius*2, particle_radius*3, particle_radius*2);
+		real3 rad = R3(particle_radius * 2, particle_radius * 3, particle_radius * 2);
 		real3 size = container_size;
 		size.y = container_size.y / 3.0;
 
 		int3 num_per_dir = I3(1, 10, 10);
 		real mu = 1;
 		real mass = 1;
-		real3 vel =  R3(-5, 0, 0);
+		real3 vel = R3(-5, 0, 0);
 		if (frame % 40 == 0) {
 
 			ChSharedBodyPtr body;
@@ -55,7 +60,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 						pos += dp + R3(5, 0, 0) + r;
 
-						InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), mu, mu, 0, true, false, -1, counter);
+						InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, -1, counter);
 
 						AddCollisionGeometry(body, CONE, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 						AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(0, -r.x, 0), Quaternion(1, 0, 0, 0));
@@ -110,6 +115,10 @@ int main(int argc, char* argv[]) {
 //addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius.x, 1, true, 0,  -6 +container_thickness+particle_radius.y, 0, 0, system_gpu);
 //=========================================================================================================
 
+	ChSharedPtr<ChMaterialSurface> material;
+	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material->SetFriction(container_friction);
+
 	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
@@ -117,78 +126,12 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
-	InitObject(
-			L,
-			100000,
-			Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			R,
-			100000,
-			Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			F,
-			100000,
-			Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			B,
-			100000,
-			Vector(0, container_height - container_thickness, container_size.z - container_thickness),
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			Bottom,
-			100000,
-			Vector(0, container_height - container_size.y, 0),
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			Top,
-			100000,
-			Vector(0, container_height + container_size.y, 0),
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
+	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(Top, 100000, Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));

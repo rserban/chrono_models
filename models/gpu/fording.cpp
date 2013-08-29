@@ -3,10 +3,10 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .002;
+real timestep = .001;
 real seconds_to_simulate = 14;
 
-int max_iter = 10;
+int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -16,11 +16,11 @@ real container_height = -1.5;
 Vector container_pos = Vector(0, container_height, 8);
 real container_friction = 1;
 
-real particle_radius = .01;
+real particle_radius = .02;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
-Vector particle_initial_vel = Vector(0, -5.5, 0); //initial velocity
+Vector particle_initial_vel = Vector(0, -5.5, 0);     //initial velocity
 
 int particle_grid_x = 2;
 int particle_grid_z = 2;
@@ -59,15 +59,24 @@ void createWheel(ChSharedBodyPtr &body) {
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
+
+	ParticleGenerator layer_gen((ChSystemGPU* )mSys);
+	layer_gen.SetDensity(1000);
+	layer_gen.SetRadius(R3(particle_radius));
+	//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 3.0, particle_radius / 4.0);
+	layer_gen.material->SetFriction(0);
+	layer_gen.material->SetCohesion(0);
+	layer_gen.material->SetCompliance(1e-5);
+
 	if (stream) {
-		if (((ChSystemGPU*) mSys)->GetNbodies() < 700000) {
+		if (((ChSystemGPU*) mSys)->GetNbodies() < 300000) {
 
 			ChSharedBodyPtr sphere;
 			real3 rad = R3(particle_radius, particle_radius, particle_radius);
 			real3 size = container_size;
 			size.y = container_size.y / 3.0;
 
-			int3 num_per_dir = I3(30*3, 1, 60*3);
+			int3 num_per_dir = I3(30 * 3/2.0, 1, 80 * 3/2.0);
 
 			if (frame % 20 == 0) {
 				//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, 1e-2, R3(0, 5, 0), (ChSystemGPU*) mSys);
@@ -83,19 +92,8 @@ void RunTimeStep(T* mSys, const int frame) {
 //						1e-3,
 //						R3(0, 0, -.5),
 //						(ChSystemGPU*) mSys);
-
-				addPerturbedLayer(
-						R3(0, -1, 8),
-						SPHERE,
-						rad,
-						num_per_dir,
-						R3(1, 0, 1),
-						mass.y,
-						0,
-						cohesion.y,
-						1e-3,
-						R3(0, -1, 0),
-						(ChSystemGPU*) mSys);
+				layer_gen.addPerturbedVolume(R3(0, -.8, 8), SPHERE, num_per_dir, R3(1, 0, 1), R3(0, -1, 0), false);
+				//addPerturbedLayer(R3(0, -1, 8), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.y, 0, cohesion.y, 1e-3, R3(0, -1, 0), (ChSystemGPU*) mSys);
 				//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, 1e-2, R3(0, 5, 0), (ChSystemGPU*) mSys);
 			}
 		}
@@ -160,7 +158,7 @@ void RunTimeStep(T* mSys, const int frame) {
 				leg_RL->SetWvel_loc(omg);
 			}
 		}
-		read_file+=2;
+		read_file += 2;
 	}
 
 }
@@ -203,10 +201,10 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .2);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(0);
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius*.05);
 	mcollisionengine->setBinsPerAxis(R3(100, 100, 100));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
@@ -227,101 +225,37 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
+	ChSharedPtr<ChMaterialSurface> material;
+	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material->SetFriction(container_friction);
+	material->SetCompliance(0);
+	material->SetCohesion(0);
+
 	Quaternion AA, BB;
 	AA.Q_from_AngX(-PI / 3.0);
 	BB.Q_from_AngX(PI / 3.0);
 
 	InitObject(
 			PF,
-			100000,
+			1000,
 			Vector(0, -container_thickness + container_size.y * .5, -container_size.z * 2.3 + container_thickness) + container_pos,
 			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
+			material,
 			true,
 			true,
 			-20,
 			-20);
 
-	InitObject(
-			PB,
-			100000,
-			Vector(0, -container_thickness + container_size.y * .5, container_size.z * 2.3 + container_thickness) + container_pos,
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-
-	InitObject(
-			L,
-			100000,
-			Vector(-container_size.x + container_thickness, -container_thickness, 0) + container_pos,
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-
-	InitObject(
-			R,
-			100000,
-			Vector(container_size.x - container_thickness, -container_thickness, 0) + container_pos,
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			F,
-			100000,
-			Vector(0, -container_thickness, -container_size.z + container_thickness) + container_pos,
-			AA,
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			B,
-			100000,
-			Vector(0, -container_thickness, container_size.z - container_thickness) + container_pos,
-			BB,
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
-	InitObject(
-			Bottom,
-			100000,
-			Vector(0, -container_size.y / 3.0, 0) + container_pos,
-			Quaternion(1, 0, 0, 0),
-			container_friction,
-			container_friction,
-			0,
-			true,
-			true,
-			-20,
-			-20);
+	InitObject(PB, 1000, Vector(0, -container_thickness + container_size.y * .5, container_size.z * 2.3 + container_thickness) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(L, 1000, Vector(-container_size.x + container_thickness, -container_thickness, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(R, 1000, Vector(container_size.x - container_thickness, -container_thickness, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(F, 1000, Vector(0, -container_thickness, -container_size.z + container_thickness) + container_pos, AA, material, true, true, -20, -20);
+	InitObject(B, 1000, Vector(0, -container_thickness, container_size.z - container_thickness) + container_pos, BB, material, true, true, -20, -20);
+	InitObject(Bottom, 1000, Vector(0, -container_size.y / 3.0, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	AddCollisionGeometry(PF, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(PB, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z * 1.5), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z * 1.5), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y/2.0, container_size.z * 1.5), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y/2.0, container_size.z * 1.5), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(F, BOX, Vector(container_size.x * 1.5, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(B, BOX, Vector(container_size.x * 1.5, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -334,13 +268,6 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 
-	PF->GetMaterialSurface()->SetCompliance(0);
-	PB->GetMaterialSurface()->SetCompliance(0);
-	L->GetMaterialSurface()->SetCompliance(0);
-	R->GetMaterialSurface()->SetCompliance(0);
-	F->GetMaterialSurface()->SetCompliance(0);
-	B->GetMaterialSurface()->SetCompliance(0);
-	Bottom->GetMaterialSurface()->SetCompliance(0);
 	real wheel_mass = 60;
 
 	//wheel = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
@@ -401,13 +328,19 @@ int main(int argc, char* argv[]) {
 	leg_RR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	leg_RL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
-	InitObject(chassis, 2500, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, 0, 1);
-	InitObject(axle_F, 250, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, true, true, -2, -2);
-	InitObject(axle_R, 250, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 0, 0, 0, true, true, -2, -2);
-	InitObject(leg_FR, 60, ChVector<>((axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, true, 2, 2);
-	InitObject(leg_FL, 60, ChVector<>(-(axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, true, 2, 2);
-	InitObject(leg_RR, 60, ChVector<>((axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, true, 2, 2);
-	InitObject(leg_RL, 60, ChVector<>(-(axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), 1, 1, 0, true, true, 2, 2);
+	ChSharedPtr<ChMaterialSurface> material_vehicle;
+	material_vehicle = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material_vehicle->SetFriction(0);
+	material_vehicle->SetCompliance(0);
+	material_vehicle->SetCohesion(0);
+
+	InitObject(chassis, 2500, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), material_vehicle, true, true, 0, 1);
+	InitObject(axle_F, 250, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_vehicle, true, true, -2, -2);
+	InitObject(axle_R, 250, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_vehicle, true, true, -2, -2);
+	InitObject(leg_FR, 60, ChVector<>((axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_vehicle, true, true, 2, 2);
+	InitObject(leg_FL, 60, ChVector<>(-(axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_vehicle, true, true, 2, 2);
+	InitObject(leg_RR, 60, ChVector<>((axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_vehicle, true, true, 2, 2);
+	InitObject(leg_RL, 60, ChVector<>(-(axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_vehicle, true, true, 2, 2);
 
 	//AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .1, chassisL / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometryTriangleMesh(chassis, "humvee.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -519,7 +452,7 @@ int main(int argc, char* argv[]) {
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-		int save_every = 1.0 / timestep / 60.0; //save data every n steps
+		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;

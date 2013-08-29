@@ -95,8 +95,8 @@ IF (ENABLE_UNIT_GPU)
     #ADD_EXECUTABLE(sls models/gpu/sls.cpp)		
     #TARGET_LINK_LIBRARIES(sls	${CHRONO_LIB} ${GPU_LIBS})
 
-    #ADD_EXECUTABLE(fording models/gpu/fording.cpp)      
-    #TARGET_LINK_LIBRARIES(fording   ${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(fording models/gpu/fording.cpp)      
+    TARGET_LINK_LIBRARIES(fording   ${CHRONO_LIB} ${GPU_LIBS})
 
 
     ADD_EXECUTABLE(cones models/gpu/cones)      

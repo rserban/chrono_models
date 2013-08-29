@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(1e-5);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(5);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(true);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .04);
@@ -294,10 +294,15 @@ int main(int argc, char* argv[]) {
 		ParticleGenerator layer_gen(system_gpu);
 		layer_gen.SetDensity(1500);
 		layer_gen.SetRadius(R3(particle_radius));
-		layer_gen.SetNormalDistribution(particle_radius - particle_radius / 3.0, particle_radius / 4.0);
+
 		layer_gen.material->SetFriction(1);
 		layer_gen.material->SetCohesion(25);
+		//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
+		layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
 		layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);
+
+
+
 		//layer_gen.SetRadius(R3(particle_radius * 4));
 		//.SetNormalDistribution(particle_radius * 2, particle_radius / 2.0);
 		//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y + particle_radius * 25, 0 + container_pos.z + 2), BOX, I3(13, 1, 20), R3(1, 1, 1), R3(0, 0, 0), false);

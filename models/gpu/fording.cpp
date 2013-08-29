@@ -69,7 +69,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	layer_gen.material->SetCompliance(1e-5);
 
 	if (stream) {
-		if (((ChSystemGPU*) mSys)->GetNbodies() < 300000) {
+		if (((ChSystemGPU*) mSys)->GetNbodies() < 200000) {
 
 			ChSharedBodyPtr sphere;
 			real3 rad = R3(particle_radius, particle_radius, particle_radius);

@@ -203,12 +203,13 @@ int main(int argc, char* argv[]) {
 	material_chassis = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_chassis->SetFriction(0);
 	material_chassis->SetCompliance(0);
+	material_chassis->SetCohesion(-100);
 
 	ChSharedPtr<ChMaterialSurface> material_wheel;
 	material_wheel = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_wheel->SetFriction(1);
 	material_wheel->SetCompliance(0);
-	material_wheel->SetCohesion(-50);
+	material_wheel->SetCohesion(-100);
 
 	InitObject(chassis, 2500 / 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), material_chassis, false, false, -2, -2);
 	InitObject(axle_F, 250 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, false, -2, -2);
@@ -296,7 +297,7 @@ int main(int argc, char* argv[]) {
 		layer_gen.SetRadius(R3(particle_radius));
 
 		layer_gen.material->SetFriction(1);
-		layer_gen.material->SetCohesion(25);
+		layer_gen.material->SetCohesion(50);
 		//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 		layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
 		layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);

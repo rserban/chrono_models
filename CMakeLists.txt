@@ -56,8 +56,8 @@ IF (ENABLE_UNIT_GPU)
     #ADD_EXECUTABLE(ball_drop models/gpu/ball_drop.cpp)		
     #TARGET_LINK_LIBRARIES(ball_drop	${CHRONO_LIB} ${GPU_LIBS})
     
-    #ADD_EXECUTABLE(convergence models/gpu/convergence.cpp)		
-    #TARGET_LINK_LIBRARIES(convergence	${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(convergence models/gpu/convergence.cpp)		
+    TARGET_LINK_LIBRARIES(convergence	${CHRONO_LIB} ${GPU_LIBS})
     
     ADD_EXECUTABLE(aor models/gpu/aor.cpp)		
     TARGET_LINK_LIBRARIES(aor	${CHRONO_LIB} ${GPU_LIBS})
@@ -83,8 +83,8 @@ IF (ENABLE_UNIT_GPU)
     #ADD_EXECUTABLE(monkey models/gpu/monkey.cpp)		
     #TARGET_LINK_LIBRARIES(monkey	${CHRONO_LIB} ${GPU_LIBS})
     
-    #ADD_EXECUTABLE(sticky models/gpu/sticky.cpp)		
-    #TARGET_LINK_LIBRARIES(sticky	${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(sticky models/gpu/sticky.cpp)		
+    TARGET_LINK_LIBRARIES(sticky	${CHRONO_LIB} ${GPU_LIBS})
 
     #ADD_EXECUTABLE(foam models/gpu/foam.cpp)		
     #TARGET_LINK_LIBRARIES(foam	${CHRONO_LIB} ${GPU_LIBS})

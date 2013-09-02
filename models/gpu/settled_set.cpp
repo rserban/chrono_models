@@ -34,15 +34,8 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
-	ChLcpSystemDescriptorGPU *mdescriptor = new ChLcpSystemDescriptorGPU();
-	ChContactContainerGPU *mcontactcontainer = new ChContactContainerGPU();
-	//ChCollisionSystemBulletGPU *mcollisionengine = new ChCollisionSystemBulletGPU();
 	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();
-	system_gpu->ChangeLcpSystemDescriptor(mdescriptor);
-	system_gpu->ChangeContactContainer(mcontactcontainer);
-	system_gpu->ChangeCollisionSystem(mcollisionengine);
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
-
 	//=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);

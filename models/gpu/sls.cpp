@@ -46,13 +46,7 @@ int main(int argc, char* argv[]) {
 	string solver_string = "ACCELERATED_PROJECTED_GRADIENT_DESCENT";
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
-	ChLcpSystemDescriptorGPU *mdescriptor = new ChLcpSystemDescriptorGPU();
-	ChContactContainerGPU *mcontactcontainer = new ChContactContainerGPU();
-	//ChCollisionSystemBulletGPU *mcollisionengine = new ChCollisionSystemBulletGPU();
 	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();
-	system_gpu->ChangeLcpSystemDescriptor(mdescriptor);
-	system_gpu->ChangeContactContainer(mcontactcontainer);
-	system_gpu->ChangeCollisionSystem(mcollisionengine);
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 	//=========================================================================================================

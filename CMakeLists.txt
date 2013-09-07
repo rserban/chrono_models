@@ -65,8 +65,8 @@ IF (ENABLE_UNIT_GPU)
     #ADD_EXECUTABLE(diagonal_impact models/gpu/diagonal_impact.cpp)		
     #TARGET_LINK_LIBRARIES(diagonal_impact	${CHRONO_LIB} ${GPU_LIBS})
     
-    #ADD_EXECUTABLE(shaker models/gpu/shaker.cpp)		
-    #TARGET_LINK_LIBRARIES(shaker	${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(shaker models/gpu/shaker.cpp)		
+    TARGET_LINK_LIBRARIES(shaker	${CHRONO_LIB} ${GPU_LIBS})
     
     #ADD_EXECUTABLE(character_walk models/gpu/character_walk.cpp)		
     #TARGET_LINK_LIBRARIES(character_walk	${CHRONO_LIB} ${GPU_LIBS})

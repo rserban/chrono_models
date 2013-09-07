@@ -7,6 +7,7 @@ real timestep = .001;
 real seconds_to_simulate = 15;
 
 int max_iter = 20;
+real tolerance = .3;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -33,7 +34,7 @@ double legL(1.0);
 double footH(0.5);
 double footW(1.5);
 double footL(2.0);
-double axleL(.8);
+double axleL(.61);
 
 bool stream = false;
 
@@ -62,6 +63,37 @@ void createWheel(ChSharedBodyPtr &body) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
+//	if (!stream&&((ChSystemGPU*) mSys)->GetNbodies() < 200000&&frame%100==0) {
+//		real3 rad = R3(particle_radius, particle_radius, particle_radius);
+//		real3 size = container_size - R3(container_thickness * 2);
+//		size.y = container_size.y / 3.0;
+//
+//		int3 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
+//
+//		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
+//		//num_per_dir = I3(66, 16, 215);
+//		num_per_dir = I3(50, 1, 140);
+//		//num_per_dir = I3(10, 12, 10);
+//		//cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
+//		//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
+//
+//		ParticleGenerator layer_gen(((ChSystemGPU*) mSys));
+//		layer_gen.SetDensity(1500);
+//		layer_gen.SetRadius(R3(particle_radius));
+//
+//		layer_gen.material->SetFriction(1);
+//		layer_gen.material->SetCohesion(100);
+//		//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
+//		layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
+//		layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y , 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, -1, 0), false);
+//
+//		//layer_gen.SetRadius(R3(particle_radius * 4));
+//		//.SetNormalDistribution(particle_radius * 2, particle_radius / 2.0);
+//		//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y + particle_radius * 25, 0 + container_pos.z + 2), BOX, I3(13, 1, 20), R3(1, 1, 1), R3(0, 0, 0), false);
+//		//addPerturbedLayer(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, rad, num_per_dir, R3(.1, .1, .1), mass, 1, 25, 0, R3(0, 0, 0), system_gpu);
+//		//addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
+//	}
+
 	double TIME = mSys->GetChTime();
 	double STEP = mSys->GetTimerStep();
 	double BROD = mSys->GetTimerCollisionBroad();
@@ -75,14 +107,17 @@ void RunTimeStep(T* mSys, const int frame) {
 
 	printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-	if (frame > 500) {
-		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct())) {
-			mfun->Set_yconst(1);     // rad/s  angular speed
-		}
-		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_R->Get_spe_funct())) {
-			mfun->Set_yconst(1);     // rad/s  angular speed
-		}
-	}
+	 if (frame > 500) {
+	 if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct())) {
+	 mfun->Set_yconst(1);     // rad/s  angular speed
+	 }
+	 if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_R->Get_spe_funct())) {
+	 mfun->Set_yconst(1);     // rad/s  angular speed
+	 }
+	 }
+	 Vector pos = chassis->GetPos();
+
+	 ((ChSystemGPU*) mSys)->SetAABB(R3(pos.x-2,pos.y-3,pos.z-2), R3(pos.x+2, pos.y+3, pos.z+2));
 
 }
 
@@ -98,14 +133,15 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
-	system_gpu->SetTol(1e-5);
-	system_gpu->SetTolSpeeds(1e-5);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
+	system_gpu->SetTol(tolerance);
+	system_gpu->SetTolSpeeds(tolerance);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(8);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(true);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .04);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .02);
 	mcollisionengine->setBinsPerAxis(R3(175, 100, 400));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
@@ -136,12 +172,12 @@ int main(int argc, char* argv[]) {
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, -container_thickness, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(F, 100000, Vector(0, -container_thickness, -container_size.z + container_thickness) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(B, 100000, Vector(0, -container_thickness, container_size.z - container_thickness) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(Bottom, 100000, Vector(0, container_height+container_size.y/1.75, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(Bottom, 100000, Vector(0, container_height + container_size.y / 1.75, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(F, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//AddCollisionGeometryTriangleMesh(Bottom, "ground.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
 	//ChSharedPtr<ChAsset> asset = Bottom->GetAssets().at(0);
@@ -185,93 +221,92 @@ int main(int argc, char* argv[]) {
 
 	real offsety = -.3;
 
-	chassis = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	axle_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	leg_FR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	leg_FL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	leg_RR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	leg_RL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 chassis = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 axle_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 leg_FR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 leg_FL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 leg_RR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 leg_RL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
-	ChSharedPtr<ChMaterialSurface> material_chassis;
-	material_chassis = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material_chassis->SetFriction(0);
-	material_chassis->SetCompliance(0);
-	material_chassis->SetCohesion(-100);
+	 ChSharedPtr<ChMaterialSurface> material_chassis;
+	 material_chassis = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	 material_chassis->SetFriction(0);
+	 material_chassis->SetCompliance(0);
+	 material_chassis->SetCohesion(-100);
 
-	ChSharedPtr<ChMaterialSurface> material_wheel;
-	material_wheel = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material_wheel->SetFriction(1);
-	material_wheel->SetCompliance(0);
-	material_wheel->SetCohesion(-100);
+	 ChSharedPtr<ChMaterialSurface> material_wheel;
+	 material_wheel = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	 material_wheel->SetFriction(1);
+	 material_wheel->SetCompliance(0);
+	 material_wheel->SetCohesion(-2000);
 
-	InitObject(chassis, 2500 / 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), material_chassis, false, false, -2, -2);
-	InitObject(axle_F, 250 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, false, -2, -2);
-	InitObject(axle_R, 250 / 1.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, false, -2, -2);
-	InitObject(leg_FR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, -2);
-	InitObject(leg_FL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, -2);
-	InitObject(leg_RR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, -2);
-	InitObject(leg_RL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, -2);
+	 InitObject(chassis, 2200 / 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, -2, -20);
+	 InitObject(axle_F, 150 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, false, -2, -2);
+	 InitObject(axle_R, 150 / 1.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, false, -2, -2);
+	 InitObject(leg_FR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety-.1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
+	 InitObject(leg_FL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety-.1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
+	 InitObject(leg_RR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety-.1, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
+	 InitObject(leg_RL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety-.1, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
 
-	AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .1, chassisL / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//AddCollisionGeometryTriangleMesh(chassis, "humvee.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .2, 1.6), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometryTriangleMesh(chassis, "humvee.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	AddCollisionGeometry(axle_F, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(axle_R, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 2.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometry(axle_F, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 1.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometry(axle_R, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 1.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	createWheel(leg_FR);
-	createWheel(leg_FL);
-	createWheel(leg_RR);
-	createWheel(leg_RL);
+	 createWheel(leg_FR);
+	 createWheel(leg_FL);
+	 createWheel(leg_RR);
+	 createWheel(leg_RL);
 
-	FinalizeObject(chassis, (ChSystemGPU *) system_gpu);
-	FinalizeObject(axle_F, (ChSystemGPU *) system_gpu);
-	FinalizeObject(axle_R, (ChSystemGPU *) system_gpu);
-	FinalizeObject(leg_FR, (ChSystemGPU *) system_gpu);
-	FinalizeObject(leg_FL, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(chassis, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(axle_F, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(axle_R, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(leg_FR, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(leg_FL, (ChSystemGPU *) system_gpu);
 
-	FinalizeObject(leg_RR, (ChSystemGPU *) system_gpu);
-	FinalizeObject(leg_RL, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(leg_RR, (ChSystemGPU *) system_gpu);
+	 FinalizeObject(leg_RL, (ChSystemGPU *) system_gpu);
 
+	 ChSharedBodyPtr chassis_ptr = ChSharedBodyPtr(chassis);
+	 ChSharedBodyPtr axle_F_ptr = ChSharedBodyPtr(axle_F);
+	 ChSharedBodyPtr axle_R_ptr = ChSharedBodyPtr(axle_R);
+	 ChSharedBodyPtr leg_FR_ptr = ChSharedBodyPtr(leg_FR);
+	 ChSharedBodyPtr leg_FL_ptr = ChSharedBodyPtr(leg_FL);
+	 ChSharedBodyPtr leg_RR_ptr = ChSharedBodyPtr(leg_RR);
+	 ChSharedBodyPtr leg_RL_ptr = ChSharedBodyPtr(leg_RL);
 
-	ChSharedBodyPtr chassis_ptr = ChSharedBodyPtr(chassis);
-	ChSharedBodyPtr axle_F_ptr = ChSharedBodyPtr(axle_F);
-	ChSharedBodyPtr axle_R_ptr = ChSharedBodyPtr(axle_R);
-	ChSharedBodyPtr leg_FR_ptr = ChSharedBodyPtr(leg_FR);
-	ChSharedBodyPtr leg_FL_ptr = ChSharedBodyPtr(leg_FL);
-	ChSharedBodyPtr leg_RR_ptr = ChSharedBodyPtr(leg_RR);
-	ChSharedBodyPtr leg_RL_ptr = ChSharedBodyPtr(leg_RL);
+	 //	// attach legs to axles
+	 ChSharedPtr<ChLinkLockLock> axle_FR(new ChLinkLockLock);
+	 axle_FR->Initialize(leg_FR_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_FR);
 
-	//	// attach legs to axles
-	ChSharedPtr<ChLinkLockLock> axle_FR(new ChLinkLockLock);
-	axle_FR->Initialize(leg_FR_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_FR);
+	 ChSharedPtr<ChLinkLockLock> axle_FL(new ChLinkLockLock);
+	 axle_FL->Initialize(leg_FL_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_FL);
 
-	ChSharedPtr<ChLinkLockLock> axle_FL(new ChLinkLockLock);
-	axle_FL->Initialize(leg_FL_ptr, axle_F_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_FL);
+	 ChSharedPtr<ChLinkLockLock> axle_RR(new ChLinkLockLock);
+	 axle_RR->Initialize(leg_RR_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_RR);
 
-	ChSharedPtr<ChLinkLockLock> axle_RR(new ChLinkLockLock);
-	axle_RR->Initialize(leg_RR_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_RR);
+	 ChSharedPtr<ChLinkLockLock> axle_RL(new ChLinkLockLock);
+	 axle_RL->Initialize(leg_RL_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
+	 system_gpu->AddLink(axle_RL);
 
-	ChSharedPtr<ChLinkLockLock> axle_RL(new ChLinkLockLock);
-	axle_RL->Initialize(leg_RL_ptr, axle_R_ptr, ChCoordsys<>(VNULL));
-	system_gpu->AddLink(axle_RL);
+	 eng_F = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
+	 eng_F->Initialize(axle_F_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, offsety-.1, chassisL / 2.0 + .2), Q_from_AngY(CH_C_PI / 2.0)));
+	 eng_F->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
+	 eng_F->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 
-	eng_F = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
-	eng_F->Initialize(axle_F_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngY(CH_C_PI / 2.0)));
-	eng_F->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
-	eng_F->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
+	 system_gpu->AddLink(eng_F);
 
-	system_gpu->AddLink(eng_F);
+	 eng_R = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
+	 eng_R->Initialize(axle_R_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, offsety-.1, -chassisL / 2.0), Q_from_AngY(CH_C_PI / 2.0)));
+	 eng_R->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
+	 eng_R->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 
-	eng_R = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
-	eng_R->Initialize(axle_R_ptr, chassis_ptr, ChCoordsys<>(ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngY(CH_C_PI / 2.0)));
-	eng_R->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
-	eng_R->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
-
-	system_gpu->AddLink(eng_R);
+	 system_gpu->AddLink(eng_R);
 
 	if (!stream) {
 		real3 rad = R3(particle_radius, particle_radius, particle_radius);
@@ -282,6 +317,7 @@ int main(int argc, char* argv[]) {
 
 		//num_per_dir = I3(1, size.y / rad.y * .85, 1);
 		num_per_dir = I3(66, 16, 215);
+		//num_per_dir = I3(50, 32, 140);
 		//num_per_dir = I3(10, 12, 10);
 		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 		//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
@@ -291,12 +327,10 @@ int main(int argc, char* argv[]) {
 		layer_gen.SetRadius(R3(particle_radius));
 
 		layer_gen.material->SetFriction(1);
-		layer_gen.material->SetCohesion(50);
+		layer_gen.material->SetCohesion(100);
 		//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
-		layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
-		layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);
-
-
+		//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
+		//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y-.04 , 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);
 
 		//layer_gen.SetRadius(R3(particle_radius * 4));
 		//.SetNormalDistribution(particle_radius * 2, particle_radius / 2.0);
@@ -306,14 +340,14 @@ int main(int argc, char* argv[]) {
 	}
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .1;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .1;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

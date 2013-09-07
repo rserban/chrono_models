@@ -22,12 +22,12 @@ real container_thickness = .25;
 real container_height = 6.0;
 real wscale = 1;
 
-int max_iter = 20;
-real tolerance = 0;
+int max_iter = 100;
+real tolerance = 4;
 
 real gravity = -9.810;
-real timestep = .01;
-real seconds_to_simulate = 2;
+real timestep = .001;
+real seconds_to_simulate = 1.5;
 int num_steps = seconds_to_simulate / timestep;
 
 int particle_grid_x = 10;
@@ -57,7 +57,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 }
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(2);
+	omp_set_num_threads(6);
 
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
@@ -72,12 +72,12 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .2);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(true);
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .02);
 	mcollisionengine->setBinsPerAxis(R3(30, 30, 30));
 	mcollisionengine->setBodyPerBin(100, 50);
 	//=========================================================================================================
@@ -124,19 +124,19 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(F, (ChSystemGPU *) system_gpu);
 	FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(BTM, (ChSystemGPU *) system_gpu);
-	FinalizeObject(BLOCK, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(BLOCK, (ChSystemGPU *) system_gpu);
 
 	ParticleGenerator layer_gen(system_gpu);
 	layer_gen.SetMass(.1);
-	layer_gen.SetRadius(R3(particle_radius));
+	layer_gen.SetRadius(R3(particle_radius * .5));
 
 	layer_gen.material->SetFriction(1);
 	layer_gen.material->SetCohesion(0);
-	layer_gen.material->SetCompliance(1e-5);
-	int3 num_per_dir = I3(10, 20, 10);
+	layer_gen.material->SetCompliance(0);
+	int3 num_per_dir = I3(10 * 2, 20 * 2, 10 * 2);
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 	//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
-	layer_gen.addPerturbedVolume(R3(0, 0, 0), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);
+	layer_gen.addPerturbedVolume(R3(0, 0, 0), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, -4, 0), false);
 
 	//addHCPCube(23, 1, 23, particle_mass, particle_radius, particle_friction, true, 0, -15, 0, Vector(0, 0, 0), system_gpu);
 
@@ -150,8 +150,13 @@ int main(int argc, char* argv[]) {
 	openGLView.StartSpinning(window_manager);
 	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
+	//timestep
+	//iterations
+	//warm start
+	//mass
 	ofstream ofile("convergence.txt");
-
+	ChTimer<double> timer;
+	timer.start();
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
 
@@ -159,7 +164,7 @@ int main(int argc, char* argv[]) {
 		system_gpu->DoStepDynamics(timestep);
 		RunTimeStep(system_gpu, i);
 
-		ofile<<((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual()<<endl;
+		//ofile<<((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual()<<endl;
 
 //		if (i % save_every == 0) {
 //			stringstream ss;
@@ -168,8 +173,10 @@ int main(int argc, char* argv[]) {
 //			//output.ExportData(ss.str());
 //			file++;
 //		}
+		timer.stop();
 
 	}
+	cout << "TIME: " << timer() << endl;
 	ofile.close();
 	return 0;
 }

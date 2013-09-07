@@ -55,6 +55,10 @@ real start_height = 1;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
+
+
+
+
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(particle_friction);
@@ -160,6 +164,7 @@ int main(int argc, char* argv[]) {
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
+	system_gpu->SetAABB(R3(-2,-5,-2), R3(2,5,2));
 
 	//=========================================================================================================
 

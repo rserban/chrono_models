@@ -103,6 +103,7 @@ void DumpAllObjectsWithGeometryPovray(ChSystemGPU* mSys, string filename) {
 	for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {
 		ChBody* abody = mSys->Get_bodylist()->at(i);
 		const Vector pos = abody->GetPos();
+		const Vector vel = abody->GetPos_dt();
 		Quaternion rot = abody->GetRot();
 		Vector pos_final, rad_final;
 		ShapeType type = SPHERE;
@@ -148,6 +149,8 @@ void DumpAllObjectsWithGeometryPovray(ChSystemGPU* mSys, string filename) {
 
 			csv_output << R3(pos_final.x, pos_final.y, pos_final.z);
 			csv_output << R4(rot.e0, rot.e1, rot.e2, rot.e3);
+			csv_output << R3(vel.x,vel.y,vel.z);
+
 
 			if (asset.IsType<ChSphereShape>()) {
 				csv_output << type;

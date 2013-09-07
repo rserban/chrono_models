@@ -1,29 +1,30 @@
 #include "../../common/common.h"
 #include "../../common/input_output.h"
 #include "../../common/parser.h"
-
+#include "../../common/generation.h"
 ChVector<> lpos(0, 0, 0);
 ChQuaternion<> quat(1, 0, 0, 0);
 
 //all dimensions are in millimeters, milligrams
-real plate_height = -10;
+real plate_height = -5;
 real plate_thickness = .25;
-real plate_radius = 7;
+real plate_radius = 5;
 real plate_friction = 1;
 
-real particle_radius = .1;
-real particle_mass = .05;
-real particle_density = .5;
+real particle_radius = .058 / 2.0;
+real particle_std_dev = .015 / 2.0;
+real particle_density = .446;
 real particle_friction = .5;
+real particle_cohesion = 1e-5;
 Vector particle_initial_vel = Vector(0, -2.5, 0);     //initial velocity
 
-real container_width = 7.0;
+real container_width = 5.0;
 real container_thickness = .25;
 real container_height = 1.0;
 real wscale = 1;
 
 real gravity = -9810;
-real timestep = .0001;
+real timestep = .00002;
 real time_to_run = .6;
 real current_time = 0;
 int num_steps = time_to_run / timestep;
@@ -31,11 +32,10 @@ int num_steps = time_to_run / timestep;
 int particle_grid_x = 14;
 int particle_grid_z = 14;
 
-int particles_every = 50;     //add particles every n steps
-int save_every = 100;     //save data every n steps
+int particles_every = 250;     //add particles every n steps
 
 int max_iteration = 20;
-int tolerance = 1e-3;
+int tolerance = .1;
 
 int particle_configuration = 0;
 //0: single sphere
@@ -46,7 +46,6 @@ bool create_particle_plate = true;
 real particle_plate_dim = 8;
 real plate_particle_radius = .075;
 bool all_three_kinds = true;
-
 GPUSOLVERTYPE solver = ACCELERATED_PROJECTED_GRADIENT_DESCENT;
 
 string data_folder = "data";
@@ -56,80 +55,26 @@ template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
 
+	ParticleGenerator layer_gen(((ChSystemGPU*) mSys));
+	layer_gen.SetDensity(particle_density);
+	layer_gen.SetRadius(R3(particle_radius));
+	layer_gen.SetNormalDistribution(particle_radius, particle_std_dev);
+	layer_gen.material->SetFriction(particle_friction);
+	layer_gen.material->SetCohesion(particle_cohesion);
+	if (all_three_kinds) {
+		layer_gen.AddMixtureType(MIX_SPHERE);
+		layer_gen.AddMixtureType(MIX_ELLIPSOID);
+		layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
+	} else if (particle_configuration == 0) {
+		layer_gen.AddMixtureType(MIX_SPHERE);
+	} else if (particle_configuration == 1) {
+		layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
+	} else if (particle_configuration == 2) {
+		layer_gen.AddMixtureType(MIX_ELLIPSOID);
+	}
 
-
-
-	ChSharedPtr<ChMaterialSurface> material;
-	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material->SetFriction(particle_friction);
-	material->SetCohesion(.1);
 	if (frame % particles_every == 0 && frame * timestep < .4) {
-		ChSharedBodyPtr sphere;
-		for (int i = 0; i < particle_grid_x; i++) {
-			for (int j = 0; j < particle_grid_z; j++) {
-				sphere = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-				Quaternion q;
-				q.Q_from_NasaAngles(Vector(rand() % 1000 / 1000.0, rand() % 1000 / 1000.0, rand() % 1000 / 1000.0));
-				q.Normalize();
-
-				ChVector<> position(i * particle_radius * 2 - particle_grid_x * .5 * particle_radius * 2, start_height, j * particle_radius * 2 - particle_grid_z * .5 * particle_radius * 2);
-
-				position.x += rand() % 1000 / 100000.0;
-				position.y += rand() % 1000 / 1000.0;
-				position.z += rand() % 1000 / 100000.0;
-
-				if (particle_configuration == 0) {
-					real percent = (rand() % 10000 / 10000.0 - .5) / 2.0;
-					real radius = particle_radius + particle_radius * percent;
-					InitObject(sphere, particle_mass, position, quat, material, true, false, -1, i);
-					AddCollisionGeometry(sphere, SPHERE, ChVector<>(radius, radius, radius), Vector(0, 0, 0), quat);
-				}
-				if (particle_configuration == 1) {
-					position.x *= 1.2;
-					position.z *= 1.0;
-					InitObject(sphere, particle_mass, position, q, material, true, false, -1, i);
-					real percent = (rand() % 10000 / 10000.0 - .5) / 2.0;
-
-					AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius + particle_radius * percent, particle_radius * .75, particle_radius * .75), Vector(-.025, 0, 0), quat);
-					percent = (rand() % 10000 / 10000.0 - .5) / 2.0;
-					AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius + particle_radius * percent, particle_radius * .75, particle_radius * .75), Vector(.025, 0, 0), quat);
-					real rho = particle_density;
-
-					//Vector inertia = Vector(3.47e-6 * rho, 2.62e-7 * rho, 3.47e-6 * rho);
-					real mass = particle_mass;
-					Vector r = ChVector<>(particle_radius, particle_radius, particle_radius);
-					Vector inertia = Vector((1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.y * r.y)));
-
-					sphere->SetInertiaXX(inertia);
-				}
-				if (particle_configuration == 2) {
-					real percent = (rand() % 10000 / 10000.0 - .5);
-					real radius1 = particle_radius * 1.2 + particle_radius * (rand() % 10000 / 10000.0 - .5);
-					real radius2 = particle_radius * .75 + particle_radius * (rand() % 10000 / 10000.0 - .5);
-					real radius3 = particle_radius * 1.2 + particle_radius * (rand() % 10000 / 10000.0 - .5);
-					InitObject(sphere, particle_mass, position, q, material, true, false, -1, i);
-
-					AddCollisionGeometry(sphere, ELLIPSOID, ChVector<>(radius1, radius2, radius3), Vector(0, 0, 0), quat);
-
-					real mass = particle_mass;
-					Vector r = ChVector<>(radius1, radius2, radius3);
-					Vector inertia = Vector((1 / 5.0 * mass * (r.y * r.y + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.z * r.z), 1 / 5.0 * mass * (r.x * r.x + r.y * r.y)));
-					sphere->SetInertiaXX(inertia);
-
-				}
-				sphere->SetPos_dt(particle_initial_vel);
-				FinalizeObject(sphere, (ChSystemGPU *) mSys);
-			}
-		}
-		if (all_three_kinds) {
-			particle_configuration++;
-			if (particle_configuration > 2) {
-				particle_configuration = 0;
-			}
-		}
-		//if (start_height < -5) {
-		//	start_height += particle_radius * 2;
-		//}
+		layer_gen.addPerturbedVolumeMixture(R3(0, start_height, 0), I3(particle_grid_x, 1, particle_grid_z), R3(.1, .1, .1), R3(0));
 	}
 
 }
@@ -137,37 +82,31 @@ int main(int argc, char* argv[]) {
 	omp_set_num_threads(4);
 	srand(1);
 
-	cout << "Mass, Radius, Friction_Sphere, Friction_Plate, Data Folder, create_particle_plate all_three_kinds, particle configuration" << endl;
-	string solver_string = "ACCELERATED_PROJECTED_GRADIENT_DESCENT";
-	if (argc == 3) {
-		all_three_kinds = atoi(argv[1]);
-		particle_configuration = atoi(argv[2]);
-	}
-	if (argc == 12) {
-		particle_mass = atof(argv[1]);
-		particle_radius = atof(argv[2]);
-		particle_friction = atof(argv[3]);
-		plate_friction = atof(argv[4]);
-		data_folder = argv[5];
-		create_particle_plate = atoi(argv[6]);
-		plate_particle_radius = atof(argv[7]);
-		all_three_kinds = atoi(argv[8]);
-		particle_configuration = atoi(argv[9]);
-		solver_string = argv[10];
-		max_iteration = atoi(argv[11]);
+	if (argc == 2) {
+		data_folder = argv[1];
 	}
 
-	cout << particle_mass << " " << particle_radius << " " << particle_friction << " " << plate_friction << " " << data_folder << " " << create_particle_plate << " " << all_three_kinds << " "
-			<< particle_configuration << solver_string << endl;
+	cout << "Density, Radius, Friction_Sphere,Cohesion_Sphere,  Friction_Plate, Data Folder" << endl;
+	if (argc == 7) {
+		particle_density = atof(argv[1]);
+		particle_radius = atof(argv[2]);
+		particle_friction = atof(argv[3]);
+		particle_cohesion = atof(argv[4]);
+		plate_friction = atof(argv[5]);
+		data_folder = argv[6];
+		//all_three_kinds = atoi(argv[7]);
+		//particle_configuration = atoi(argv[8]);
+	}
+
+	cout << particle_density << " " << particle_radius << " " << particle_friction << " " << particle_cohesion << " " << plate_friction << " " << data_folder << " " << endl;
 	//=========================================================================================================
 	//=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
-	system_gpu->SetAABB(R3(-2,-5,-2), R3(2,5,2));
+	//system_gpu->SetAABB(R3(-2,-5,-2), R3(2,5,2));
 
 	//=========================================================================================================
-
 	system_gpu->SetMaxiter(max_iteration);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iteration);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
@@ -175,11 +114,12 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(tolerance);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1);
 	//setSolverGPU(solver_string, system_gpu);     //reads a string and sets the solver
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(true);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(solver);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .1);
-	mcollisionengine->setBinsPerAxis(R3(40, 15, 40));
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
+	mcollisionengine->setBinsPerAxis(R3(100, 30, 100));
 	mcollisionengine->setBodyPerBin(100, 50);
 
 	//=========================================================================================================
@@ -197,7 +137,7 @@ int main(int argc, char* argv[]) {
 
 		ChSharedBodyPtr sphere;
 		sphere = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		InitObject(sphere, particle_mass, Vector(0, 0, 0), quat, material, true, true, -20, -20);
+		InitObject(sphere, 1, Vector(0, 0, 0), quat, material, true, true, -20, -20);
 		for (int i = 0; i < num_particle; i++) {
 			for (int j = 0; j < num_particle; j++) {
 
@@ -242,10 +182,10 @@ int main(int argc, char* argv[]) {
 	//==========
 
 	real funnel_thickness = .05;
-	real funnel_height = 10;
-	real funnel_width = 2;
-	real funnel_h = 4;
-	real funnel_offset = funnel_width;     //.5*sqrt(2)*funnel_width-funnel_thickness*6+particle_radius*3;
+	real funnel_height = 5;
+	real funnel_width = 1;
+	real funnel_h = 2;
+	real funnel_offset = funnel_width * .8;     //.5*sqrt(2)*funnel_width-funnel_thickness*6+particle_radius*3;
 	ChSharedBodyPtr Lt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	ChSharedBodyPtr Rt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	ChSharedBodyPtr Ft = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
@@ -293,13 +233,13 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	//////Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_pos = Vector(0, -5, -40);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 	stringstream ss_m;
 	ss_m << data_folder << "/" << "timing.txt";
@@ -316,22 +256,21 @@ int main(int argc, char* argv[]) {
 				<< ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations() << "\n";
 		//TimingFile(system_gpu, timing_file_name, current_time);
 		system_gpu->DoStepDynamics(timestep);
-
+		int save_every = 1.0 / timestep / 600.0;     //save data every n steps
 		RunTimeStep(system_gpu, i);
-//		if (i % save_every == 0) {
-//			stringstream ss;
-//			cout << "Frame: " << file << endl;
-//			ss << data_folder << "/" << file << ".txt";
-//			DumpObjects(system_gpu, ss.str());
-//			file++;
-//		}
+		if (i % save_every == 0) {
+			stringstream ss;
+			cout << "Frame: " << file << endl;
+			ss << data_folder << "/" << file << ".txt";
+			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
+			file++;
+		}
 		current_time += timestep;
 
 	}
-	stringstream ss;
-	ss << data_folder << "/" << particle_friction << "_" << plate_friction << "_" << create_particle_plate << ".txt";
-
-	DumpAllObjectsWithGeometry(system_gpu, ss.str());
+	//stringstream ss;
+	//ss << data_folder << "/" << particle_friction << "_" << particle_cohesion << "_" << plate_friction << ".txt";
+	//DumpAllObjectsWithGeometry(system_gpu, ss.str());
 	return 0;
 }
 

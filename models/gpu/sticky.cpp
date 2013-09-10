@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(container_friction);
 	material->SetCompliance(0);
-	material->SetCohesion(5);
+	material->SetCohesion(10);
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
@@ -122,12 +122,12 @@ int main(int argc, char* argv[]) {
 
 	AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-//	FinalizeObject(L, (ChSystemGPU *) system_gpu);
-//	FinalizeObject(R, (ChSystemGPU *) system_gpu);
-//	FinalizeObject(F, (ChSystemGPU *) system_gpu);
-//	FinalizeObject(B, (ChSystemGPU *) system_gpu);
-//	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
-//	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
+	FinalizeObject(L, (ChSystemGPU *) system_gpu);
+	FinalizeObject(R, (ChSystemGPU *) system_gpu);
+	FinalizeObject(F, (ChSystemGPU *) system_gpu);
+	FinalizeObject(B, (ChSystemGPU *) system_gpu);
+	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
+	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
 
 
 	Quaternion quat;

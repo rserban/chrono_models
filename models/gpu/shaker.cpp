@@ -3,10 +3,10 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .001;
 real particle_radius = .1;
 real particle_friction = .5;
-real seconds_to_simulate = 30;
+real seconds_to_simulate = 60;
 real tolerance = 2e-3;
 
 double fstar = .27;
@@ -20,7 +20,7 @@ double P = 60000;
 real3 container_size = R3(L / 2, 5, L / 2);
 real container_thickness = .25;
 real container_height = 4;
-real container_friction = 0;
+real container_friction = .5;
 real current_time = 0;
 //int3 num_per_dir = I3((container_size.x-particle_radius-container_thickness*2)/particle_radius,10,(container_size.z-particle_radius-container_thickness*2)/particle_radius);
 int3 num_per_dir = I3(50, 24, 50);
@@ -30,7 +30,7 @@ double H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
 double frequency = fstar / sqrtf(H / fabs(gravity));
 double amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
 
-int max_iter = 25;
+int max_iter = 30;
 string data_folder = "data/shaker2";
 int num_steps = seconds_to_simulate / timestep;
 
@@ -43,7 +43,7 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-bool warm_start = false;
+	bool warm_start = false;
 	if (argc == 7) {
 		omp_set_num_threads(atoi(argv[1]));
 
@@ -59,7 +59,7 @@ bool warm_start = false;
 		data_folder = argv[5];
 
 		warm_start = atoi(argv[6]);
-		cout<<"BLAH"<<endl;
+		cout << "BLAH" << endl;
 
 	} else {
 		omp_set_num_threads(1);
@@ -106,16 +106,36 @@ bool warm_start = false;
 	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 
-	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y * 1.5, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y * 1.5, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(F, BOX, Vector(container_size.x, container_size.y * 1.5, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y * 1.5, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(
+			Bottom,
+			BOX,
+			Vector(container_thickness, container_size.y * 1.5, container_size.z),
+			Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
+			Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(
+			Bottom,
+			BOX,
+			Vector(container_thickness, container_size.y * 1.5, container_size.z),
+			Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
+			Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(
+			Bottom,
+			BOX,
+			Vector(container_size.x, container_size.y * 1.5, container_thickness),
+			Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
+			Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(
+			Bottom,
+			BOX,
+			Vector(container_size.x, container_size.y * 1.5, container_thickness),
+			Vector(0, container_height - container_thickness, container_size.z - container_thickness),
+			Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	FinalizeObject(L, (ChSystemGPU *) system_gpu);
-	FinalizeObject(R, (ChSystemGPU *) system_gpu);
-	FinalizeObject(F, (ChSystemGPU *) system_gpu);
-	FinalizeObject(B, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(L, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(R, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(F, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	//=========================================================================================================
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
@@ -123,14 +143,14 @@ bool warm_start = false;
 	ParticleGenerator layer_gen(system_gpu);
 	layer_gen.SetDensity(11340);
 	layer_gen.SetRadius(R3(particle_radius));
-	layer_gen.SetNormalDistribution(particle_radius , 1/300.0);
+	layer_gen.SetNormalDistribution(particle_radius, 1 / 300.0);
 	layer_gen.material->SetFriction(particle_friction);
 	layer_gen.material->SetCohesion(0);
 	layer_gen.material->SetCompliance(0);
 
 	//layer_gen.addHCPCube(num_per_dir,1,R3(0,0,0),R3(0,0,0));
-	layer_gen.addVolume(R3(0,2,0),SPHERE,num_per_dir, R3(0,0,0));
-
+	//num_per_dir=I3(10,10,10);
+	layer_gen.addVolume(R3(0, 2, 0), SPHERE, num_per_dir, R3(0, 0, 0));
 
 	//addPerturbedLayer(R3(0, -5 + particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
 	//=========================================================================================================

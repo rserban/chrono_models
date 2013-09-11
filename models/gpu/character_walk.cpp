@@ -120,6 +120,12 @@ void RunTimeStep(T* mSys, const int frame) {
 
 			Character[i]->SetRot(Quaternion(rot.w, rot.x, rot.y, rot.z));
 			Character[i]->SetWvel_loc(wvelloc);
+
+			if(i==1){
+
+				 ((ChSystemGPU*) mSys)->SetAABB(R3(pos.x-6,pos.y-5,pos.z-12), R3(pos.x+6, pos.y+3, pos.z+2));
+
+			}
 		}
 	}
 }
@@ -150,7 +156,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);     //IMPORTANT: this is the max velocity of the plate!!
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(170, 20, 194 * 4)/2);
+	mcollisionengine->setBinsPerAxis(R3(170, 20, 194 * 4)/4.0);
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -222,7 +228,7 @@ int main(int argc, char* argv[]) {
 	//170
 	num_per_dir = I3(170, 20, 194 * 4);
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	//num_per_dir = I3(1, 1, 194*4);
+	//num_per_dir = I3(1, 20, 1);
 	ParticleGenerator layer_gen(system_gpu);
 	layer_gen.SetDensity(1000);
 	layer_gen.SetRadius(R3(particle_radius));
@@ -232,7 +238,7 @@ int main(int argc, char* argv[]) {
 	layer_gen.material->SetCompliance(0);
 
 	//layer_gen.addHCPCube(num_per_dir,1,R3(0,0,0),R3(0,0,0));
-	layer_gen.addVolume(R3(0, 0, 11), SPHERE, num_per_dir, R3(0, 0, 0));
+	layer_gen.addVolume(R3(0, -.25, 11), SPHERE, num_per_dir, R3(0, 0, 0));
 
 	//addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
 	//addPerturbedLayer(R3(0,1+particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 1, 1,.5,R3(0,0,0), system_gpu);

@@ -232,7 +232,7 @@ int main(int argc, char* argv[]) {
 	layer_gen.material->SetCompliance(0);
 
 	//layer_gen.addHCPCube(num_per_dir,1,R3(0,0,0),R3(0,0,0));
-	//layer_gen.addVolume(R3(0, 0, 11), SPHERE, num_per_dir, R3(0, 0, 0));
+	layer_gen.addVolume(R3(0, 0, 11), SPHERE, num_per_dir, R3(0, 0, 0));
 
 	//addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
 	//addPerturbedLayer(R3(0,1+particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 1, 1,.5,R3(0,0,0), system_gpu);

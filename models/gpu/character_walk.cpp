@@ -5,10 +5,10 @@
 real gravity = -9.80665;
 real timestep = .001;
 real particle_radius = .025;
-real particle_friction = 1;
+real particle_friction = .5;
 real seconds_to_simulate = 14;
 
-real3 container_size = R3(5, 5, 20);
+real3 container_size = R3(5, 5, 5);
 real container_thickness = .25;
 real container_height = 4;
 real container_friction = 1;
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);     //IMPORTANT: this is the max velocity of the plate!!
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(170, 20, 194 * 4)/4.0);
+	mcollisionengine->setBinsPerAxis(R3(170, 20, 194 )/4.0);
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -174,11 +174,11 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
-	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 11), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 11), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness + 11), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness + 11), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, +11), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 25), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 25), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness + 25), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness + 25), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 25), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -226,9 +226,9 @@ int main(int argc, char* argv[]) {
 	}
 	LoadChar();
 	//170
-	num_per_dir = I3(170, 20, 194 * 4);
+	num_per_dir = I3(170, 20, 194);
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	//num_per_dir = I3(1, 20, 1);
+	//num_per_dir = I3(1, 1, 180);
 	ParticleGenerator layer_gen(system_gpu);
 	layer_gen.SetDensity(1000);
 	layer_gen.SetRadius(R3(particle_radius));
@@ -238,7 +238,7 @@ int main(int argc, char* argv[]) {
 	layer_gen.material->SetCompliance(0);
 
 	//layer_gen.addHCPCube(num_per_dir,1,R3(0,0,0),R3(0,0,0));
-	layer_gen.addVolume(R3(0, -.25, 11), SPHERE, num_per_dir, R3(0, 0, 0));
+	layer_gen.addVolume(R3(0, -.25, 25), SPHERE, num_per_dir, R3(0, 0, 0));
 
 	//addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius, particle_friction, true, 0, 0, 0, 0, system_gpu);
 	//addPerturbedLayer(R3(0,1+particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 1, 1,.5,R3(0,0,0), system_gpu);

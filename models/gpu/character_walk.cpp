@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
 	//170
 	num_per_dir = I3(170, 20, 194 * 4);
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
-	num_per_dir = I3(1, 1, 194*4);
+	//num_per_dir = I3(1, 1, 194*4);
 	ParticleGenerator layer_gen(system_gpu);
 	layer_gen.SetDensity(1000);
 	layer_gen.SetRadius(R3(particle_radius));

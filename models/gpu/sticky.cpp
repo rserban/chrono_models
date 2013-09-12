@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
 		cohesion = atof(argv[2]);
 
 	}
+
+
 //=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();
@@ -133,8 +135,15 @@ int main(int argc, char* argv[]) {
 	Quaternion quat;
 	quat.Q_from_AngAxis(90,Vector(0,1,0));
 
+
+	ChSharedPtr<ChMaterialSurface> material_monkey;
+	material_monkey = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material_monkey->SetFriction(container_friction);
+	material_monkey->SetCompliance(0);
+	material_monkey->SetCohesion(10);
+
 	ChSharedBodyPtr Monkey = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	InitObject(Monkey, 100000, Vector(0,-2,0), quat, material, true, true, -20, -20);
+	InitObject(Monkey, 100000, Vector(0,-2,0), quat, material_monkey, true, true, -20, -20);
 	AddCollisionGeometryTriangleMesh(Monkey, "monkey.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(Monkey, (ChSystemGPU *) system_gpu);
 
@@ -176,7 +185,7 @@ int main(int argc, char* argv[]) {
 	layer_gen.material->SetCohesion(0);
 	layer_gen.material->SetCompliance(0);
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
-	layer_gen.UseNormalCohesion(1, 10);
+	layer_gen.UseNormalCohesion(10, 1);
 	layer_gen.addSnowball(R3(2, -2, 0),SPHERE,1,R3(-22, 0, 0));
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 	//layer_gen.addPerturbedVolume(R3(2, -2, 0), SPHERE, num_per_dir, R3(.1, .1, .1), R3(-22, 0, 0), false);

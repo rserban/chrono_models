@@ -54,7 +54,7 @@ class VoronoiSampler {
 			if (bound < boundary) {
 				counter++;
 				//cout << counter << endl;
-				return 0;
+				return values[seed_points - 1]/10.0;
 			}
 			//cout<<values<<values[seed_points - 1];
 			return values[seed_points - 1];

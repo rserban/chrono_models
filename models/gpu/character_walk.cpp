@@ -235,6 +235,7 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(particle_radius , 1/300.0);
 	layer_gen.material->SetFriction(particle_friction);
 	layer_gen.material->SetCohesion(2);
+	layer_gen.UseNormalCohesion(1, 10);
 	layer_gen.material->SetCompliance(0);
 
 	//layer_gen.addHCPCube(num_per_dir,1,R3(0,0,0),R3(0,0,0));

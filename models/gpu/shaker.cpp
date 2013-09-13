@@ -3,11 +3,11 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .001;
+real timestep = .0005;
 real particle_radius = .1;
 real particle_friction = .5;
-real seconds_to_simulate = 60;
-real tolerance = 2e-3;
+real seconds_to_simulate = 100;
+real tolerance = 0;
 
 double fstar = .27;
 double Gamma = 3.0;
@@ -30,7 +30,7 @@ double H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
 double frequency = fstar / sqrtf(H / fabs(gravity));
 double amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
 
-int max_iter = 30;
+int max_iter = 40;
 string data_folder = "data/shaker2";
 int num_steps = seconds_to_simulate / timestep;
 
@@ -59,7 +59,6 @@ int main(int argc, char* argv[]) {
 		data_folder = argv[5];
 
 		warm_start = atoi(argv[6]);
-		cout << "BLAH" << endl;
 
 	} else {
 		omp_set_num_threads(1);

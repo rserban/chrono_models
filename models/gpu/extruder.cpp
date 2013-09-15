@@ -25,7 +25,7 @@ int particle_grid_x = 2;
 int particle_grid_z = 2;
 real start_height = 1;
 
-ChSharedBodyPtr slicer;
+ChSharedBodyPtr slicer1,slicer2;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
@@ -47,8 +47,8 @@ void RunTimeStep(T* mSys, const int frame) {
 			layer_gen.SetMass(1);
 			layer_gen.SetRadius(R3(particle_radius));
 
-			layer_gen.material->SetFriction(1);
-			layer_gen.material->SetCohesion(10);
+			layer_gen.material->SetFriction(.5);
+			layer_gen.material->SetCohesion(5);
 			layer_gen.AddMixtureType(MIX_SPHERE);
 			layer_gen.AddMixtureType(MIX_ELLIPSOID);
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
@@ -62,9 +62,15 @@ void RunTimeStep(T* mSys, const int frame) {
 		}
 	}
 
-	slicer->SetPos(Vector(3.5,(sin(frame*timestep*6)-1),0));
-	slicer->SetPos_dt(Vector(0,(cos(frame*timestep*6)*6),0));
-	slicer->SetRot(Quaternion(1,0,0,0));
+	slicer1->SetPos(Vector(3.5,(sin(frame*timestep*6)-1),0));
+	slicer1->SetPos_dt(Vector(0,(cos(frame*timestep*6)*6),0));
+	slicer1->SetRot(Quaternion(1,0,0,0));
+
+
+	slicer2->SetPos(Vector(3.5,(sin(frame*timestep*6+PI)-1),0));
+	slicer2->SetPos_dt(Vector(0,(cos(frame*timestep*6)*6),0));
+	slicer2->SetRot(Quaternion(1,0,0,0));
+
 
 }
 
@@ -83,10 +89,10 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(6);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(12);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(R3(30, 30, 30));
+	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -137,10 +143,16 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Tube, (ChSystemGPU *) system_gpu);
-	slicer= ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	InitObject(slicer, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
-	AddCollisionGeometry(slicer, BOX, Vector(container_thickness/15.0, .2, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
-	FinalizeObject(slicer, (ChSystemGPU *) system_gpu);
+	slicer1= ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	InitObject(slicer1, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
+	AddCollisionGeometry(slicer1, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
+	FinalizeObject(slicer1, (ChSystemGPU *) system_gpu);
+
+	slicer2= ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		InitObject(slicer2, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
+		AddCollisionGeometry(slicer2, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
+		FinalizeObject(slicer2, (ChSystemGPU *) system_gpu);
+
 //=========================================================================================================
 //Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();

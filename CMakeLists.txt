@@ -89,6 +89,9 @@ IF (ENABLE_UNIT_GPU)
     #ADD_EXECUTABLE(foam models/gpu/foam.cpp)		
     #TARGET_LINK_LIBRARIES(foam	${CHRONO_LIB} ${GPU_LIBS})
     
+    ADD_EXECUTABLE(extruder models/gpu/extruder.cpp)		
+    TARGET_LINK_LIBRARIES(extruder	${CHRONO_LIB} ${GPU_LIBS})
+    
     #ADD_EXECUTABLE(rollers models/gpu/rollers.cpp)		
     #TARGET_LINK_LIBRARIES(rollers	${CHRONO_LIB} ${GPU_LIBS})
 

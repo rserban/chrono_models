@@ -2,7 +2,7 @@
 #include <random>
 
 enum MixType {
-	MIX_SPHERE, MIX_ELLIPSOID, MIX_DOUBLESPHERE
+	MIX_SPHERE, MIX_ELLIPSOID, MIX_DOUBLESPHERE, MIX_CUBE, MIX_CYLINDER, MIX_CONE
 };
 class VoronoiSampler {
 	public:
@@ -54,7 +54,7 @@ class VoronoiSampler {
 			if (bound < boundary) {
 				counter++;
 				//cout << counter << endl;
-				return values[seed_points - 1]/10.0;
+				return values[seed_points - 1] / 10.0;
 			}
 			//cout<<values<<values[seed_points - 1];
 			return values[seed_points - 1];
@@ -265,6 +265,12 @@ class ParticleGenerator {
 							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(r.x / 2.0, 0, 0), Quaternion(1, 0, 0, 0));
 						} else if (mixture[mix_type] == MIX_ELLIPSOID) {
 							AddCollisionGeometry(body, ELLIPSOID, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+						} else if (mixture[mix_type] == MIX_CUBE) {
+							AddCollisionGeometry(body, BOX, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+						} else if (mixture[mix_type] == MIX_CYLINDER) {
+							AddCollisionGeometry(body, CYLINDER, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+						}else if (mixture[mix_type] == MIX_CONE) {
+							AddCollisionGeometry(body, CONE, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 						}
 						mix_type++;
 						if (mix_type > mixture.size()) {

@@ -145,6 +145,14 @@ void DumpAllObjectsWithGeometryPovray(ChSystemGPU* mSys, string filename) {
 				rad_final.z = rad;
 				pos_final = pos;
 				type = CYLINDER;
+			}else if (asset.IsType<ChConeShape>()) {
+				ChConeShape * cylinder_shape = ((ChConeShape *) (asset.get_ptr()));
+				Vector center = cylinder_shape->GetConeGeometry().center;
+				rad_final.x = cylinder_shape->GetConeGeometry().rad.x;
+				rad_final.y = cylinder_shape->GetConeGeometry().rad.y;
+				rad_final.z = cylinder_shape->GetConeGeometry().rad.z;
+				pos_final = pos+center;
+				type = CONE;
 			}
 
 			csv_output << R3(pos_final.x, pos_final.y, pos_final.z);
@@ -169,7 +177,6 @@ void DumpAllObjectsWithGeometryPovray(ChSystemGPU* mSys, string filename) {
 				csv_output << R2(rad_final.x, rad_final.y);
 				csv_output.Endline();
 			} else if (asset.IsType<ChConeShape>()) {
-
 				csv_output << type;
 				csv_output << R2(rad_final.x, rad_final.y);
 				csv_output.Endline();

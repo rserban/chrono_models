@@ -42,14 +42,14 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		//int3 num_per_dir = I3(1, 10, 10);
 
-		if (frame % 25 == 0) {
+		if (frame % 50 == 0) {
 
 			ParticleGenerator layer_gen((ChSystemGPU *) mSys);
 			layer_gen.SetMass(1);
 			layer_gen.SetRadius(R3(particle_radius));
 
 			layer_gen.material->SetFriction(.5);
-			layer_gen.material->SetCohesion(10);
+			layer_gen.material->SetCohesion(1);
 			layer_gen.AddMixtureType(MIX_SPHERE);
 			layer_gen.AddMixtureType(MIX_ELLIPSOID);
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
@@ -58,10 +58,10 @@ void RunTimeStep(T* mSys, const int frame) {
 			//layer_gen.AddMixtureType(MIX_CONE);
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
-			layer_gen.addPerturbedVolume(R3(5, container_size.y / 2.0, 0), ELLIPSOID, I3(1, 10, 10), R3(1, 0, 1), R3(-5, 0, 0));
-			layer_gen.addPerturbedVolume(R3(-5, container_size.y / 2.0, 0), BOX, I3(1, 10, 10), R3(1, 0, 1), R3(5, 0, 0));
-			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, 5), CONE, I3(10, 10, 1), R3(1, 0, 1), R3(0, 0, -5));
-			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, -5), CYLINDER, I3(10, 10, 1), R3(1, 0, 1), R3(0, 0, 5));
+			layer_gen.addPerturbedVolume(R3(2.5, container_size.y / 2.0, 0), ELLIPSOID, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
+			layer_gen.addPerturbedVolume(R3(-2.5, container_size.y / 2.0, 0), BOX, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
+			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, 2.5), CONE, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
+			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, -2.5), CYLINDER, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 		}
 	}
@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(15);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));

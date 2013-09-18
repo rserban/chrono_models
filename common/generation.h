@@ -198,7 +198,7 @@ class ParticleGenerator {
 			real3 r = radius + R3(3 * std_dev) * use_normal_dist;
 
 			real3 a = r * percent_perturbation;
-			real3 d = a + 2 * r;     //compute cell length
+			real3 d = a + 3 * r;     //compute cell length
 			real3 dp;
 
 			dp.x = rand() % 10000 / 10000.0 * a.x - a.x / 2.0;

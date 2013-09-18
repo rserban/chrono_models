@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .0005;
 real seconds_to_simulate = 60;
 
-int max_iter = 20;
+int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -58,10 +58,12 @@ void RunTimeStep(T* mSys, const int frame) {
 			//layer_gen.AddMixtureType(MIX_CONE);
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
-			layer_gen.addPerturbedVolume(R3(2.5, container_size.y / 2.0, 0), ELLIPSOID, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
-			layer_gen.addPerturbedVolume(R3(-2.5, container_size.y / 2.0, 0), BOX, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
-			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, 2.5), CONE, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
-			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, -2.5), CYLINDER, I3(10, 1, 10), R3(1, 0, 1), R3(0, -5, 0));
+			layer_gen.addPerturbedVolume(R3(2.5, container_size.y / 2.0, 0), ELLIPSOID, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen.addPerturbedVolume(R3(-2.5, container_size.y / 2.0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen.SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
+			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, 2.5), CONE, I3(10, 1, 10), R3(.1, 0, .1), R3(0, -5, 0));
+			layer_gen.SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
+			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 		}
 	}
@@ -149,12 +151,12 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(Tube, BOX, Vector(2, .6, container_thickness / 6.0), Vector(0, container_size.y / 2.0 + .4, -1), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Tube, BOX, Vector(2, .6, container_thickness / 6.0), Vector(0, container_size.y / 2.0 + .4, 1), Quaternion(1, 0, 0, 0));
 
-	FinalizeObject(L, (ChSystemGPU *) system_gpu);
-	FinalizeObject(R, (ChSystemGPU *) system_gpu);
-	FinalizeObject(F, (ChSystemGPU *) system_gpu);
-	FinalizeObject(B, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(L, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(R, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(F, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(B, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
-	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(Top, (ChSystemGPU *) system_gpu);
 	//FinalizeObject(Tube, (ChSystemGPU *) system_gpu);
 
 	ChSharedBodyPtr Ring;

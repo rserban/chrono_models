@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .0001;
 real seconds_to_simulate = 5;
 
 int max_iter = 10;
@@ -15,7 +15,7 @@ real container_thickness = .2;
 real container_height = 0;
 real container_friction = 1;
 
-real particle_radius = .01;
+real particle_radius = .04;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(300);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .1);
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
@@ -106,6 +106,8 @@ int main(int argc, char* argv[]) {
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(container_friction);
+	//material->SetRollingFriction(.5);
+	//material->SetSpinningFriction(.5);
 	material->SetCompliance(0);
 	material->SetCohesion(10);
 
@@ -183,11 +185,13 @@ int main(int argc, char* argv[]) {
 	layer_gen.SetRadius(rad);
 	layer_gen.material->SetFriction(.5);
 	layer_gen.material->SetCohesion(0);
+	layer_gen.material->SetRollingFriction(1);
+	layer_gen.material->SetSpinningFriction(1);
 	layer_gen.material->SetCompliance(0);
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	layer_gen.UseNormalCohesion(10, 1);
 	layer_gen.addSnowball(R3(2, -2, 0),SPHERE,1,R3(-22, 0, 0));
-	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
+	//layer_gen.addPerturbedVolume(R3(0 , 0, 0 ), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 	//layer_gen.addPerturbedVolume(R3(2, -2, 0), SPHERE, num_per_dir, R3(.1, .1, .1), R3(-22, 0, 0), false);
 	//addPerturbedLayer(R3(-2, -2, 0), SPHERE, rad, num_per_dir, R3(.1,.1,.1), .333, .01, rand()%5, R3(44, 0, 0), system_gpu);
 //		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, 0, R3(0, 0, 0), system_gpu);
@@ -195,14 +199,14 @@ int main(int argc, char* argv[]) {
 //	}
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

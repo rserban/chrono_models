@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .0005;
 real particle_radius = .1;
 real particle_friction = .5;
-real seconds_to_simulate = 100;
+real seconds_to_simulate = 200;
 real tolerance = 0;
 
 double fstar = .27;

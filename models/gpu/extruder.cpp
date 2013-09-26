@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .001;
 real seconds_to_simulate = 60;
 
 int max_iter = 10;
@@ -50,6 +50,8 @@ void RunTimeStep(T* mSys, const int frame) {
 
 			layer_gen.material->SetFriction(.5);
 			layer_gen.material->SetCohesion(1);
+			layer_gen.material->SetSpinningFriction(.5);
+			layer_gen.material->SetRollingFriction(.5);
 			layer_gen.AddMixtureType(MIX_SPHERE);
 			layer_gen.AddMixtureType(MIX_ELLIPSOID);
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
@@ -59,11 +61,11 @@ void RunTimeStep(T* mSys, const int frame) {
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
 			layer_gen.addPerturbedVolume(R3(2.5, container_size.y / 2.0, 0), ELLIPSOID, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-			layer_gen.addPerturbedVolume(R3(-2.5, container_size.y / 2.0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-			layer_gen.SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
-			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, 2.5), CONE, I3(10, 1, 10), R3(.1, 0, .1), R3(0, -5, 0));
-			layer_gen.SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
-			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+//			layer_gen.addPerturbedVolume(R3(-2.5, container_size.y / 2.0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+//			layer_gen.SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
+//			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, 2.5), CONE, I3(10, 1, 10), R3(.1, 0, .1), R3(0, -5, 0));
+//			layer_gen.SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
+//			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 		}
 	}
@@ -100,9 +102,9 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
-	system_gpu->SetTol(0);
-	system_gpu->SetTolSpeeds(0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
+	system_gpu->SetTol(.1);
+	system_gpu->SetTolSpeeds(.1);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
@@ -127,6 +129,8 @@ int main(int argc, char* argv[]) {
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(.4);
+	material->SetRollingFriction(.4);
+	material->SetSpinningFriction(.4);
 	material->SetCompliance(0);
 	material->SetCohesion(-100);
 
@@ -192,14 +196,14 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(spinner, (ChSystemGPU *) system_gpu);
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

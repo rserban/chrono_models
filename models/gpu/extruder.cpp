@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 60;
 
-int max_iter = 10;
+int max_iter = 30;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -31,7 +31,7 @@ real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 0;
-
+ParticleGenerator *layer_gen;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < 1071630) {
@@ -42,30 +42,21 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		//int3 num_per_dir = I3(1, 10, 10);
 
-		if (frame % 50 == 0) {
+		if (frame % 22 == 0) {
 
-			ParticleGenerator layer_gen((ChSystemGPU *) mSys);
-			layer_gen.SetMass(1);
-			layer_gen.SetRadius(R3(particle_radius));
-
-			layer_gen.material->SetFriction(.5);
-			layer_gen.material->SetCohesion(1);
-			layer_gen.material->SetSpinningFriction(.5);
-			layer_gen.material->SetRollingFriction(.5);
-			layer_gen.AddMixtureType(MIX_SPHERE);
-			layer_gen.AddMixtureType(MIX_ELLIPSOID);
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
 			//layer_gen.AddMixtureType(MIX_CUBE);
 			//layer_gen.AddMixtureType(MIX_CYLINDER);
 			//layer_gen.AddMixtureType(MIX_CONE);
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
-			layer_gen.addPerturbedVolume(R3(2.5, container_size.y / 2.0, 0), ELLIPSOID, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-//			layer_gen.addPerturbedVolume(R3(-2.5, container_size.y / 2.0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-//			layer_gen.SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
-//			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, 2.5), CONE, I3(10, 1, 10), R3(.1, 0, .1), R3(0, -5, 0));
-//			layer_gen.SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
-//			layer_gen.addPerturbedVolume(R3(0, container_size.y / 2.0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->SetRadius(R3(particle_radius));
+			layer_gen->addPerturbedVolume(R3(2.5, container_size.y / 3.0, 0), ELLIPSOID, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->addPerturbedVolume(R3(-2.5, container_size.y / 3.0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
+			layer_gen->addPerturbedVolume(R3(0, container_size.y / 3.0, 2.5), SPHERE, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
+			layer_gen->addPerturbedVolume(R3(0, container_size.y / 3.0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 		}
 	}
@@ -84,7 +75,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	}
 	Quaternion q1;
 	q1.Q_from_AngY(ang);
-	spinner->SetPos(Vector(0, container_height - container_size.y - 3, 0));
+	spinner->SetPos(Vector(0, container_height - container_size.y + 1, 0));
 	spinner->SetPos_dt(Vector(0, 0, 0));
 	spinner->SetRot(q1);
 
@@ -108,7 +99,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
+	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
@@ -191,19 +182,30 @@ int main(int argc, char* argv[]) {
 //		AddCollisionGeometry(slicer2, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
 //		FinalizeObject(slicer2, (ChSystemGPU *) system_gpu);
 	spinner = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	InitObject(spinner, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
-	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, 1, 4), Vector(0, container_size.y / 2.0 + .6 + .4, 0), Quaternion(1, 0, 0, 0));
+	InitObject(spinner, 100000, Vector(0, container_size.y / 2.0 + .6 + .4, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
+	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, 1, 4), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(spinner, (ChSystemGPU *) system_gpu);
+
+	layer_gen = new ParticleGenerator((ChSystemGPU *) system_gpu);
+	layer_gen->SetMass(1);
+	layer_gen->SetRadius(R3(particle_radius));
+
+	layer_gen->material->SetFriction(.5);
+	layer_gen->material->SetCohesion(.1);
+	layer_gen->material->SetSpinningFriction(.5);
+	layer_gen->material->SetRollingFriction(.5);
+	layer_gen->AddMixtureType(MIX_SPHERE);
+	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 //=========================================================================================================
 //Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.render_camera->mScale = .5;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	openGLView.render_camera->mScale = .5;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

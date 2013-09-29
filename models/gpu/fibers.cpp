@@ -77,7 +77,7 @@ void CreateFiber(T* mSys, ChVector<> position) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame % 200 == 0) {
+	if (frame % 250 == 0) {
 		for(int i=0; i<20; i++)
 		CreateFiber(mSys,Vector(0,5,i/5.0));
 
@@ -121,17 +121,20 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr Tube = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material->SetFriction(.4);
-	material->SetRollingFriction(.4);
-	material->SetSpinningFriction(.4);
+	material->SetFriction(.1);
+	material->SetRollingFriction(0);
+	material->SetSpinningFriction(0);
 	material->SetCompliance(0);
 	material->SetCohesion(-100);
+
+	Quaternion q;
+	q.Q_from_AngZ(.05);
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y/2.0, 0), q, material, true, true, -20, -20);
 	InitObject(Top, 100000, Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(Tube, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 
@@ -162,6 +165,12 @@ int main(int argc, char* argv[]) {
 	material_fiber->SetSpinningFriction(.4);
 	material_fiber->SetCompliance(0);
 	material_fiber->SetCohesion(0);
+
+
+
+
+
+
 
 
 //=========================================================================================================

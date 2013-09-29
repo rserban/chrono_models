@@ -10,7 +10,7 @@ int max_iter = 30;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(6, 1, 6);
+real3 container_size = R3(6, 2, 6);
 real container_thickness = .1;
 real container_height = 0;
 real container_friction = 1;
@@ -36,31 +36,29 @@ ChSharedPtr<ChMaterialSurface> material_fiber;
 template<class T>
 void CreateFiber(T* mSys, ChVector<> position) {
 
-
-
 	real length = .1;
-	real thickness = .05;
+	real thickness = .03;
 
 	ChSharedBodyPtr Fiber1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
 	ChSharedBodyPtr Fiber2;
-	vector<ChSharedBodyPtr> fibers(20);
+	vector<ChSharedBodyPtr> fibers(10);
 	fibers[0] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	Quaternion q;
 	q.Q_from_AngZ(PI / 2.0);
-	InitObject(fibers[0], 1, Vector(0, -2, 0)+position, q, material_fiber, true, false, -1, -2);
+	InitObject(fibers[0], 1, Vector(0, -2, 0) + position, q, material_fiber, true, false, -1, -2);
 	AddCollisionGeometry(fibers[0], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(fibers[0], (ChSystemGPU *) mSys);
 	fibers[0]->SetPos_dt(Vector(0, -1, 0));
 
-	for (int i = 1; i < 20; i++) {
+	for (int i = 1; i < 10; i++) {
 		fibers[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		InitObject(fibers[i], 1, Vector(i * length * 2.1, -2, 0)+position, q, material_fiber, true, false, -1, -2);
+		InitObject(fibers[i], 1, Vector(i * length * 2.1, -2, 0) + position, q, material_fiber, true, false, -1, -2);
 		AddCollisionGeometry(fibers[i], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 		FinalizeObject(fibers[i], (ChSystemGPU *) mSys);
 		fibers[i]->SetPos_dt(Vector(0, -1, 0));
 		ChCoordsys<> pos;
-		pos.pos = Vector((i - 1) * length * 2.1 + length, -2, 0)+position;
+		pos.pos = Vector((i - 1) * length * 2.1 + length, -2, 0) + position;
 		ChSharedPtr<ChLinkLockRevolute> joint(new ChLinkLockRevolute);
 		joint->Initialize(fibers[i - 1], fibers[i], pos);
 		//		joint->Initialize(fibers[i - 1], fibers[i], true, Vector(length,0,0),Vector(-length,0,0),true);
@@ -77,10 +75,13 @@ void CreateFiber(T* mSys, ChVector<> position) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame % 250 == 0) {
-		for(int i=0; i<20; i++)
-		CreateFiber(mSys,Vector(0,4,i/5.0));
-
+	if (frame % 150 == 0) {
+		for (int i = 0; i < 40; i++) {
+			CreateFiber(mSys, Vector(3, 5, i / 8.0+.5));
+			CreateFiber(mSys, Vector(.5, 5, i / 8.0+.5));
+			CreateFiber(mSys, Vector(-2, 5, i / 8.0+.5));
+			CreateFiber(mSys, Vector(-4.5, 5, i / 8.0+.5));
+		}
 	}
 }
 
@@ -134,7 +135,7 @@ int main(int argc, char* argv[]) {
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y/2.0, 0), q, material, true, true, -20, -20);
+	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y / 2.0, 0), q, material, true, true, -20, -20);
 	InitObject(Top, 100000, Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(Tube, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 
@@ -161,17 +162,10 @@ int main(int argc, char* argv[]) {
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_fiber->SetFriction(.4);
-	material_fiber->SetRollingFriction(.4);
-	material_fiber->SetSpinningFriction(.4);
+	material_fiber->SetRollingFriction(0);
+	material_fiber->SetSpinningFriction(0);
 	material_fiber->SetCompliance(0);
 	material_fiber->SetCohesion(0);
-
-
-
-
-
-
-
 
 //=========================================================================================================
 //Rendering specific stuff:

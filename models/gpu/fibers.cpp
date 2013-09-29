@@ -79,7 +79,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 	if (frame % 250 == 0) {
 		for(int i=0; i<20; i++)
-		CreateFiber(mSys,Vector(0,5,i/5.0));
+		CreateFiber(mSys,Vector(0,4,i/5.0));
 
 	}
 }
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(.01);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.01);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(20);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 	material->SetCohesion(-100);
 
 	Quaternion q;
-	q.Q_from_AngZ(.05);
+	q.Q_from_AngX(-.05);
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);

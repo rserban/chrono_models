@@ -75,7 +75,7 @@ void CreateFiber(T* mSys, ChVector<> position) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame % 150 == 0) {
+	if (frame % 188 == 0) {
 		for (int i = 0; i < 40; i++) {
 			CreateFiber(mSys, Vector(3, 5, i / 8.0+.5));
 			CreateFiber(mSys, Vector(.5, 5, i / 8.0+.5));

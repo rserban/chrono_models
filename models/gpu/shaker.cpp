@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .0002;
 real particle_radius = .1;
 real particle_friction = .5;
 real seconds_to_simulate = 200;
@@ -30,7 +30,7 @@ double H = P * PI / 6.0 * (pow(D, 3) / pow(L, 2)) / phi;
 double frequency = fstar / sqrtf(H / fabs(gravity));
 double amplitude = Gamma * fabs(gravity) * pow(PI, -0.2e1) * pow(frequency, -0.2e1) / 0.4e1;
 
-int max_iter = 40;
+int max_iter = 80;
 string data_folder = "data/shaker2";
 int num_steps = seconds_to_simulate / timestep;
 

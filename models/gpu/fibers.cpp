@@ -10,7 +10,7 @@ int max_iter = 40;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(6, 2, 12);
+real3 container_size = R3(4, 2, 6);
 real container_thickness = .1;
 real container_height = 0;
 real container_friction = 1;
@@ -82,10 +82,10 @@ void RunTimeStep(T* mSys, const int frame) {
 
 	if (frame % 100 == 0) {
 		for (int i = 0; i < 40; i++) {
-			CreateFiber(mSys, Vector(3, 3, i / 8.0+6));
-			CreateFiber(mSys, Vector(.5, 3, i / 8.0+6));
-			CreateFiber(mSys, Vector(-2, 3, i / 8.0+6));
-			CreateFiber(mSys, Vector(-4.5, 3, i / 8.0+6));
+			CreateFiber(mSys, Vector(2-1.6*0, 3, i / 8.0));
+			CreateFiber(mSys, Vector(2-1.6*1, 3, i / 8.0));
+			CreateFiber(mSys, Vector(2-1.6*2, 3, i / 8.0));
+			CreateFiber(mSys, Vector(2-1.6*3, 3, i / 8.0));
 			fibers+=4;
 		}
 		cout<<"Fibers: "<<fibers<<endl;
@@ -177,14 +177,14 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

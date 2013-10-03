@@ -10,7 +10,7 @@ int max_iter = 40;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(6, 2, 6);
+real3 container_size = R3(6, 2, 12);
 real container_thickness = .1;
 real container_height = 0;
 real container_friction = 1;
@@ -31,13 +31,14 @@ real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 0;
+int fibers = 0;
 ParticleGenerator *layer_gen;
 ChSharedPtr<ChMaterialSurface> material_fiber;
 template<class T>
 void CreateFiber(T* mSys, ChVector<> position) {
 
-	real length = .1;
-	real thickness = .03;
+	real length = .05;
+	real thickness = .01;
 
 	ChSharedBodyPtr Fiber1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 
@@ -46,19 +47,23 @@ void CreateFiber(T* mSys, ChVector<> position) {
 	fibers[0] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
 	Quaternion q;
 	q.Q_from_AngZ(PI / 2.0);
-	InitObject(fibers[0], 1, Vector(0, -2, 0) + position, q, material_fiber, true, false, -1, -2);
+	InitObject(fibers[0], .1, Vector(0, -2, 0) + position, q, material_fiber, true, false, -1, -2);
 	AddCollisionGeometry(fibers[0], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(fibers[0], SPHERE, Vector(thickness, length, length), Vector(0, length,0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(fibers[0], SPHERE, Vector(thickness, length, length), Vector(0, -length, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(fibers[0], (ChSystemGPU *) mSys);
 	fibers[0]->SetPos_dt(Vector(0, -1, 0));
 
 	for (int i = 1; i < 10; i++) {
 		fibers[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-		InitObject(fibers[i], 1, Vector(i * length * 2.1, -2, 0) + position, q, material_fiber, true, false, -1, -2);
+		InitObject(fibers[i], .1, Vector(i * (length+thickness) * 2, -2, 0) + position, q, material_fiber, true, false, -1, -2);
 		AddCollisionGeometry(fibers[i], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(fibers[i], SPHERE, Vector(thickness, length, length), Vector(0, length,0), Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(fibers[i], SPHERE, Vector(thickness, length, length), Vector(0, -length, 0), Quaternion(1, 0, 0, 0));
 		FinalizeObject(fibers[i], (ChSystemGPU *) mSys);
 		fibers[i]->SetPos_dt(Vector(0, -1, 0));
 		ChCoordsys<> pos;
-		pos.pos = Vector((i - 1) * length * 2.1 + length, -2, 0) + position;
+		pos.pos = Vector((i - 1) * (length+thickness) * 2 + length, -2, 0) + position;
 		ChSharedPtr<ChLinkLockRevolute> joint(new ChLinkLockRevolute);
 		joint->Initialize(fibers[i - 1], fibers[i], pos);
 		//		joint->Initialize(fibers[i - 1], fibers[i], true, Vector(length,0,0),Vector(-length,0,0),true);
@@ -75,13 +80,15 @@ void CreateFiber(T* mSys, ChVector<> position) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame % 188 == 0) {
+	if (frame % 100 == 0) {
 		for (int i = 0; i < 40; i++) {
-			CreateFiber(mSys, Vector(3, 5, i / 8.0+.5));
-			CreateFiber(mSys, Vector(.5, 5, i / 8.0+.5));
-			CreateFiber(mSys, Vector(-2, 5, i / 8.0+.5));
-			CreateFiber(mSys, Vector(-4.5, 5, i / 8.0+.5));
+			CreateFiber(mSys, Vector(3, 3, i / 8.0+6));
+			CreateFiber(mSys, Vector(.5, 3, i / 8.0+6));
+			CreateFiber(mSys, Vector(-2, 3, i / 8.0+6));
+			CreateFiber(mSys, Vector(-4.5, 3, i / 8.0+6));
+			fibers+=4;
 		}
+		cout<<"Fibers: "<<fibers<<endl;
 	}
 }
 
@@ -100,14 +107,14 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(40);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
-	((ChSystemGPU*) system_gpu)->SetAABB(R3(-6,-3,-6), R3(6,6,6));
+	((ChSystemGPU*) system_gpu)->SetAABB(R3(-6,-3,-12), R3(6,6,12));
 //=========================================================================================================
 //cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 //addPerturbedLayer(R3(0, -5 +container_thickness-particle_radius.y, 0), ELLIPSOID, particle_radius, num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
@@ -163,8 +170,8 @@ int main(int argc, char* argv[]) {
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_fiber->SetFriction(.4);
-	material_fiber->SetRollingFriction(0);
-	material_fiber->SetSpinningFriction(0);
+	material_fiber->SetRollingFriction(1);
+	material_fiber->SetSpinningFriction(1);
 	material_fiber->SetCompliance(0);
 	material_fiber->SetCohesion(0);
 

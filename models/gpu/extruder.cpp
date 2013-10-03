@@ -84,6 +84,10 @@ void RunTimeStep(T* mSys, const int frame) {
 
 int main(int argc, char* argv[]) {
 	omp_set_num_threads(8);
+
+	if(argc>1){
+		omp_set_num_threads(atoi(argv[1]));
+	}
 //=========================================================================================================
 	ChSystemGPU * system_gpu = new ChSystemGPU;
 	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();

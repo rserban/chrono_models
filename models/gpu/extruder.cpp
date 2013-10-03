@@ -42,7 +42,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		//int3 num_per_dir = I3(1, 10, 10);
 
-		if (frame % 22 == 0) {
+		if (frame % 44 == 0) {
 
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
 			//layer_gen.AddMixtureType(MIX_CUBE);
@@ -51,12 +51,12 @@ void RunTimeStep(T* mSys, const int frame) {
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
 			layer_gen->SetRadius(R3(particle_radius));
-			layer_gen->addPerturbedVolume(R3(2.5, container_size.y / 3.0, 0), ELLIPSOID, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-			layer_gen->addPerturbedVolume(R3(-2.5, container_size.y / 3.0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->addPerturbedVolume(R3(2.5, 0, 0), ELLIPSOID, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->addPerturbedVolume(R3(-2.5, 0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
 			layer_gen->SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
-			layer_gen->addPerturbedVolume(R3(0, container_size.y / 3.0, 2.5), SPHERE, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->addPerturbedVolume(R3(0, 0, 2.5), SPHERE, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
 			layer_gen->SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
-			layer_gen->addPerturbedVolume(R3(0, container_size.y / 3.0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->addPerturbedVolume(R3(0, 0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 		}
 	}
@@ -69,7 +69,7 @@ void RunTimeStep(T* mSys, const int frame) {
 //	slicer2->SetPos(Vector(3.5,(sin(frame*timestep*6+PI)-1),0));
 //	slicer2->SetPos_dt(Vector(0,(cos(frame*timestep*6)*6),0));
 //	slicer2->SetRot(Quaternion(1,0,0,0));
-	ang += CH_C_PI * timestep;
+	ang += CH_C_PI * timestep/2.0;
 	if (ang >= 2 * CH_C_PI) {
 		ang = 0;
 	}
@@ -79,7 +79,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	spinner->SetPos_dt(Vector(0, 0, 0));
 	spinner->SetRot(q1);
 
-	spinner->SetWvel_loc(Vector(0, CH_C_PI, 0));
+	spinner->SetWvel_loc(Vector(0, CH_C_PI/2.0, 0));
 }
 
 int main(int argc, char* argv[]) {

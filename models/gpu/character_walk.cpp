@@ -17,7 +17,7 @@ int3 num_per_dir = I3((container_size.x - particle_radius - container_thickness 
 //int3 num_per_dir = I3(35, 10, 130);
 int save_every = 1.0 / timestep / 30.0;     //save data every n steps
 
-int max_iter = 20;
+int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
 	}
 	LoadChar();
 	//170
-	num_per_dir = I3(170, 20, 194);
+	num_per_dir = I3(170, 1, 170);
 	cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	//num_per_dir = I3(1, 1, 180);
 	ParticleGenerator layer_gen(system_gpu);
@@ -235,7 +235,7 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(particle_radius , 1/300.0);
 	layer_gen.material->SetFriction(particle_friction);
 	layer_gen.material->SetCohesion(2);
-	layer_gen.UseNormalCohesion(1, 10);
+	layer_gen.UseNormalCohesion(.1, 1);
 	layer_gen.material->SetCompliance(0);
 
 	//layer_gen.addHCPCube(num_per_dir,1,R3(0,0,0),R3(0,0,0));
@@ -245,14 +245,14 @@ int main(int argc, char* argv[]) {
 	//addPerturbedLayer(R3(0,1+particle_radius + container_thickness, 0), ELLIPSOID, R3(particle_radius), num_per_dir, R3(.01, .01, .01), 1, 1,.5,R3(0,0,0), system_gpu);
 	//=========================================================================================================
 	//////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = 1;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = 1;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 	int file = 0;
 

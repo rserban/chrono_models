@@ -22,9 +22,9 @@
 #include "collision/CHcModelBullet.h"
 #include "collision/CHcCollisionSystemBullet.h"
 #include "physics/CHcontactContainer.h"
-#include "unit_OPENGL/CHopenGL.h"
-#include "unit_GPU/CHsystemGPU.h"
-#include "unit_GPU/CHlcpSystemDescriptorGPU.h"
+#include "CHopenGL.h"
+#include "CHsystemParallel.h"
+#include "CHlcpSystemDescriptorParallel.h"
 #include "unit_POSTPROCESS/CHmitsubaRender.h"
 //#include "unit_GPU/CHbodyFluid.h"
 using namespace chrono;

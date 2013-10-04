@@ -96,7 +96,7 @@ void DumpAllObjects(T* mSys, string filename, string delim = ",", bool dump_vel_
 	}
 	csv_output.CloseFile();
 }
-void DumpAllObjectsWithGeometryPovray(ChSystemGPU* mSys, string filename) {
+void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 
 	CSVGen csv_output;
 	csv_output.OpenFile(filename.c_str());
@@ -190,7 +190,7 @@ void DumpAllObjectsWithGeometryPovray(ChSystemGPU* mSys, string filename) {
 	csv_output.CloseFile();
 }
 
-void DumpAllObjectsWithGeometry(ChSystemGPU* mSys, string filename, string delim = ",") {
+void DumpAllObjectsWithGeometry(ChSystemParallel* mSys, string filename, string delim = ",") {
 	ofstream ofile(filename.c_str());
 
 	for (int i = 0; i < mSys->Get_bodylist()->size(); i++) {

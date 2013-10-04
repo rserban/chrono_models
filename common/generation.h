@@ -78,7 +78,7 @@ class VoronoiSampler {
 
 class ParticleGenerator {
 	public:
-		ParticleGenerator(ChSystemGPU* system) {
+		ParticleGenerator(ChSystemParallel* system) {
 			mSys = system;
 			mass = 1;
 			use_normal_dist = false;
@@ -123,7 +123,7 @@ class ParticleGenerator {
 					InitObject(body, mass, Vector(x, y, z), Quaternion(1, 0, 0, 0), material, true, !active, -1, i);
 					AddCollisionGeometry(body, SPHERE, ChVector<>(radius.x, radius.x, radius.x), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 					body->SetPos_dt(ChVector<>(vel.x, vel.y, vel.z));
-					FinalizeObject(body, (ChSystemGPU *) mSys);
+					FinalizeObject(body, (ChSystemParallel *) mSys);
 				}
 			}
 		}
@@ -231,7 +231,7 @@ class ParticleGenerator {
 
 						AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-						FinalizeObject(body, (ChSystemGPU *) mSys);
+						FinalizeObject(body, (ChSystemParallel *) mSys);
 						body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
 						counter++;
 					}
@@ -277,7 +277,7 @@ class ParticleGenerator {
 							mix_type = 0;
 						}
 
-						FinalizeObject(body, (ChSystemGPU *) mSys);
+						FinalizeObject(body, (ChSystemParallel *) mSys);
 						body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
 						counter++;
 					}
@@ -339,7 +339,7 @@ class ParticleGenerator {
 
 								AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-								FinalizeObject(body, (ChSystemGPU *) mSys);
+								FinalizeObject(body, (ChSystemParallel *) mSys);
 								body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
 							}
 
@@ -389,7 +389,7 @@ class ParticleGenerator {
 		bool use_density;
 		bool use_common_material;
 		ChSharedPtr<ChMaterialSurface> material;
-		ChSystemGPU* mSys;
+		ChSystemParallel* mSys;
 
 		bool use_normal_friction;
 		real mean_friction, std_dev_friction;

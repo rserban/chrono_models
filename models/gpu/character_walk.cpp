@@ -168,11 +168,11 @@ int main(int argc, char* argv[]) {
 	material->SetCompliance(0);
 	material->SetCohesion(0);
 
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 25), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 25), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
@@ -203,7 +203,7 @@ int main(int argc, char* argv[]) {
 			//ss >> local_pos.x >> local_pos.y >> local_pos.z;
 			size = size * char_scale;
 			local_pos = local_pos * char_scale;
-			Character[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+			Character[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 			InitObject(Character[i], 10, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 			AddCollisionGeometry(Character[i], BOX, Vector(size.x, size.y, size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 			FinalizeObject(Character[i], (ChSystemGPU *) system_gpu);

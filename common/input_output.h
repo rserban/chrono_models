@@ -269,10 +269,10 @@ template<class T>
 void TimingFile(T* mSys, string filename, real current_time) {
 	ofstream ofile(filename.c_str(), std::ofstream::out | std::ofstream::app);
 
-	ofile << " Residual: " << ((ChLcpSolverGPU *) (mSys->GetLcpSolverSpeed()))->GetResidual();
-	ofile << " ITER: " << ((ChLcpSolverGPU *) (mSys->GetLcpSolverSpeed()))->GetTotalIterations();
+	ofile << " Residual: " << ((ChLcpSolverParallel *) (mSys->GetLcpSolverSpeed()))->GetResidual();
+	ofile << " ITER: " << ((ChLcpSolverParallel *) (mSys->GetLcpSolverSpeed()))->GetTotalIterations();
 	ofile << " OUTPUT STEP: Time= " << current_time << " bodies= " << mSys->GetNbodies() << " contacts= " << mSys->GetNcontacts() << " step time=" << mSys->GetTimerStep() << " lcp time="
 			<< mSys->GetTimerLcp() << " CDbroad time=" << mSys->GetTimerCollisionBroad() << " CDnarrow time=" << mSys->GetTimerCollisionNarrow() << " Iterations="
-			<< ((ChLcpSolverGPU*) (mSys->GetLcpSolverSpeed()))->GetTotalIterations() << "\n";
+			<< ((ChLcpSolverParallel*) (mSys->GetLcpSolverSpeed()))->GetTotalIterations() << "\n";
 	ofile.close();
 }

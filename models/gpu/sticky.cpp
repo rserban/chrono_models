@@ -96,12 +96,12 @@ int main(int argc, char* argv[]) {
 //
 //	if (!stream) {
 
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
 	material_monkey->SetCompliance(0);
 	material_monkey->SetCohesion(10);
 
-	ChSharedBodyPtr Monkey = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Monkey = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(Monkey, 100000, Vector(0,-2,0), quat, material_monkey, true, true, -20, -20);
 	AddCollisionGeometryTriangleMesh(Monkey, "monkey.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(Monkey, (ChSystemGPU *) system_gpu);

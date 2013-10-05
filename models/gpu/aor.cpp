@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
 	if (create_particle_plate) {
 
 		ChSharedBodyPtr sphere;
-		sphere = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		sphere = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		InitObject(sphere, 1, Vector(0, 0, 0), quat, material, true, true, -20, -20);
 		for (int i = 0; i < num_particle; i++) {
 			for (int j = 0; j < num_particle; j++) {
@@ -165,15 +165,15 @@ int main(int argc, char* argv[]) {
 		}
 		FinalizeObject(sphere, (ChSystemGPU *) system_gpu);
 	}
-	ChSharedBodyPtr PLATE = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr PLATE = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(PLATE, 1, ChVector<>(0, plate_height, 0), quat, material, true, true, -1000, -20000);
 	AddCollisionGeometry(PLATE, BOX, ChVector<>(plate_radius, plate_thickness, plate_radius), lpos, quat);
 	FinalizeObject(PLATE, (ChSystemGPU *) system_gpu);
 
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height + container_height, 0), quat, material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_width - container_thickness, plate_height + container_height, 0), quat, material, true, true, -20, -20);
@@ -197,15 +197,15 @@ int main(int argc, char* argv[]) {
 	real funnel_width = 1;
 	real funnel_h = 2;
 	real funnel_offset = funnel_width * .8;     //.5*sqrt(2)*funnel_width-funnel_thickness*6+particle_radius*3;
-	ChSharedBodyPtr Lt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Rt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Ft = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Bt = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Lt = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Rt = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Ft = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Bt = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
-	ChSharedBodyPtr F1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F2 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F3 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F4 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr F1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F2 = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F3 = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F4 = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	ChSharedPtr<ChMaterialSurface> material_funnel;
 	material_funnel = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Ft, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Bt, (ChSystemGPU *) system_gpu);
 
-	ChSharedBodyPtr TUBE = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr TUBE = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(TUBE, 100000, Vector(0, plate_height + funnel_height - funnel_h - funnel_h / 9.0, 0), quat, material_funnel, true, true, -20, -20);
 	AddCollisionGeometry(TUBE, BOX, Vector(funnel_thickness, funnel_h / 6.0, funnel_width / 3.0), Vector(-funnel_width / 3.0, 0, 0), quat);
 	AddCollisionGeometry(TUBE, BOX, Vector(funnel_thickness, funnel_h / 6.0, funnel_width / 3.0), Vector(funnel_width / 3.0, 0, 0), quat);

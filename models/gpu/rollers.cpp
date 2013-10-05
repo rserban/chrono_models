@@ -102,12 +102,12 @@ int main(int argc, char* argv[]) {
 //addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius.x, 1, true, 0,  -6 +container_thickness+particle_radius.y, 0, 0, system_gpu);
 //=========================================================================================================
 
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
@@ -137,9 +137,9 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
 	FinalizeObject(Top, (ChSystemGPU *) system_gpu);
 
-	ChSharedBodyPtr chassis(new ChBody(new ChCollisionModelGPU));
-	axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	axle_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr chassis(new ChBody(new ChCollisionModelParallel));
+	axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	axle_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	real chassisL = .8;
 	InitObject(chassis, 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, false, true, 0, 1);
@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr axle_F_ptr = ChSharedBodyPtr(axle_F);
 	ChSharedBodyPtr axle_R_ptr = ChSharedBodyPtr(axle_R);
 
-	ChSharedBodyPtr wall(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr wall(new ChBody(new ChCollisionModelParallel));
 	InitObject(wall, 1.0, ChVector<>(0, 1, 0), Quaternion(1, 0, 0, 0), 0, 0, 0, true, true, 0, 1);
 	AddCollisionGeometry(wall, BOX, ChVector<>(.1, 3, 1), Vector(-.75, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(wall, BOX, ChVector<>(.1, 3, 1), Vector(.75, 0, 0), Quaternion(1, 0, 0, 0));

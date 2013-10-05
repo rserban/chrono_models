@@ -152,15 +152,15 @@ int main(int argc, char* argv[]) {
 //addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius.x, 1, true, 0,  -6 +container_thickness+particle_radius.y, 0, 0, system_gpu);
 //=========================================================================================================
 
-	ChSharedBodyPtr PF = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr PB = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr PF = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr PB = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
@@ -221,13 +221,13 @@ int main(int argc, char* argv[]) {
 
 	real offsety = -.3;
 
-	 chassis = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	 axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	 axle_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	 leg_FR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	 leg_FL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	 leg_RR = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	 leg_RL = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	 chassis = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	 axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	 axle_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	 leg_FR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	 leg_FL = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	 leg_RR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	 leg_RL = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	 ChSharedPtr<ChMaterialSurface> material_chassis;
 	 material_chassis = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);

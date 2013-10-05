@@ -114,13 +114,13 @@ int main(int argc, char* argv[]) {
 //addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius.x, 1, true, 0,  -6 +container_thickness+particle_radius.y, 0, 0, system_gpu);
 //=========================================================================================================
 
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Tube = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Tube = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(.4);
@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
 		Quaternion q;
 		q.Q_from_AngAxis(-angle, Vector(0, 1, 0));
 
-		Ring = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		Ring = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		InitObject(Ring, 100000, Vector(x, container_height - 3, z), q, material, true, true, -20, -20);
 
 		AddCollisionGeometry(Ring, BOX, Vector(.25, 3, .25), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
 //		InitObject(slicer2, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 //		AddCollisionGeometry(slicer2, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
 //		FinalizeObject(slicer2, (ChSystemGPU *) system_gpu);
-	spinner = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	spinner = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(spinner, 100000, Vector(0, container_size.y / 2.0 + .6 + .4, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, 1, 4), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(spinner, (ChSystemGPU *) system_gpu);

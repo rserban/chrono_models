@@ -114,7 +114,7 @@ class ParticleGenerator {
 
 			for (int i = 0; i < grid_x; i++) {
 				for (int k = 0; k < grid_z; k++) {
-					body = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+					body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 					offset = (k % 2 != 0) ? radius.x : 0;
 					x = i * 2 * radius.x + offset - grid_x * 2 * radius.x / 2.0 + global_x;
@@ -225,7 +225,7 @@ class ParticleGenerator {
 						computeRadius(r);
 						computeMassType(type, r);
 
-						body = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+						body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 						createBody(body, pos, mass);
 
@@ -254,7 +254,7 @@ class ParticleGenerator {
 						computeRadius(r);
 						computeMassMixture(mixture[mix_type], r);
 
-						body = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+						body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 						createBody(body, pos, mass);
 
@@ -308,7 +308,7 @@ class ParticleGenerator {
 
 					for (int i = 0; i < grid_x; i++) {
 						for (int k = 0; k < grid_z; k++) {
-							body = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+							body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 							offset = (k % 2 != 0) ? radius.x : 0;
 							x = i * 2 * radius.x + offset - grid_x * 2 * radius.x / 2.0 + global_x;

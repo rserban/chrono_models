@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .0004;
-real seconds_to_simulate = 60;
+real seconds_to_simulate = 30;
 
 int max_iter = 40;
 
@@ -40,27 +40,27 @@ void CreateFiber(T* mSys, ChVector<> position) {
 	real length = .05;
 	real thickness = .01;
 
-	ChSharedBodyPtr Fiber1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr Fiber1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	ChSharedBodyPtr Fiber2;
 	vector<ChSharedBodyPtr> fibers(10);
-	fibers[0] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	fibers[0] = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	Quaternion q;
 	q.Q_from_AngZ(PI / 2.0);
 	InitObject(fibers[0], .1, Vector(0, -2, 0) + position, q, material_fiber, true, false, -1, -2);
 	AddCollisionGeometry(fibers[0], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(fibers[0], SPHERE, Vector(thickness, length, length), Vector(0, length,0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(fibers[0], SPHERE, Vector(thickness, length, length), Vector(0, -length, 0), Quaternion(1, 0, 0, 0));
-	FinalizeObject(fibers[0], (ChSystemGPU *) mSys);
+	FinalizeObject(fibers[0], (ChSystemParallel *) mSys);
 	fibers[0]->SetPos_dt(Vector(0, -1, 0));
 
 	for (int i = 1; i < 10; i++) {
-		fibers[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+		fibers[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		InitObject(fibers[i], .1, Vector(i * (length+thickness) * 2, -2, 0) + position, q, material_fiber, true, false, -1, -2);
 		AddCollisionGeometry(fibers[i], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(fibers[i], SPHERE, Vector(thickness, length, length), Vector(0, length,0), Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(fibers[i], SPHERE, Vector(thickness, length, length), Vector(0, -length, 0), Quaternion(1, 0, 0, 0));
-		FinalizeObject(fibers[i], (ChSystemGPU *) mSys);
+		FinalizeObject(fibers[i], (ChSystemParallel *) mSys);
 		fibers[i]->SetPos_dt(Vector(0, -1, 0));
 		ChCoordsys<> pos;
 		pos.pos = Vector((i - 1) * (length+thickness) * 2 + length, -2, 0) + position;
@@ -80,7 +80,7 @@ void CreateFiber(T* mSys, ChVector<> position) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame % 100 == 0) {
+	if (frame % 100 == 0&&frame*timestep<20) {
 		for (int i = 0; i < 40; i++) {
 			CreateFiber(mSys, Vector(2-1.6*0, 3, i / 8.0));
 			CreateFiber(mSys, Vector(2-1.6*1, 3, i / 8.0));
@@ -95,39 +95,39 @@ void RunTimeStep(T* mSys, const int frame) {
 int main(int argc, char* argv[]) {
 	omp_set_num_threads(8);
 //=========================================================================================================
-	ChSystemGPU * system_gpu = new ChSystemGPU;
-	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();
+	ChSystemParallel * system_gpu = new ChSystemParallel;
+	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
-	system_gpu->SetTol(0);
-	system_gpu->SetTolSpeeds(0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
+	system_gpu->SetTol(.1);
+	system_gpu->SetTolSpeeds(.1);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
-	((ChSystemGPU*) system_gpu)->SetAABB(R3(-6,-3,-12), R3(6,6,12));
+	((ChSystemParallel*) system_gpu)->SetAABB(R3(-6,-3,-12), R3(6,6,12));
 //=========================================================================================================
 //cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 //addPerturbedLayer(R3(0, -5 +container_thickness-particle_radius.y, 0), ELLIPSOID, particle_radius, num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
 //addHCPCube(num_per_dir.x, num_per_dir.y, num_per_dir.z, 1, particle_radius.x, 1, true, 0,  -6 +container_thickness+particle_radius.y, 0, 0, system_gpu);
 //=========================================================================================================
 
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr Tube = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr Tube = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(.1);
@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
 	material->SetCohesion(-100);
 
 	Quaternion q;
-	q.Q_from_AngX(-.05);
+	q.Q_from_AngX(-.1);
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
@@ -160,13 +160,13 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(Tube, BOX, Vector(2, .6, container_thickness / 6.0), Vector(0, container_size.y / 2.0 + .4, -1), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Tube, BOX, Vector(2, .6, container_thickness / 6.0), Vector(0, container_size.y / 2.0 + .4, 1), Quaternion(1, 0, 0, 0));
 
-	FinalizeObject(L, (ChSystemGPU *) system_gpu);
-	FinalizeObject(R, (ChSystemGPU *) system_gpu);
-	FinalizeObject(F, (ChSystemGPU *) system_gpu);
-	FinalizeObject(B, (ChSystemGPU *) system_gpu);
-	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
-	//FinalizeObject(Top, (ChSystemGPU *) system_gpu);
-	//FinalizeObject(Tube, (ChSystemGPU *) system_gpu);
+	FinalizeObject(L, (ChSystemParallel *) system_gpu);
+	FinalizeObject(R, (ChSystemParallel *) system_gpu);
+	FinalizeObject(F, (ChSystemParallel *) system_gpu);
+	FinalizeObject(B, (ChSystemParallel *) system_gpu);
+	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(Top, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(Tube, (ChSystemParallel *) system_gpu);
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_fiber->SetFriction(.4);
@@ -177,14 +177,14 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
@@ -195,10 +195,10 @@ int main(int argc, char* argv[]) {
 		double NARR = system_gpu->GetTimerCollisionNarrow();
 		double LCP = system_gpu->GetTimerLcp();
 		double UPDT = system_gpu->GetTimerUpdate();
-		double RESID = ((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
+		double RESID = ((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
 		int BODS = system_gpu->GetNbodies();
 		int CNTC = system_gpu->GetNcontacts();
-		int REQ_ITS = ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
+		int REQ_ITS = ((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 

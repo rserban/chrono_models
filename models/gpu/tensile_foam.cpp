@@ -19,13 +19,14 @@ real particle_radius = .05;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
-Vector particle_initial_vel = Vector(0, -5.5, 0);     //initial velocity
+Vector particle_initial_vel = Vector(0, -5.5, 0); //initial velocity
 
 int particle_grid_x = 2;
 int particle_grid_z = 2;
 real start_height = 1;
 
 ChSharedBodyPtr impactor;
+
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
@@ -42,21 +43,8 @@ void RunTimeStep(T* mSys, const int frame) {
 		int3 num_per_dir = I3(1, 10, 10);
 
 		if (frame % 20 == 0) {
-
-			ParticleGenerator layer_gen((ChSystemGPU *) mSys);
-			layer_gen.SetMass(1);
-			layer_gen.SetRadius(R3(particle_radius));
-
-			layer_gen.material->SetFriction(1);
-			layer_gen.material->SetCohesion(100);
-			layer_gen.AddMixtureType(MIX_SPHERE);
-			layer_gen.AddMixtureType(MIX_ELLIPSOID);
-			layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
-			layer_gen.AddMixtureType(MIX_CUBE);
-			layer_gen.AddMixtureType(MIX_CYLINDER);
-
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
-			layer_gen.addPerturbedVolumeMixture(R3(5, 0, 0), num_per_dir, R3(1, 0, 1), R3(-5, 0, 0));
+			addPerturbedLayer(R3(5, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.y, 1, 5, R3(-5, 0, 0), (ChSystemGPU*) mSys, 1);
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
 		}
 	}
@@ -97,18 +85,12 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
-	ChSharedPtr<ChMaterialSurface> material;
-	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material->SetFriction(0);
-	material->SetCompliance(0);
-	material->SetCohesion(-100);
-
-	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(Top, 100000, Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	InitObject(B, 100000, Vector(0, container_height - container_thickness, container_size.z - container_thickness), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	InitObject(Bottom, 100000, Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
+	InitObject(Top, 100000, Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0), container_friction, container_friction, 0, true, true, -20, -20);
 
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -158,7 +140,7 @@ int main(int argc, char* argv[]) {
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
+		int save_every = 1.0 / timestep / 60.0; //save data every n steps
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;

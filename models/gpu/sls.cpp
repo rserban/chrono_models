@@ -118,13 +118,13 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetStep(timestep);
 	//=========================================================================================================
 
-	ChSharedBodyPtr PLATE = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr SPACER_L = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
-	ChSharedBodyPtr SPACER_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ChSharedBodyPtr PLATE = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr SPACER_L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	ChSharedBodyPtr SPACER_R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	ChSharedPtr<ChMaterialSurface> material_plate;
 	material_plate = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(SPACER_L, (ChSystemGPU *) system_gpu);
 	FinalizeObject(SPACER_R, (ChSystemGPU *) system_gpu);
 
-	ROLLER = ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+	ROLLER = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChQuaternion<> roller_quat;
 	roller_quat.Q_from_AngAxis(PI / 2.0, ChVector<>(0, 0, 1));
 

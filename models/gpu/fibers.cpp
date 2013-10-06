@@ -90,17 +90,20 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
+	int threads = 8;
 
 	if(argc>1){
-		omp_set_num_threads(atoi(argv[1]));
+		threads = (atoi(argv[1]));
 	}
+
+	omp_set_num_threads(threads);
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
 	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
+	system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);

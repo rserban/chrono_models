@@ -1,4 +1,4 @@
-#include "../../common/common.h"
+//#include "../../common/common.h"
 #include "../../common/generation.h"
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
@@ -32,7 +32,6 @@ real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 0;
 int fibers = 0;
-ParticleGenerator *layer_gen;
 ChSharedPtr<ChMaterialSurface> material_fiber;
 template<class T>
 void CreateFiber(T* mSys, ChVector<> position) {

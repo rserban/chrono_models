@@ -25,8 +25,6 @@ int particle_grid_x = 2;
 int particle_grid_z = 2;
 real start_height = 1;
 
-ChSharedBodyPtr slicer1, slicer2, spinner;
-
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
@@ -42,7 +40,7 @@ void CreateFiber(T* mSys, ChVector<> position) {
 	ChSharedBodyPtr Fiber1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
 	ChSharedBodyPtr Fiber2;
-	vector<ChSharedBodyPtr> fibers(10);
+	ChSharedBodyPtr fibers[10];
 	fibers[0] = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	Quaternion q;
 	q.Q_from_AngZ(PI / 2.0);

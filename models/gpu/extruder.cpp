@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .0005;
 real seconds_to_simulate = 30;
 
-int max_iter = 30;
+int max_iter = 15;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -32,6 +32,51 @@ real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 0;
 ParticleGenerator *layer_gen;
+
+ChSharedPtr<ChMaterialSurface> material_fiber;
+template<class T>
+void CreateFiber(T* mSys, ChVector<> position) {
+
+	real length = .1;
+	real thickness = .04;
+
+	ChSharedBodyPtr Fiber1 = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+
+	ChSharedBodyPtr Fiber2;
+	ChSharedBodyPtr fibers[10];
+	fibers[0] = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	Quaternion q;
+	q.Q_from_AngZ(PI / 2.0);
+	InitObject(fibers[0], .1, Vector(0, -2, 0) + position, q, material_fiber, true, false, -1, -2);
+	AddCollisionGeometry(fibers[0], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(fibers[0], SPHERE, Vector(thickness, length, length), Vector(0, length, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(fibers[0], SPHERE, Vector(thickness, length, length), Vector(0, -length, 0), Quaternion(1, 0, 0, 0));
+	FinalizeObject(fibers[0], (ChSystemParallel *) mSys);
+	fibers[0]->SetPos_dt(Vector(0, -1, 0));
+
+	for (int i = 1; i < 10; i++) {
+		fibers[i] = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+		InitObject(fibers[i], .1, Vector(i * (length + thickness) * 2, -2, 0) + position, q, material_fiber, true, false, -1, -2);
+		AddCollisionGeometry(fibers[i], CYLINDER, Vector(thickness, length, length), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(fibers[i], SPHERE, Vector(thickness, length, length), Vector(0, length, 0), Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(fibers[i], SPHERE, Vector(thickness, length, length), Vector(0, -length, 0), Quaternion(1, 0, 0, 0));
+		FinalizeObject(fibers[i], (ChSystemParallel *) mSys);
+		fibers[i]->SetPos_dt(Vector(0, -1, 0));
+		ChCoordsys<> pos;
+		pos.pos = Vector((i - 1) * (length + thickness) * 2 + length, -2, 0) + position;
+		ChSharedPtr<ChLinkLockRevolute> joint(new ChLinkLockRevolute);
+		joint->Initialize(fibers[i - 1], fibers[i], pos);
+		//		joint->Initialize(fibers[i - 1], fibers[i], true, Vector(length,0,0),Vector(-length,0,0),true);
+		//		joint->Set_SpringF(100);
+		//		joint->Set_SpringK(100);
+		//		joint->Set_SpringR(100);
+
+		mSys->AddLink(joint);
+
+	}
+
+}
+
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < 1071630) {
@@ -42,22 +87,30 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		//int3 num_per_dir = I3(1, 10, 10);
 
-		if (frame % 44 == 0) {
+		if (frame % 44 == 0 && frame * timestep < 1.25) {
 
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
 			//layer_gen.AddMixtureType(MIX_CUBE);
 			//layer_gen.AddMixtureType(MIX_CYLINDER);
 			//layer_gen.AddMixtureType(MIX_CONE);
 
-			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemGPU*) mSys);
+			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
 			layer_gen->SetRadius(R3(particle_radius));
-			layer_gen->addPerturbedVolume(R3(2.5, 0, 0), ELLIPSOID, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-			layer_gen->addPerturbedVolume(R3(-2.5, 0, 0), BOX, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-			layer_gen->SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
-			layer_gen->addPerturbedVolume(R3(0, 0, 2.5), SPHERE, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-			layer_gen->SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
-			layer_gen->addPerturbedVolume(R3(0, 0, -2.5), CYLINDER, I3(10, 1, 10), R3(0, 0, 0), R3(0, -5, 0));
-			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemGPU*) mSys);
+			layer_gen->addPerturbedVolume(R3(0, 0, 0), SPHERE, I3(60, 1, 60), R3(0, 0, 0), R3(0, -5, 0));
+			//layer_gen->addPerturbedVolume(R3(-2, 0, 0), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
+			//layer_gen->SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
+			//layer_gen->addPerturbedVolume(R3(0, 0, 2), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
+			///layer_gen->SetRadius(R3(particle_radius,particle_radius/2.0,particle_radius));
+			//layer_gen->addPerturbedVolume(R3(0, 0, -2), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
+			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemParallel*) mSys);
+		}
+			if (frame % 150 == 0 && frame * timestep > 3 && frame * timestep < 4) {
+
+			for (int i = 0; i < 10; i++) {
+				CreateFiber(mSys, Vector(0, 3, i / 8.0));
+
+			}
+
 		}
 	}
 //
@@ -69,7 +122,7 @@ void RunTimeStep(T* mSys, const int frame) {
 //	slicer2->SetPos(Vector(3.5,(sin(frame*timestep*6+PI)-1),0));
 //	slicer2->SetPos_dt(Vector(0,(cos(frame*timestep*6)*6),0));
 //	slicer2->SetRot(Quaternion(1,0,0,0));
-	ang += CH_C_PI * timestep/2.0;
+	ang += CH_C_PI * timestep / 2.0;
 	if (ang >= 2 * CH_C_PI) {
 		ang = 0;
 	}
@@ -79,31 +132,34 @@ void RunTimeStep(T* mSys, const int frame) {
 	spinner->SetPos_dt(Vector(0, 0, 0));
 	spinner->SetRot(q1);
 
-	spinner->SetWvel_loc(Vector(0, CH_C_PI/2.0, 0));
+	spinner->SetWvel_loc(Vector(0, CH_C_PI / 2.0, 0));
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
+	int threads = 8;
 
-	if(argc>1){
-		omp_set_num_threads(atoi(argv[1]));
+
+	if (argc > 1) {
+		threads=(atoi(argv[1]));
 	}
+	omp_set_num_threads(threads);
 //=========================================================================================================
-	ChSystemGPU * system_gpu = new ChSystemGPU;
-	ChCollisionSystemGPU *mcollisionengine = new ChCollisionSystemGPU();
+	ChSystemParallel * system_gpu = new ChSystemParallel;
+	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
+	system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
 	system_gpu->SetTol(.1);
 	system_gpu->SetTolSpeeds(.1);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
@@ -124,8 +180,8 @@ int main(int argc, char* argv[]) {
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(.4);
-	material->SetRollingFriction(.4);
-	material->SetSpinningFriction(.4);
+	material->SetRollingFriction(0);
+	material->SetSpinningFriction(0);
 	material->SetCompliance(0);
 	material->SetCohesion(-100);
 
@@ -150,13 +206,13 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(Tube, BOX, Vector(2, .6, container_thickness / 6.0), Vector(0, container_size.y / 2.0 + .4, -1), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Tube, BOX, Vector(2, .6, container_thickness / 6.0), Vector(0, container_size.y / 2.0 + .4, 1), Quaternion(1, 0, 0, 0));
 
-	//FinalizeObject(L, (ChSystemGPU *) system_gpu);
-	//FinalizeObject(R, (ChSystemGPU *) system_gpu);
-	//FinalizeObject(F, (ChSystemGPU *) system_gpu);
-	//FinalizeObject(B, (ChSystemGPU *) system_gpu);
-	FinalizeObject(Bottom, (ChSystemGPU *) system_gpu);
-	//FinalizeObject(Top, (ChSystemGPU *) system_gpu);
-	//FinalizeObject(Tube, (ChSystemGPU *) system_gpu);
+	//FinalizeObject(L, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(R, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(F, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(B, (ChSystemParallel *) system_gpu);
+	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(Top, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(Tube, (ChSystemParallel *) system_gpu);
 
 	ChSharedBodyPtr Ring;
 
@@ -173,33 +229,41 @@ int main(int argc, char* argv[]) {
 
 		AddCollisionGeometry(Ring, BOX, Vector(.25, 3, .25), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-		FinalizeObject(Ring, (ChSystemGPU *) system_gpu);
+		FinalizeObject(Ring, (ChSystemParallel *) system_gpu);
 	}
 
-//	slicer1= ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+//	slicer1= ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 //	InitObject(slicer1, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 //	AddCollisionGeometry(slicer1, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
-//	FinalizeObject(slicer1, (ChSystemGPU *) system_gpu);
+//	FinalizeObject(slicer1, (ChSystemParallel *) system_gpu);
 //
-//	slicer2= ChSharedBodyPtr(new ChBody(new ChCollisionModelGPU));
+//	slicer2= ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 //		InitObject(slicer2, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 //		AddCollisionGeometry(slicer2, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
-//		FinalizeObject(slicer2, (ChSystemGPU *) system_gpu);
+//		FinalizeObject(slicer2, (ChSystemParallel *) system_gpu);
 	spinner = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(spinner, 100000, Vector(0, container_size.y / 2.0 + .6 + .4, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, 1, 4), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	FinalizeObject(spinner, (ChSystemGPU *) system_gpu);
+	FinalizeObject(spinner, (ChSystemParallel *) system_gpu);
 
-	layer_gen = new ParticleGenerator((ChSystemGPU *) system_gpu);
+	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
 	layer_gen->SetMass(1);
 	layer_gen->SetRadius(R3(particle_radius));
 
 	layer_gen->material->SetFriction(.5);
 	layer_gen->material->SetCohesion(.1);
-	layer_gen->material->SetSpinningFriction(.5);
-	layer_gen->material->SetRollingFriction(.5);
+	layer_gen->material->SetSpinningFriction(0);
+	layer_gen->material->SetRollingFriction(0);
 	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+
+	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material_fiber->SetFriction(.4);
+	material_fiber->SetRollingFriction(1);
+	material_fiber->SetSpinningFriction(1);
+	material_fiber->SetCompliance(0);
+	material_fiber->SetCohesion(0);
+
 //=========================================================================================================
 //Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();
@@ -220,10 +284,10 @@ int main(int argc, char* argv[]) {
 		double NARR = system_gpu->GetTimerCollisionNarrow();
 		double LCP = system_gpu->GetTimerLcp();
 		double UPDT = system_gpu->GetTimerUpdate();
-		double RESID = ((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
+		double RESID = ((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->GetResidual();
 		int BODS = system_gpu->GetNbodies();
 		int CNTC = system_gpu->GetNcontacts();
-		int REQ_ITS = ((ChLcpSolverGPU*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
+		int REQ_ITS = ((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 

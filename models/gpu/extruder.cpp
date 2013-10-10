@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .0005;
 real seconds_to_simulate = 30;
 
-int max_iter = 15;
+int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -104,7 +104,7 @@ void RunTimeStep(T* mSys, const int frame) {
 			//layer_gen->addPerturbedVolume(R3(0, 0, -2), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemParallel*) mSys);
 		}
-			if (frame % 150 == 0 && frame * timestep > 3 && frame * timestep < 4) {
+			if (frame % 150 == 0 && frame * timestep > 3 && frame * timestep < 5) {
 
 			for (int i = 0; i < 10; i++) {
 				CreateFiber(mSys, Vector(0, 3, i / 8.0));
@@ -157,13 +157,14 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(.1);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(15);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(R3(50, 50, 50));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
+	((ChSystemParallel*) system_gpu)->SetAABB(R3(-6,-6,-6), R3(6,6,6));
 //=========================================================================================================
 //cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 //addPerturbedLayer(R3(0, -5 +container_thickness-particle_radius.y, 0), ELLIPSOID, particle_radius, num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
@@ -266,14 +267,14 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .5;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .5;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

@@ -22,7 +22,7 @@ real container_thickness = .25;
 real container_height = 6.0;
 real wscale = 1;
 
-int max_iter = 20;
+int max_iter = 150;
 real tolerance = 0;
 
 real gravity = -9.810;

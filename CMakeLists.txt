@@ -74,8 +74,8 @@ IF (ENABLE_UNIT_GPU)
     #ADD_EXECUTABLE(character_walk models/gpu/character_walk.cpp)		
     #TARGET_LINK_LIBRARIES(character_walk	${CHRONO_LIB} ${GPU_LIBS})
 
-    #ADD_EXECUTABLE(trough models/gpu/trough.cpp)		
-    #TARGET_LINK_LIBRARIES(trough	${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(trough models/gpu/trough.cpp)		
+    TARGET_LINK_LIBRARIES(trough	${CHRONO_LIB} ${GPU_LIBS})
 
     #ADD_EXECUTABLE(density models/gpu/density.cpp)		
     #TARGET_LINK_LIBRARIES(density	${CHRONO_LIB} ${GPU_LIBS})
@@ -89,8 +89,8 @@ IF (ENABLE_UNIT_GPU)
     #ADD_EXECUTABLE(sticky models/gpu/sticky.cpp)		
     #TARGET_LINK_LIBRARIES(sticky	${CHRONO_LIB} ${GPU_LIBS})
 
-    #ADD_EXECUTABLE(foam models/gpu/foam.cpp)		
-    #TARGET_LINK_LIBRARIES(foam	${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(foam models/gpu/foam.cpp)		
+    TARGET_LINK_LIBRARIES(foam	${CHRONO_LIB} ${GPU_LIBS})
     
     ADD_EXECUTABLE(extruder models/gpu/extruder.cpp)		
     TARGET_LINK_LIBRARIES(extruder	${CHRONO_LIB} ${GPU_LIBS})
@@ -107,14 +107,16 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(fibers models/gpu/fibers.cpp)      
     TARGET_LINK_LIBRARIES(fibers   ${CHRONO_LIB} ${GPU_LIBS})
 
-    #ADD_EXECUTABLE(cones models/gpu/cones)      
-    #TARGET_LINK_LIBRARIES(cones   ${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(cones models/gpu/cones)      
+    TARGET_LINK_LIBRARIES(cones   ${CHRONO_LIB} ${GPU_LIBS})
     
     #ADD_EXECUTABLE(walker models/generic/demo_walker_nonIrr.cpp)		
     #TARGET_LINK_LIBRARIES(walker	${CHRONO_LIB} ${GPU_LIBS})
 
     #ADD_EXECUTABLE(cylinder_drop models/gpu/cylinder_drop.cpp)		
     #TARGET_LINK_LIBRARIES(cylinder_drop	${CHRONO_LIB} ${GPU_LIBS})
+     ADD_EXECUTABLE(adams_comparison models/gpu/adams_comparison.cpp)		
+    TARGET_LINK_LIBRARIES(adams_comparison	${CHRONO_LIB} ${GPU_LIBS})
 ENDIF(ENABLE_UNIT_GPU)
 
 IF (ENABLE_UNIT_MPI)

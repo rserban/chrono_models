@@ -2,7 +2,7 @@
 #include <random>
 
 enum MixType {
-	MIX_SPHERE, MIX_ELLIPSOID, MIX_DOUBLESPHERE, MIX_CUBE, MIX_CYLINDER, MIX_CONE
+	MIX_SPHERE, MIX_ELLIPSOID, MIX_DOUBLESPHERE, MIX_CUBE, MIX_CYLINDER, MIX_CONE,MIX_TYPE1,MIX_TYPE2,MIX_TYPE3,MIX_TYPE4
 };
 class VoronoiSampler {
 	public:
@@ -178,6 +178,14 @@ class ParticleGenerator {
 					mass = density * 4.0 / 3.0 * PI * r.x * r.x * r.x * 2;
 				} else if (type == MIX_ELLIPSOID) {
 					mass = density * 4.0 / 3.0 * PI * r.x * r.y * r.z;
+				}else if (type == MIX_TYPE1) {
+					mass = density * 4.0 / 3.0 * PI * r.x * r.x * r.x * 2;
+				}else if (type == MIX_TYPE2) {
+					mass = density * 4.0 / 3.0 * PI * r.x * r.y * r.z;
+				}else if (type == MIX_TYPE3) {
+					mass = density * 4.0 / 3.0 * PI * r.x * r.x * r.x;
+				}else if (type == MIX_TYPE4) {
+					mass = density * 4.0 / 3.0 * PI * r.x*2 * r.y * r.z;
 				} else {
 					mass = 1;
 				}
@@ -186,16 +194,16 @@ class ParticleGenerator {
 		void computeRadius(real3 & r) {
 
 			if (use_normal_dist) {
-				r.x = fmaxf(fminf(distribution->operator()(generator), radius.x + 3 * std_dev), mean - 3 * std_dev);
-				r.y = fmaxf(fminf(distribution->operator()(generator), radius.y + 3 * std_dev), mean - 3 * std_dev);
-				r.z = fmaxf(fminf(distribution->operator()(generator), radius.z + 3 * std_dev), mean - 3 * std_dev);
+				r.x = fmaxf(fminf(distribution->operator()(generator), radius.x + 1 * std_dev), mean - 1 * std_dev);
+				r.y = fmaxf(fminf(distribution->operator()(generator), radius.y + 1 * std_dev), mean - 1 * std_dev);
+				r.z = fmaxf(fminf(distribution->operator()(generator), radius.z + 1 * std_dev), mean - 1 * std_dev);
 			} else {
 				r = radius;
 			}
 		}
 
 		void computePerturbedPos(real3 percent_perturbation, int3 num_per_dir, int3 index, real3 origin, real3 & pos) {
-			real3 r = radius + R3(3 * std_dev) * use_normal_dist;
+			real3 r = radius + R3(1 * std_dev) * use_normal_dist;
 
 			real3 a = r * percent_perturbation;
 			real3 d = a + 2 * r;     //compute cell length
@@ -271,6 +279,19 @@ class ParticleGenerator {
 							AddCollisionGeometry(body, CYLINDER, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 						}else if (mixture[mix_type] == MIX_CONE) {
 							AddCollisionGeometry(body, CONE, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+						}else if (mixture[mix_type] == MIX_TYPE1) {
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x*1.25, r.y*1.25, r.z*1.25), Vector(-r.x / 2.0, 0, 0), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(r.x / 2.0, 0, 0), Quaternion(1, 0, 0, 0));
+						}else if (mixture[mix_type] == MIX_TYPE2) {
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x*1.25, r.y, r.z), Vector(-r.x / 2.0, 0, 0), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, ELLIPSOID, ChVector<>(r.x*1.25, r.y, r.z), Vector(r.x / 2.0, 0, 0), Quaternion(1, 0, 0, 0));
+						}else if (mixture[mix_type] == MIX_TYPE3) {
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, CONE, ChVector<>(r.x*.75, r.y*.75, r.z*.75), Vector(0, r.x, 0), Quaternion(1, 0, 0, 0));
+						}else if (mixture[mix_type] == MIX_TYPE4) {
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(-r.x/ 2.0, 0, 0), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(r.x/ 2.0, 0, 0), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, ELLIPSOID, ChVector<>(r.x*2, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 						}
 						mix_type++;
 						if (mix_type > mixture.size()) {

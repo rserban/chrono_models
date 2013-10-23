@@ -115,12 +115,12 @@ void RunTimeStep(T* mSys, const int frame) {
 	}
 	Vector pos = chassis->GetPos();
 
-	//((ChSystemParallel*) mSys)->SetAABB(R3(pos.x - 2, pos.y - 3, pos.z - 2), R3(pos.x + 2, pos.y + 3, pos.z + 2));
+	((ChSystemParallel*) mSys)->SetAABB(R3(pos.x - 2, pos.y - 3, pos.z - 2), R3(pos.x + 2, pos.y + 3, pos.z + 2));
 
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(7);
+	omp_set_num_threads(8);
 
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .02);
-	mcollisionengine->setBinsPerAxis(R3(175, 100, 400));
+	mcollisionengine->setBinsPerAxis(R3(100, 50, 200));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);

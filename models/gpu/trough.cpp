@@ -329,8 +329,8 @@ int main(int argc, char* argv[]) {
 	layer_gen.material->SetSpinningFriction(0);
 		layer_gen.AddMixtureType(MIX_TYPE1);
 			layer_gen.AddMixtureType(MIX_TYPE2);
-			//layer_gen.AddMixtureType(MIX_TYPE3);
-			layer_gen.AddMixtureType(MIX_TYPE4);
+			layer_gen.AddMixtureType(MIX_TYPE3);
+			//layer_gen.AddMixtureType(MIX_TYPE4);
 			layer_gen.AddMixtureType(MIX_SPHERE);
 			layer_gen.AddMixtureType(MIX_ELLIPSOID);
 			layer_gen.AddMixtureType(MIX_DOUBLESPHERE);

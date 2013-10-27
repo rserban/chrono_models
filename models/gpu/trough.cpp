@@ -120,8 +120,9 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
-
+	if(argc==2){
+	omp_set_num_threads(atoi(argv[1]));
+	}
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
 	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();

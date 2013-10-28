@@ -203,7 +203,7 @@ class ParticleGenerator {
 		}
 
 		void computePerturbedPos(real3 percent_perturbation, int3 num_per_dir, int3 index, real3 origin, real3 & pos) {
-			real3 r = radius + R3(2 * std_dev,2 * std_dev,2 * std_dev) * use_normal_dist;
+			real3 r = radius +radius/2.0+ R3(std_dev) * use_normal_dist;
 
 			real3 a = r * percent_perturbation;
 			real3 d = a + 2 * r;     //compute cell length
@@ -258,6 +258,8 @@ class ParticleGenerator {
 				for (int j = 0; j < num_per_dir.y; j++) {
 					for (int k = 0; k < num_per_dir.z; k++) {
 						real3 r = R3(0), pos = R3(0);
+						mix_type = rand()%mixture.size();
+
 						computePerturbedPos(percent_perturbation, num_per_dir, I3(i, j, k), origin, pos);
 						computeRadius(r);
 						computeMassMixture(mixture[mix_type], r);
@@ -293,10 +295,10 @@ class ParticleGenerator {
 							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(r.x/ 2.0, 0, 0), Quaternion(1, 0, 0, 0));
 							AddCollisionGeometry(body, ELLIPSOID, ChVector<>(r.x*2, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 						}
-						mix_type++;
-						if (mix_type > mixture.size()) {
-							mix_type = 0;
-						}
+						//mix_type++;
+//						if (mix_type > mixture.size()) {
+//							mix_type = 0;
+//						}
 
 						FinalizeObject(body, (ChSystemParallel *) mSys);
 						body->SetPos_dt(Vector(vel.x, vel.y, vel.z));

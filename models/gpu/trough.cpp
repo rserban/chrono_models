@@ -115,7 +115,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	}
 	Vector pos = chassis->GetPos();
 
-	((ChSystemParallel*) mSys)->SetAABB(R3(pos.x - 2, pos.y - 3, pos.z - 2), R3(pos.x + 2, pos.y + 3, pos.z + 2));
+	//((ChSystemParallel*) mSys)->SetAABB(R3(pos.x - 2, pos.y - 3, pos.z - 2), R3(pos.x + 2, pos.y + 3, pos.z + 2));
 
 }
 
@@ -314,9 +314,9 @@ int main(int argc, char* argv[]) {
 	 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
 
 	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
-	//num_per_dir = I3(66, 16, 215);
-	//num_per_dir = I3(50, 32, 140);
-	num_per_dir = I3(100, 24, 290);
+	//num_per_dir = I3(66, 16, 218);
+	//num_per_dir = I3(78, 16, 1);
+	num_per_dir = I3(78, 16, 218);
 	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
 
@@ -335,7 +335,7 @@ int main(int argc, char* argv[]) {
 			layer_gen.AddMixtureType(MIX_SPHERE);
 			layer_gen.AddMixtureType(MIX_ELLIPSOID);
 			layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
-	layer_gen.addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
+	layer_gen.addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y-.05, 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 	//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y-.04 , 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);

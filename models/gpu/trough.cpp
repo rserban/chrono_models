@@ -16,7 +16,7 @@ real container_thickness = .04;
 real container_height = -1.1;
 Vector container_pos = Vector(0, container_height, 2.8);
 real container_friction = 1;
-
+int3 num_per_dir;
 real particle_radius = .01;
 real particle_mass = .05;
 real particle_density = .5;
@@ -48,7 +48,7 @@ ChSharedBodyPtr leg_FL;
 ChSharedBodyPtr leg_RR;
 ChSharedBodyPtr leg_RL;
 int read_file = 0;
-
+ParticleGenerator *layer_gen;
 ChSharedPtr<ChLinkEngine> eng_F, eng_R;
 
 void createWheel(ChSharedBodyPtr &body) {
@@ -105,7 +105,25 @@ void RunTimeStep(T* mSys, const int frame) {
 
 	printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-	if (frame > 500) {
+	if(frame*timestep==0||frame*timestep==.5){
+
+		layer_gen->addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y+.4, 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
+
+	}
+
+
+	if (frame*timestep > 1) {
+
+		chassis->SetBodyFixed(false);
+		axle_F->SetBodyFixed(false);
+		axle_R->SetBodyFixed(false);
+		leg_FR->SetBodyFixed(false);
+		leg_FL->SetBodyFixed(false);
+		leg_RR->SetBodyFixed(false);
+		leg_RL->SetBodyFixed(false);
+
+	}
+	if (frame*timestep > 1.5) {
 		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct())) {
 			mfun->Set_yconst(1);     // rad/s  angular speed
 		}
@@ -210,7 +228,7 @@ int main(int argc, char* argv[]) {
 	real3 size = container_size;
 	size.y = container_size.y / 3.0;
 
-	int3 num_per_dir;
+
 
 	real density = 1250;
 	real v = 4 / 3.0 * CH_C_PI * pow(particle_radius, 3);
@@ -240,13 +258,13 @@ int main(int argc, char* argv[]) {
 	material_wheel->SetCompliance(0);
 	material_wheel->SetCohesion(-2000);
 
-	InitObject(chassis, 2200 / 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, -2, -20);
-	InitObject(axle_F, 150 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, false, -2, -2);
-	InitObject(axle_R, 150 / 1.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, false, -2, -2);
-	InitObject(leg_FR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety - .1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
-	InitObject(leg_FL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety - .1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
-	InitObject(leg_RR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety - .1, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
-	InitObject(leg_RL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety - .1, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, false, -2, 0);
+	InitObject(chassis, 2200 / 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), material_chassis, true, true, -2, -20);
+	InitObject(axle_F, 150 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, true, -2, -2);
+	InitObject(axle_R, 150 / 1.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, true, -2, -2);
+	InitObject(leg_FR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety - .1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, true, -2, 0);
+	InitObject(leg_FL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety - .1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, true, -2, 0);
+	InitObject(leg_RR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety - .1, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, true, -2, 0);
+	InitObject(leg_RL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety - .1, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, true, true, -2, 0);
 
 	AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .2, 1.6), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometryTriangleMesh(chassis, "humvee.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -307,6 +325,9 @@ int main(int argc, char* argv[]) {
 
 	system_gpu->AddLink(eng_R);
 
+
+
+
 	 rad = R3(particle_radius, particle_radius, particle_radius);
 	 size = container_size - R3(container_thickness * 2);
 	size.y = container_size.y / 3.0;
@@ -314,28 +335,28 @@ int main(int argc, char* argv[]) {
 	 num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
 
 	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
-	//num_per_dir = I3(66, 16, 218);
-	//num_per_dir = I3(78, 16, 1);
-	num_per_dir = I3(78, 16, 218);
+	//num_per_dir = I3(78, 16, 218);
+	num_per_dir = I3(78, 20, 218);
+	//num_per_dir = I3(100, 24, 290);
 	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
 
-	ParticleGenerator layer_gen(system_gpu);
-	layer_gen.SetDensity(1500);
-	layer_gen.SetRadius(R3(particle_radius));
-	layer_gen.SetNormalDistribution(particle_radius, .005);
-	layer_gen.material->SetFriction(1);
-	layer_gen.material->SetCohesion(100);
-	layer_gen.material->SetRollingFriction(0);
-	layer_gen.material->SetSpinningFriction(0);
-		layer_gen.AddMixtureType(MIX_TYPE1);
-			layer_gen.AddMixtureType(MIX_TYPE2);
+	layer_gen = new ParticleGenerator(system_gpu);
+	layer_gen->SetDensity(1500);
+	layer_gen->SetRadius(R3(particle_radius));
+	layer_gen->SetNormalDistribution(particle_radius, .005);
+	layer_gen->material->SetFriction(1);
+	layer_gen->material->SetCohesion(100);
+	layer_gen->material->SetRollingFriction(0);
+	layer_gen->material->SetSpinningFriction(0);
+		layer_gen->AddMixtureType(MIX_TYPE1);
+			layer_gen->AddMixtureType(MIX_TYPE2);
 			//layer_gen.AddMixtureType(MIX_TYPE3);
 			//layer_gen.AddMixtureType(MIX_TYPE4);
-			layer_gen.AddMixtureType(MIX_SPHERE);
-			layer_gen.AddMixtureType(MIX_ELLIPSOID);
-			layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
-	layer_gen.addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y-.05, 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
+			layer_gen->AddMixtureType(MIX_SPHERE);
+			layer_gen->AddMixtureType(MIX_ELLIPSOID);
+			layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
+
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 	//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y-.04 , 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);

@@ -347,8 +347,8 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetNormalDistribution(particle_radius, .005);
 	layer_gen->material->SetFriction(1);
 	layer_gen->material->SetCohesion(100);
-	layer_gen->material->SetRollingFriction(0);
-	layer_gen->material->SetSpinningFriction(0);
+	layer_gen->material->SetRollingFriction(.1);
+	layer_gen->material->SetSpinningFriction(.1);
 		layer_gen->AddMixtureType(MIX_TYPE1);
 			layer_gen->AddMixtureType(MIX_TYPE2);
 			//layer_gen.AddMixtureType(MIX_TYPE3);

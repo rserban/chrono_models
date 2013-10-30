@@ -241,7 +241,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "Density " << density << " mass " << mass << " volume " << v << endl;
 
-	real offsety = -.2;
+	real offsety = -.4;
 
 	chassis = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -263,7 +263,7 @@ int main(int argc, char* argv[]) {
 	material_wheel->SetCompliance(0);
 	material_wheel->SetCohesion(-2000);
 
-	InitObject(chassis, 2200 / 1.0, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0), material_chassis, false, true, -2, -20);
+	InitObject(chassis, 2200 / 1.0, ChVector<>(0, offsety+.2, 0), Quaternion(1, 0, 0, 0), material_chassis, false, true, -2, -20);
 	InitObject(axle_F, 150 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, true, -2, -2);
 	InitObject(axle_R, 150 / 1.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, true, -2, -2);
 	InitObject(leg_FR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety - .1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, false, true, -2, 0);
@@ -336,7 +336,7 @@ int main(int argc, char* argv[]) {
 
 	// num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
 
-	//num_per_dir = I3(100, 20, 1);
+	//num_per_dir = I3(1, 24, 290);
 	//num_per_dir = I3(78, 16, 218);
 	//num_per_dir = I3(78, 20, 218);
 	num_per_dir = I3(100, 24, 290);

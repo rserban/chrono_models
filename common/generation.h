@@ -203,7 +203,7 @@ class ParticleGenerator {
 		}
 
 		void computePerturbedPos(real3 percent_perturbation, int3 num_per_dir, int3 index, real3 origin, real3 & pos) {
-			real3 r = radius +radius/2.0+ R3(std_dev) * use_normal_dist;
+			real3 r = radius +radius/4.0+ R3(std_dev) * use_normal_dist;
 
 			real3 a = r * percent_perturbation;
 			real3 d = a + 2 * r;     //compute cell length

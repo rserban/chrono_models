@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .001;
 real seconds_to_simulate = 15;
 
 int max_iter = 15 * 3;
@@ -17,7 +17,7 @@ real container_height = -1.1;
 Vector container_pos = Vector(0, container_height, 2.8);
 real container_friction = 1;
 int3 num_per_dir;
-real particle_radius = .01;
+real particle_radius = .02;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(tolerance);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(8);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
@@ -241,7 +241,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "Density " << density << " mass " << mass << " volume " << v << endl;
 
-	real offsety = -.4;
+	real offsety = -.6;
 
 	chassis = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	axle_F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -255,7 +255,7 @@ int main(int argc, char* argv[]) {
 	material_chassis = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_chassis->SetFriction(0);
 	material_chassis->SetCompliance(0);
-	material_chassis->SetCohesion(-100);
+	material_chassis->SetCohesion(-2000);
 
 	ChSharedPtr<ChMaterialSurface> material_wheel;
 	material_wheel = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
@@ -336,10 +336,10 @@ int main(int argc, char* argv[]) {
 
 	// num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
 
-	//num_per_dir = I3(1, 24, 290);
+	//num_per_dir = I3(62, 16, 1);
 	//num_per_dir = I3(78, 16, 218);
-	//num_per_dir = I3(78, 20, 218);
-	num_per_dir = I3(100, 24, 290);
+	num_per_dir = I3(62, 16, 176);
+	//num_per_dir = I3(100, 24, 290);
 	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
 
@@ -347,10 +347,10 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetDensity(1500);
 	layer_gen->SetRadius(R3(particle_radius));
 	//layer_gen->SetNormalDistribution(particle_radius, .005);
-	layer_gen->material->SetFriction(1);
-	layer_gen->material->SetCohesion(100);
-	layer_gen->material->SetRollingFriction(.1);
-	layer_gen->material->SetSpinningFriction(.1);
+	layer_gen->material->SetFriction(.5);
+	layer_gen->material->SetCohesion(25);
+	layer_gen->material->SetRollingFriction(0);
+	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->AddMixtureType(MIX_TYPE1);
 	layer_gen->AddMixtureType(MIX_TYPE2);
 	layer_gen->AddMixtureType(MIX_TYPE3);

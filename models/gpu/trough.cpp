@@ -48,6 +48,9 @@ ChSharedBodyPtr leg_FL;
 ChSharedBodyPtr leg_RR;
 ChSharedBodyPtr leg_RL;
 int read_file = 0;
+
+string data_folder = "data/trough";
+
 ParticleGenerator *layer_gen;
 ChSharedPtr<ChLinkEngine> eng_F, eng_R;
 
@@ -147,7 +150,13 @@ void RunTimeStep(T* mSys, const int frame) {
 int main(int argc, char* argv[]) {
 	if (argc == 2) {
 		omp_set_num_threads(atoi(argv[1]));
+
 	}
+
+	if (argc == 3) {
+			omp_set_num_threads(atoi(argv[1]));
+			data_folder = argv[2];
+		}
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
 	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
@@ -397,7 +406,7 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/trough/" << "/" << file << ".txt";
+			ss << data_folder << "/" << file << ".txt";
 			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
 			//output.ExportData(ss.str());
 			file++;

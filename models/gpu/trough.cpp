@@ -186,17 +186,18 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr Bottom = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedBodyPtr Top = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
-	ChSharedPtr<ChMaterialSurface> material;
-	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material->SetFriction(container_friction);
-	material->SetCompliance(0);
+	ChSharedPtr<ChMaterialSurface> material_wall;
+	material_wall = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material_wall->SetFriction(container_friction);
+	material_wall->SetCompliance(0);
+	material_wall->SetCohesion(-2000);
 
-	InitObject(L, 100000, Vector(-container_size.x + container_thickness, -container_thickness, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(L, 100000, Vector(-container_size.x + container_thickness, -container_thickness, 0) + container_pos, Quaternion(1, 0, 0, 0), material_wall, true, true, -20, -20);
 
-	InitObject(R, 100000, Vector(container_size.x - container_thickness, -container_thickness, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(F, 100000, Vector(0, -container_thickness, -container_size.z + container_thickness) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(B, 100000, Vector(0, -container_thickness, container_size.z - container_thickness) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	InitObject(Bottom, 100000, Vector(0, container_height + container_size.y / 1.75, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(R, 100000, Vector(container_size.x - container_thickness, -container_thickness, 0) + container_pos, Quaternion(1, 0, 0, 0), material_wall, true, true, -20, -20);
+	InitObject(F, 100000, Vector(0, -container_thickness, -container_size.z + container_thickness) + container_pos, Quaternion(1, 0, 0, 0), material_wall, true, true, -20, -20);
+	InitObject(B, 100000, Vector(0, -container_thickness, container_size.z - container_thickness) + container_pos, Quaternion(1, 0, 0, 0), material_wall, true, true, -20, -20);
+
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(F, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -204,6 +205,13 @@ int main(int argc, char* argv[]) {
 	//AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//AddCollisionGeometryTriangleMesh(Bottom, "ground.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
+
+	ChSharedPtr<ChMaterialSurface> material;
+		material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+		material->SetFriction(container_friction);
+		material->SetCompliance(0);
+
+		InitObject(Bottom, 100000, Vector(0, container_height + container_size.y / 1.75, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	//ChSharedPtr<ChAsset> asset = Bottom->GetAssets().at(0);
 	ChTriangleMeshConnected trimesh;
 	trimesh.LoadWavefrontMesh("ground.obj", false, false);
@@ -272,7 +280,7 @@ int main(int argc, char* argv[]) {
 	InitObject(leg_RL, 60 / 1.0, ChVector<>(-(axleL + legW) / 2.0, offsety - .1, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, false, true, -2, 0);
 
 	AddCollisionGeometry(chassis, BOX, ChVector<>(.5, .2, 1.6), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometryTriangleMesh(chassis, "humvee.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	//AddCollisionGeometryTriangleMesh(chassis, "humvee.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
 	AddCollisionGeometry(axle_F, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 1.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(axle_R, ELLIPSOID, ChVector<>(0.5 / 2.0, 0.5 / 1.0, 0.5 / 2.0), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
@@ -336,7 +344,7 @@ int main(int argc, char* argv[]) {
 
 	// num_per_dir = I3(size.x / rad.x * .9, size.y / rad.y * .85, size.z / rad.z * .85);
 
-	//num_per_dir = I3(62, 16, 1);
+	//num_per_dir = I3(10, 10, 1);
 	//num_per_dir = I3(78, 16, 218);
 	num_per_dir = I3(62, 16, 176);
 	//num_per_dir = I3(100, 24, 290);

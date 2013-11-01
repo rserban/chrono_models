@@ -22,7 +22,7 @@ real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
 Vector particle_initial_vel = Vector(0, -5.5, 0);     //initial velocity
-
+real cohesion = 25;
 int particle_grid_x = 2;
 int particle_grid_z = 2;
 real start_height = 1;
@@ -38,7 +38,6 @@ double axleL(.61);
 
 real3 mass = R3(.034, .034, .034);
 real3 friction = R3(0, 0, 0);
-real3 cohesion = R3(0, 0, 0);
 
 ChSharedBodyPtr chassis;
 ChSharedBodyPtr axle_F;
@@ -153,9 +152,10 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	if (argc == 3) {
+	if (argc == 4) {
 			omp_set_num_threads(atoi(argv[1]));
-			data_folder = argv[2];
+			cohesion = atof(argv[2]);
+			data_folder = argv[3];
 		}
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
@@ -272,13 +272,13 @@ int main(int argc, char* argv[]) {
 	material_chassis = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_chassis->SetFriction(0);
 	material_chassis->SetCompliance(0);
-	material_chassis->SetCohesion(-2000);
+	material_chassis->SetCohesion(-cohesion);
 
 	ChSharedPtr<ChMaterialSurface> material_wheel;
 	material_wheel = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_wheel->SetFriction(1);
 	material_wheel->SetCompliance(0);
-	material_wheel->SetCohesion(-2000);
+	material_wheel->SetCohesion(-cohesion);
 
 	InitObject(chassis, 2200 / 1.0, ChVector<>(0, offsety+.2, 0), Quaternion(1, 0, 0, 0), material_chassis, false, true, -2, -20);
 	InitObject(axle_F, 150 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, true, -2, -2);
@@ -365,7 +365,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetRadius(R3(particle_radius));
 	//layer_gen->SetNormalDistribution(particle_radius, .005);
 	layer_gen->material->SetFriction(.5);
-	layer_gen->material->SetCohesion(25);
+	layer_gen->material->SetCohesion(cohesion);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->AddMixtureType(MIX_TYPE1);

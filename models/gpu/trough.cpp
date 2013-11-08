@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .001;
+real timestep = .0002;
 real seconds_to_simulate = 15;
 
 int max_iter = 15 * 3;

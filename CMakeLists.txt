@@ -109,6 +109,9 @@ IF (ENABLE_UNIT_GPU)
 
     ADD_EXECUTABLE(cones models/gpu/cones)      
     TARGET_LINK_LIBRARIES(cones   ${CHRONO_LIB} ${GPU_LIBS})
+
+    ADD_EXECUTABLE(pipe models/gpu/pipe)      
+    TARGET_LINK_LIBRARIES(pipe   ${CHRONO_LIB} ${GPU_LIBS})
     
     #ADD_EXECUTABLE(walker models/generic/demo_walker_nonIrr.cpp)		
     #TARGET_LINK_LIBRARIES(walker	${CHRONO_LIB} ${GPU_LIBS})

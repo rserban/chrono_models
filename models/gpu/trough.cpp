@@ -153,10 +153,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (argc == 4) {
-			omp_set_num_threads(atoi(argv[1]));
-			cohesion = atof(argv[2]);
-			data_folder = argv[3];
-		}
+		omp_set_num_threads(atoi(argv[1]));
+		cohesion = atof(argv[2]);
+		data_folder = argv[3];
+	}
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
 	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
@@ -214,13 +214,12 @@ int main(int argc, char* argv[]) {
 	//AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//AddCollisionGeometryTriangleMesh(Bottom, "ground.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-
 	ChSharedPtr<ChMaterialSurface> material;
-		material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-		material->SetFriction(container_friction);
-		material->SetCompliance(0);
+	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material->SetFriction(container_friction);
+	material->SetCompliance(0);
 
-		InitObject(Bottom, 100000, Vector(0, container_height + container_size.y / 1.75, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(Bottom, 100000, Vector(0, container_height + container_size.y / 1.75, 0) + container_pos, Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	//ChSharedPtr<ChAsset> asset = Bottom->GetAssets().at(0);
 	ChTriangleMeshConnected trimesh;
 	trimesh.LoadWavefrontMesh("ground.obj", false, false);
@@ -280,7 +279,7 @@ int main(int argc, char* argv[]) {
 	material_wheel->SetCompliance(0);
 	material_wheel->SetCohesion(-cohesion);
 
-	InitObject(chassis, 2200 / 1.0, ChVector<>(0, offsety+.2, 0), Quaternion(1, 0, 0, 0), material_chassis, false, true, -2, -20);
+	InitObject(chassis, 2200 / 1.0, ChVector<>(0, offsety + .2, 0), Quaternion(1, 0, 0, 0), material_chassis, false, true, -2, -20);
 	InitObject(axle_F, 150 / 1.0, ChVector<>(0, offsety, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, true, -2, -2);
 	InitObject(axle_R, 150 / 1.0, ChVector<>(0, offsety, -chassisL / 2.0), Q_from_AngZ(CH_C_PI / 2.0), material_chassis, false, true, -2, -2);
 	InitObject(leg_FR, 60 / 1.0, ChVector<>((axleL + legW) / 2.0, offsety - .1, chassisL / 2.0 + .2), Q_from_AngZ(CH_C_PI / 2.0), material_wheel, false, true, -2, 0);
@@ -376,7 +375,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y , 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
+	layer_gen->addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
 	//layer_gen->addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 	//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y-.04 , 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);

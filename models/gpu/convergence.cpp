@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
-	mcollisionengine->setBinsPerAxis(R3(30, 30, 30));
+	mcollisionengine->setBinsPerAxis(I3(30, 30, 30));
 	mcollisionengine->setBodyPerBin(100, 50);
 	//=========================================================================================================
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));

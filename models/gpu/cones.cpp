@@ -28,40 +28,40 @@ void RunTimeStep(T* mSys, const int frame) {
 	material->SetCohesion(0);
 	material->SetCompliance(0);
 
-//	if (mSys->GetNbodies() < 1000) {
-//		ChSharedBodyPtr sphere;
-//		real3 rad = R3(particle_radius * 2, particle_radius * 3, particle_radius * 2);
-//		real3 size = container_size;
-//		size.y = container_size.y / 3.0;
-//
-//		int3 num_per_dir = I3(4, 1, 4);
-//		real mu = 1;
-//		real mass = 1;
-//		real3 vel = R3(0, -5, 0);
-//		if (frame % 80 == 0) {
-//			ParticleGenerator layer_gen(((ChSystemParallel*) mSys));
-//			layer_gen.SetDensity(1000);
-//			layer_gen.SetRadius(R3(particle_radius));
-//			layer_gen.SetNormalDistribution(particle_radius, particle_radius*.1);
-//			layer_gen.material->SetFriction(1);
-//			layer_gen.material->SetRollingFriction(1);
-//			layer_gen.material->SetSpinningFriction(1);
-//			layer_gen.material->SetCohesion(0);
-//			layer_gen.AddMixtureType(MIX_SPHERE);
-//			layer_gen.AddMixtureType(MIX_ELLIPSOID);
-//			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
-//
-//			layer_gen.addPerturbedVolumeMixture(
-//					R3(0, 0, 0),
-//					I3(4, 1, 4),
-//					R3(.1, .1, .1),
-//					R3(0,-5,0));
-//
-////addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
-////addPerturbedLayer(R3(5, 0, 0), CONE, rad, num_per_dir, R3(0, 0, 0), 1, 1, 0, R3(-5, 0, 0), (ChSystemParallel*) mSys, 0);
-////addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemParallel*) mSys);
-//		}
-//	}
+	if (mSys->GetNbodies() < 1000) {
+		ChSharedBodyPtr sphere;
+		real3 rad = R3(particle_radius * 2, particle_radius * 3, particle_radius * 2);
+		real3 size = container_size;
+		size.y = container_size.y / 3.0;
+
+		int3 num_per_dir = I3(4, 1, 4);
+		real mu = 1;
+		real mass = 1;
+		real3 vel = R3(0, -5, 0);
+		if (frame % 80 == 0) {
+			ParticleGenerator layer_gen(((ChSystemParallel*) mSys));
+			layer_gen.SetDensity(1000);
+			layer_gen.SetRadius(R3(particle_radius));
+			layer_gen.SetNormalDistribution(particle_radius, particle_radius*.1);
+			layer_gen.material->SetFriction(1);
+			layer_gen.material->SetRollingFriction(1);
+			layer_gen.material->SetSpinningFriction(1);
+			layer_gen.material->SetCohesion(0);
+			layer_gen.AddMixtureType(MIX_SPHERE);
+			layer_gen.AddMixtureType(MIX_ELLIPSOID);
+			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
+
+			layer_gen.addPerturbedVolumeMixture(
+					R3(0, 0, 0),
+					I3(4, 1, 4),
+					R3(.1, .1, .1),
+					R3(0,-5,0));
+
+//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
+//addPerturbedLayer(R3(5, 0, 0), CONE, rad, num_per_dir, R3(0, 0, 0), 1, 1, 0, R3(-5, 0, 0), (ChSystemParallel*) mSys, 0);
+//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemParallel*) mSys);
+		}
+	}
 
 }
 
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(R3(30, 30, 30));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(30, 30, 30));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -146,16 +146,16 @@ int main(int argc, char* argv[]) {
 	material2->SetCompliance(0);
 
 //
-	 ChSharedBodyPtr body;
-	 body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	 Quaternion q(1,0,0,0);
-	// q.Q_from_AngX(PI);
-	 InitObject(body, 1, Vector(0, 1, 0), q, material2, true, false, -1, 1);
-
-	 AddCollisionGeometry(body, SPHERE, ChVector<>(1,1,1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	 body->SetWvel_loc(Vector(0,20,0));
-	 //body->SetPos_dt(Vector(5,0,0));
-	 FinalizeObject(body, (ChSystemParallel *) system_gpu);
+//	 ChSharedBodyPtr body;
+//	 body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+//	 Quaternion q(1,0,0,0);
+//	// q.Q_from_AngX(PI);
+//	 InitObject(body, 1, Vector(0, 1, 0), q, material2, true, false, -1, 1);
+//
+//	 AddCollisionGeometry(body, SPHERE, ChVector<>(1,2,1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+//	 body->SetWvel_loc(Vector(0,20,0));
+//	 //body->SetPos_dt(Vector(5,0,0));
+//	 FinalizeObject(body, (ChSystemParallel *) system_gpu);
 
 //=========================================================================================================
 //Rendering specific stuff:

@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .02);
-	mcollisionengine->setBinsPerAxis(R3(100, 50, 200));
+	mcollisionengine->setBinsPerAxis(I3(100, 50, 200));
 	mcollisionengine->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -375,7 +375,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
+	//layer_gen->addPerturbedVolumeMixture(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), num_per_dir, R3(.1, .1, .1), R3(0));
 	//layer_gen->addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
 	//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
 	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y-.04 , 0 + container_pos.z), SPHERE, num_per_dir, R3(.1, .1, .1), R3(0, 0, 0), false);
@@ -388,14 +388,14 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .1;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .1;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

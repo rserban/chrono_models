@@ -419,7 +419,7 @@ class ParticleGenerator {
 
 		}
 
-		void SetCylidnerRadius(real rad) {
+		void SetCylinderRadius(real rad) {
 			volume_cylinder = true;
 			cylinder_rad = rad;
 

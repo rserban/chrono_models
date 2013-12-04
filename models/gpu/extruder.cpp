@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .0005;
 real seconds_to_simulate = 30;
 
-int max_iter = 20;
+int max_iter = 30;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -87,7 +87,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		//int3 num_per_dir = I3(1, 10, 10);
 
-		if (frame % 44 == 0 && frame * timestep < 1.25) {
+		if (frame % 50 == 0 && frame * timestep < 1.5) {
 
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
 			//layer_gen.AddMixtureType(MIX_CUBE);
@@ -95,8 +95,9 @@ void RunTimeStep(T* mSys, const int frame) {
 			//layer_gen.AddMixtureType(MIX_CONE);
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
-			layer_gen->SetRadius(R3(particle_radius));
-			layer_gen->addPerturbedVolume(R3(0, 0, 0), SPHERE, I3(60, 1, 60), R3(0, 0, 0), R3(0, -5, 0));
+
+			//layer_gen->addPerturbedVolume(R3(0, 0, 0), SPHERE, I3(40, 1, 40), R3(0, 0, 0), R3(0, -5, 0));
+			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(0, 0, 0), R3(0, -5, 0));
 			//layer_gen->addPerturbedVolume(R3(-2, 0, 0), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
 			//layer_gen->SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
 			//layer_gen->addPerturbedVolume(R3(0, 0, 2), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
@@ -255,8 +256,11 @@ int main(int argc, char* argv[]) {
 	layer_gen->material->SetCohesion(.1);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
+	layer_gen->SetRadius(R3(particle_radius));
+	layer_gen->SetCylinderRadius(4.5);
+	layer_gen->SetNormalDistribution(particle_radius, .01);
 	layer_gen->AddMixtureType(MIX_SPHERE);
-	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	//layer_gen->AddMixtureType(MIX_ELLIPSOID);
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_fiber->SetFriction(.4);

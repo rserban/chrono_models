@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
 	layer_gen = new ParticleGenerator(system_gpu);
 	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(R3(particle_radius));
-	layer_gen->SetCylidnerRadius(1.5);
+	layer_gen->SetCylinderRadius(1.5);
 	//layer_gen->SetNormalDistribution(particle_radius, .005);
 	layer_gen->material->SetFriction(0);
 	layer_gen->material->SetCohesion(0);

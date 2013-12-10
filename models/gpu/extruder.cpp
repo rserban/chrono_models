@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .0005;
-real seconds_to_simulate = 30;
+real seconds_to_simulate = 15;
 
 int max_iter = 30;
 
@@ -87,7 +87,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		//int3 num_per_dir = I3(1, 10, 10);
 
-		if (frame % 50 == 0 && frame * timestep < 1.5) {
+		if (frame % 50 == 0 && frame * timestep < 2.0) {
 
 			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
 			//layer_gen.AddMixtureType(MIX_CUBE);
@@ -153,12 +153,16 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
+	//((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(15);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(20);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
 	system_gpu->SetTol(.1);
 	system_gpu->SetTolSpeeds(.1);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(15);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(30);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(I3(50, 50, 50));
@@ -245,7 +249,7 @@ int main(int argc, char* argv[]) {
 //		FinalizeObject(slicer2, (ChSystemParallel *) system_gpu);
 	spinner = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(spinner, 100000, Vector(0, container_size.y / 2.0 + .6 + .4, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
-	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, 1, 4), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, 1, 3.5), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(spinner, (ChSystemParallel *) system_gpu);
 
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);

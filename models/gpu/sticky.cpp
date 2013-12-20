@@ -3,10 +3,10 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .001;
+real timestep = .0005;
 real seconds_to_simulate = 30;
 
-int max_iter = 15;
+int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -15,7 +15,7 @@ real container_thickness = .2;
 real container_height = 0;
 real container_friction = .1;
 
-real particle_radius = .03;
+real particle_radius = .02;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 1;
@@ -60,16 +60,16 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
-	system_gpu->SetMaxiter(max_iter);
-	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
+	//system_gpu->SetMaxiter(max_iter);
+	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(1e-4);
 	system_gpu->SetTolSpeeds(1e-4);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-4);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(25);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -77,6 +77,8 @@ int main(int argc, char* argv[]) {
 	mcollisionengine->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
+
+	((ChSystemParallel*) system_gpu)->SetAABB(R3(-6, -6, -6), R3(6, 6, 6));
 //=========================================================================================================
 //cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 //addPerturbedLayer(R3(0, -5 +container_thickness-particle_radius.y, 0), ELLIPSOID, particle_radius, num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);

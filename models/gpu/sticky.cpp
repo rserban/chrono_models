@@ -45,7 +45,7 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
+	//omp_set_num_threads(8);
 
 	if (argc == 3) {
 		cohesion = atof(argv[2]);

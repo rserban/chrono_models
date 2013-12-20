@@ -220,11 +220,11 @@ class ParticleGenerator {
 
 			pos += dp + r;
 
-			if (volume_cylinder && sqrt(pos.x*pos.x+pos.z*pos.z) < cylinder_rad) {
+			if (volume_cylinder && sqrt(pos.x * pos.x + pos.z * pos.z) < cylinder_rad) {
 				pos += origin;
 				return true;
 
-			} else if(volume_cylinder && sqrt(pos.x*pos.x+pos.z*pos.z) > cylinder_rad) {
+			} else if (volume_cylinder && sqrt(pos.x * pos.x + pos.z * pos.z) > cylinder_rad) {
 				return false;
 			}
 			pos += origin;
@@ -388,6 +388,30 @@ class ParticleGenerator {
 				}
 			}
 
+		}
+
+		void loadAscii(string filename, real3 origin, ShapeType type, real3 rad, real3 vel, real3 scale) {
+			ifstream ifile(filename.c_str());
+			string temp;
+
+			while (ifile.fail() == false) {
+				getline(ifile, temp);
+				if (ifile.fail() == true) {
+					return;
+				}
+				stringstream ss;
+				ss << temp;
+				real3 pos;
+				ss >> pos.x >> pos.y >> pos.z;
+
+				body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+
+				createBody(body, pos*scale+origin, mass);
+				AddCollisionGeometry(body, type, ChVector<>(rad.x, rad.y, rad.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+				FinalizeObject(body, (ChSystemParallel *) mSys);
+				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
+			}
+			ifile.close();
 		}
 
 		void SetNormalDistribution(real _mean, real _std_dev) {

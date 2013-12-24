@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
 //	}
 
 	//layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.02, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
-	layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.01, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
+	layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.005, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
 
 //=========================================================================================================
 //Rendering specific stuff:

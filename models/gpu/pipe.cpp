@@ -9,13 +9,11 @@ real seconds_to_simulate = 15;
 int max_iter = 15 * 3;
 real tolerance = .001;
 
-
 real3 container_size = R3(1.75, 1, 4.7);
 real container_thickness = .04;
 real container_height = 0;
-Vector container_pos = Vector(0, container_height,0);
+Vector container_pos = Vector(0, container_height, 0);
 real container_friction = 0;
-
 
 int num_steps = seconds_to_simulate / timestep;
 float particle_radius = .01;
@@ -115,18 +113,18 @@ int main(int argc, char* argv[]) {
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 	int3 num_per_dir = I3(120, 140, 120);
 	//120 140 120
-	layer_gen->addPerturbedVolumeMixture(R3(0, container_height+2.5 , 0 ), num_per_dir, R3(.01, .01, .01), R3(0));
+	//layer_gen->addPerturbedVolumeMixture(R3(0, container_height+2.5 , 0 ), num_per_dir, R3(.01, .01, .01), R3(0));
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .1;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	//	openGLView.render_camera->mScale = .1;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

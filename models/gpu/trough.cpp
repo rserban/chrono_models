@@ -113,33 +113,33 @@ void RunTimeStep(T* mSys, const int frame) {
 //
 //	}
 
-	if (frame * timestep > .5) {
+//	if (frame * timestep > .5) {
+//
+	chassis->SetBodyFixed(false);
+	axle_F->SetBodyFixed(false);
+	axle_R->SetBodyFixed(false);
+	leg_FR->SetBodyFixed(false);
+	leg_FL->SetBodyFixed(false);
+	leg_RR->SetBodyFixed(false);
+	leg_RL->SetBodyFixed(false);
 
-		chassis->SetBodyFixed(false);
-		axle_F->SetBodyFixed(false);
-		axle_R->SetBodyFixed(false);
-		leg_FR->SetBodyFixed(false);
-		leg_FL->SetBodyFixed(false);
-		leg_RR->SetBodyFixed(false);
-		leg_RL->SetBodyFixed(false);
-
-		chassis->SetCollide(true);
-		axle_F->SetCollide(false);
-		axle_R->SetCollide(false);
-		leg_FR->SetCollide(true);
-		leg_FL->SetCollide(true);
-		leg_RR->SetCollide(true);
-		leg_RL->SetCollide(true);
-
-	}
-	if (frame * timestep > 1) {
-		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct())) {
-			mfun->Set_yconst(1);     // rad/s  angular speed
-		}
-		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_R->Get_spe_funct())) {
-			mfun->Set_yconst(1);     // rad/s  angular speed
-		}
-	}
+	chassis->SetCollide(true);
+	axle_F->SetCollide(false);
+	axle_R->SetCollide(false);
+	leg_FR->SetCollide(true);
+	leg_FL->SetCollide(true);
+	leg_RR->SetCollide(true);
+	leg_RL->SetCollide(true);
+//
+//	}
+//	if (frame * timestep > 1) {
+//		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_F->Get_spe_funct())) {
+//			mfun->Set_yconst(1);     // rad/s  angular speed
+//		}
+//		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_R->Get_spe_funct())) {
+//			mfun->Set_yconst(1);     // rad/s  angular speed
+//		}
+//	}
 	Vector pos = chassis->GetPos();
 
 	//((ChSystemParallel*) mSys)->SetAABB(R3(pos.x - 2, pos.y - 3, pos.z - 2), R3(pos.x + 2, pos.y + 3, pos.z + 2));
@@ -390,9 +390,9 @@ int main(int argc, char* argv[]) {
 //Rendering specific stuff:
 	ChOpenGLManager * window_manager = new ChOpenGLManager();
 	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.render_camera->mScale = .1;
+	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	//	openGLView.render_camera->mScale = .1;
 	openGLView.SetCustomCallback(RunTimeStep);
 	openGLView.StartSpinning(window_manager);
 	window_manager->CallGlutMainLoop();

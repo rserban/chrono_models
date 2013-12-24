@@ -26,7 +26,7 @@ int particle_grid_z = 2;
 real start_height = 1;
 
 ChSharedBodyPtr impactor;
-
+ParticleGenerator* layer_gen;
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
@@ -43,22 +43,8 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		if (frame % 20 == 0) {
 
-			ParticleGenerator layer_gen((ChSystemParallel *) mSys);
-			layer_gen.SetMass(1);
-			layer_gen.SetRadius(R3(particle_radius));
-
-			layer_gen.material->SetFriction(1);
-			layer_gen.material->SetCohesion(100);
-			layer_gen.material->SetRollingFriction(1);
-			layer_gen.material->SetSpinningFriction(1);
-			layer_gen.AddMixtureType(MIX_SPHERE);
-			layer_gen.AddMixtureType(MIX_ELLIPSOID);
-			layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
-			layer_gen.AddMixtureType(MIX_CUBE);
-			layer_gen.AddMixtureType(MIX_CYLINDER);
-
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
-			layer_gen.addPerturbedVolumeMixture(R3(5, 0, 0), num_per_dir, R3(1, 0, 1), R3(-5, 0, 0));
+			layer_gen->addPerturbedVolumeMixture(R3(5, 0, 0), num_per_dir, R3(1, 0, 1), R3(-5, 0, 0));
 			//addPerturbedLayer(R3(2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.z, friction.z, cohesion.z, R3(0, 5, 0), (ChSystemParallel*) mSys);
 		}
 	}
@@ -74,10 +60,12 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
-	system_gpu->SetTol(0);
-	system_gpu->SetTolSpeeds(0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter/2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter/2);
+	system_gpu->SetTol(.001);
+	system_gpu->SetTolSpeeds(.001);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.001);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
@@ -107,7 +95,6 @@ int main(int argc, char* argv[]) {
 	material->SetCompliance(0);
 	material->SetCohesion(-100);
 
-
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(F, 100000, Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
@@ -136,13 +123,27 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
 	FinalizeObject(Top, (ChSystemParallel *) system_gpu);
 
+	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen->SetMass(1);
+	layer_gen->SetRadius(R3(particle_radius));
+	layer_gen->SetNormalDistribution(particle_radius, particle_radius / 4.0);
+	layer_gen->material->SetFriction(1);
+	layer_gen->material->SetCohesion(100);
+	layer_gen->material->SetRollingFriction(1);
+	layer_gen->material->SetSpinningFriction(1);
+	layer_gen->AddMixtureType(MIX_SPHERE);
+	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
+	layer_gen->AddMixtureType(MIX_CUBE);
+	layer_gen->AddMixtureType(MIX_CYLINDER);
+
 //=========================================================================================================
 //Rendering specific stuff:
 	ChOpenGLManager * window_manager = new ChOpenGLManager();
 	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	openGLView.render_camera->mScale = .5;
+	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	//openGLView.render_camera->look_at = Vector(0, -5, 0);
+	//openGLView.render_camera->mScale = .5;
 	openGLView.SetCustomCallback(RunTimeStep);
 	openGLView.StartSpinning(window_manager);
 	window_manager->CallGlutMainLoop();

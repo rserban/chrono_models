@@ -3,8 +3,8 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
-real seconds_to_simulate = timestep * 10;
+real timestep = .001;
+real seconds_to_simulate = 5;
 
 int max_iter = 10;
 
@@ -15,11 +15,11 @@ real container_thickness = .2;
 real container_height = 0;
 real container_friction = .1;
 
-real particle_radius = .02;
+real particle_radius = .06;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 1;
-real particle_cohesion = .5;
+real particle_cohesion = 100;
 real rolling_fric = 1;
 real spinning_fric = 1;
 Vector particle_initial_vel = Vector(0, -5.5, 0);     //initial velocity
@@ -33,9 +33,9 @@ ParticleGenerator* layer_gen;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
-real cohesion = .25;
+real cohesion = 200;
 ChSharedBodyPtr Bunny;
-
+string data_folder = "data/deform";
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
@@ -46,10 +46,15 @@ void RunTimeStep(T* mSys, const int frame) {
 
 int main(int argc, char* argv[]) {
 	//omp_set_num_threads(8);
-	int solver = 0;
-	if (argc == 2) {
-		solver = atoi(argv[1]);
 
+	if (argc == 4) {
+
+		cohesion = atof(argv[1]);
+		particle_friction = atof(argv[2]);
+		data_folder=argv[3];
+		//rolling_fric = atof(argv[3]);
+		//spinning_fric = atof(argv[4]);
+		cout<<cohesion<<" "<<particle_friction<<" "<<data_folder<<endl;
 	}
 
 //=========================================================================================================
@@ -60,29 +65,23 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter * 2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	system_gpu->SetTol(1e-4);
-	system_gpu->SetTolSpeeds(1e-4);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-4);
+	system_gpu->SetTol(.3);
+	system_gpu->SetTolSpeeds(.3);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.3);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(25);
-	if (solver == 0) {
-		cout<<"APGD"<<endl;
-		((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
-	} else if (solver == 1) {
-		cout<<"APGDRS"<<endl;
-		((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
-	}
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(I3(100, 100, 100));
+	mcollisionengine->setBinsPerAxis(I3(25, 25, 25));
 	mcollisionengine->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 
-	((ChSystemParallel*) system_gpu)->SetAABB(R3(-6, -6, -6), R3(6, 6, 6));
+	//((ChSystemParallel*) system_gpu)->SetAABB(R3(-6, -6, -6), R3(6, 6, 6));
 //=========================================================================================================
 //cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 //addPerturbedLayer(R3(0, -5 +container_thickness-particle_radius.y, 0), ELLIPSOID, particle_radius, num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
@@ -119,8 +118,8 @@ int main(int argc, char* argv[]) {
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(container_friction);
-//material->SetRollingFriction(.5);
-//material->SetSpinningFriction(.5);
+	//material->SetRollingFriction(.5);
+	//material->SetSpinningFriction(.5);
 	material->SetCompliance(0);
 	material->SetCohesion(-1000);
 
@@ -142,9 +141,9 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(B, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	//AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	AddCollisionGeometry(Float, BOX, Vector(1, 1, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	//AddCollisionGeometry(Float, BOX, Vector(1, 1, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
 	FinalizeObject(L, (ChSystemParallel *) system_gpu);
 	FinalizeObject(R, (ChSystemParallel *) system_gpu);
@@ -152,7 +151,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(B, (ChSystemParallel *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
 
-//FinalizeObject(Float, (ChSystemParallel *) system_gpu);
+	FinalizeObject(Float, (ChSystemParallel *) system_gpu);
 
 	Quaternion quat;
 	quat.Q_from_AngAxis(90, Vector(0, 1, 0));
@@ -163,10 +162,10 @@ int main(int argc, char* argv[]) {
 	material_monkey->SetCompliance(0);
 	material_monkey->SetCohesion(10);
 
-//ChSharedBodyPtr Monkey = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-//InitObject(Monkey, 100000, Vector(0,-2,0), quat, material_monkey, true, true, -20, -20);
-//AddCollisionGeometryTriangleMesh(Monkey, "monkey.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-//FinalizeObject(Monkey, (ChSystemParallel *) system_gpu);
+	//ChSharedBodyPtr Monkey = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	//InitObject(Monkey, 100000, Vector(0,-2,0), quat, material_monkey, true, true, -20, -20);
+	//AddCollisionGeometryTriangleMesh(Monkey, "monkey.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	//FinalizeObject(Monkey, (ChSystemParallel *) system_gpu);
 
 //		ifstream ifile("bunny_init.txt");
 //		string temp;
@@ -194,7 +193,7 @@ int main(int argc, char* argv[]) {
 //
 	int3 num_per_dir;
 //		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
-//num_per_dir = I3(1, size.y / rad.y * .85, 1);
+	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
 //
 	num_per_dir = I3(40, 40, 40);
 
@@ -206,18 +205,17 @@ int main(int argc, char* argv[]) {
 	layer_gen->material->SetRollingFriction(rolling_fric);
 	layer_gen->material->SetSpinningFriction(spinning_fric);
 	layer_gen->material->SetCompliance(0);
-//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
-//layer_gen->UseNormalCohesion(particle_cohesion, 1);
+	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
+	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-//layer_gen.addPerturbedVolume(R3(0 , 0, 0 ), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
-//layer_gen.addPerturbedVolume(R3(2, -2, 0), SPHERE, num_per_dir, R3(.1, .1, .1), R3(-22, 0, 0), false);
-//addPerturbedLayer(R3(-2, -2, 0), SPHERE, rad, num_per_dir, R3(.1,.1,.1), .333, .01, rand()%5, R3(44, 0, 0), system_gpu);
+	//layer_gen.addPerturbedVolume(R3(0 , 0, 0 ), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
+	//layer_gen.addPerturbedVolume(R3(2, -2, 0), SPHERE, num_per_dir, R3(.1, .1, .1), R3(-22, 0, 0), false);
+	//addPerturbedLayer(R3(-2, -2, 0), SPHERE, rad, num_per_dir, R3(.1,.1,.1), .333, .01, rand()%5, R3(44, 0, 0), system_gpu);
 //		addPerturbedLayer(R3(0, 0, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .666, 0, 0, R3(0, 0, 0), system_gpu);
 //		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
 //	}
 
-//layer_gen->loadAscii("bunny.txt", R3(0, 2, 0), SPHERE, R3(.0235, 0, 0), R3(0, -10, 0), R3(2, 2, 2));
-	layer_gen->loadAscii("bunny.txt", R3(0, 2, 0), SPHERE, R3(.03, 0, 0), R3(0, -10, 0), R3(2, 2, 2));
+	layer_gen->loadAscii("teapot_thick_low.txt", R3(0, 0, 0), SPHERE, R3(.02, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
 
 //=========================================================================================================
 //Rendering specific stuff:
@@ -246,18 +244,18 @@ int main(int argc, char* argv[]) {
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-//		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
-//		if (i % save_every == 0) {
-//			stringstream ss;
-//			cout << "Frame: " << file << endl;
-//			ss << "data/sticky/" << "/" << file << ".txt";
-//			DumpAllObjects(system_gpu, ss.str(), ",", true);
-//			//output.ExportData(ss.str());
-//			file++;
-//		}
+		int save_every = 1.0 / timestep / 600.0;     //save data every n steps
+		if (i % save_every == 0) {
+			stringstream ss;
+			cout << "Frame: " << file << endl;
+			ss << data_folder << "/" << file << ".txt";
+			DumpAllObjects(system_gpu, ss.str(), ",", true);
+			//output.ExportData(ss.str());
+			file++;
+		}
 		RunTimeStep(system_gpu, i);
 	}
 
-//DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
+	//DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
 
 }

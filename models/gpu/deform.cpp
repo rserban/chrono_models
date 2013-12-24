@@ -215,7 +215,8 @@ int main(int argc, char* argv[]) {
 //		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
 //	}
 
-	layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.02, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
+	//layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.02, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
+	layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.01, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
 
 //=========================================================================================================
 //Rendering specific stuff:

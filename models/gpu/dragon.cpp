@@ -10,7 +10,7 @@ int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(6, 6, 6);
+real3 container_size = R3(20, 6, 20);
 real container_thickness = .2;
 real container_height = 0;
 real container_friction = .1;
@@ -59,7 +59,6 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
-	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
@@ -76,8 +75,8 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(I3(100, 100, 100));
-	mcollisionengine->setBodyPerBin(200, 100);
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(90, 15, 90));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 
@@ -145,13 +144,13 @@ int main(int argc, char* argv[]) {
 
 	//AddCollisionGeometry(Float, BOX, Vector(1, 1, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	FinalizeObject(L, (ChSystemParallel *) system_gpu);
-	FinalizeObject(R, (ChSystemParallel *) system_gpu);
-	FinalizeObject(F, (ChSystemParallel *) system_gpu);
-	FinalizeObject(B, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(L, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(R, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(F, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(B, (ChSystemParallel *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
 
-	FinalizeObject(Float, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(Float, (ChSystemParallel *) system_gpu);
 
 	Quaternion quat;
 	quat.Q_from_AngAxis(90, Vector(0, 1, 0));
@@ -215,8 +214,8 @@ int main(int argc, char* argv[]) {
 //		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
 //	}
 
-	layer_gen->loadAscii("dragon.txt", R3(0, .7*4-6+container_thickness, 0), SPHERE, R3(.015*(2), 0, 0), R3(0, -10, 0), R3(4, 4, 4));
-
+	//layer_gen->loadAscii("dragon.txt", R3(0, .7*4-6+container_thickness, 0), SPHERE, R3(.015*(2), 0, 0), R3(0, -10, 0), R3(4, 4, 4));
+	layer_gen->loadAscii("dragon_hi_.01.txt", R3(0, .7*4-6+container_thickness, 0), SPHERE, R3(.01*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
 //=========================================================================================================
 //Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();

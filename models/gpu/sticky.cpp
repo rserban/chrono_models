@@ -35,7 +35,7 @@ real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = .25;
 ChSharedBodyPtr Bunny;
-
+string data_folder = "data/sticky";
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
@@ -47,11 +47,12 @@ void RunTimeStep(T* mSys, const int frame) {
 int main(int argc, char* argv[]) {
 	//omp_set_num_threads(8);
 
-	if (argc == 3) {
-		cohesion = atof(argv[2]);
-		particle_friction = atof(argv[3]);
-		rolling_fric = atof(argv[4]);
-		spinning_fric = atof(argv[5]);
+	if (argc == 6) {
+		cohesion = atof(argv[1]);
+		particle_friction = atof(argv[2]);
+		rolling_fric = atof(argv[3]);
+		spinning_fric = atof(argv[4]);
+		data_folder=argv[5];
 	}
 
 //=========================================================================================================
@@ -245,7 +246,7 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/sticky/" << "/" << file << ".txt";
+			ss << data_folder << "/" << file << ".txt";
 			DumpAllObjects(system_gpu, ss.str(), ",", true);
 			//output.ExportData(ss.str());
 			file++;

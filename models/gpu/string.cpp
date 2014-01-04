@@ -98,7 +98,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	if (frame % inter_frame_time == 0 && frame * timestep < 30) {
 		CreateSegment(mSys, Vector(-half_len - 1, -1, 0), Vector(half_len / total_time * 2, 0, 0));
 		//num_seg += 1;
-		if (fibers%5 == 0) {
+		if (fibers%20 == 0) {
 		} else {
 			JoinSegments(mSys, string_vector[fibers - 2], string_vector[fibers - 1]);
 		}

@@ -115,6 +115,9 @@ IF (ENABLE_UNIT_GPU)
 
     ADD_EXECUTABLE(fibers models/gpu/fibers.cpp)      
     TARGET_LINK_LIBRARIES(fibers   ${CHRONO_LIB} ${GPU_LIBS})
+    
+    ADD_EXECUTABLE(string models/gpu/string.cpp)      
+    TARGET_LINK_LIBRARIES(string   ${CHRONO_LIB} ${GPU_LIBS})
 
     ADD_EXECUTABLE(cones models/gpu/cones)      
     TARGET_LINK_LIBRARIES(cones   ${CHRONO_LIB} ${GPU_LIBS})

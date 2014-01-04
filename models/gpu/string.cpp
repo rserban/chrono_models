@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(10);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(10);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
 	system_gpu->SetTol(.1);
 	system_gpu->SetTolSpeeds(.1);

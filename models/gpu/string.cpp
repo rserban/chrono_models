@@ -3,8 +3,8 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0004;
-real seconds_to_simulate = 30;
+real timestep = .0001;
+real seconds_to_simulate = 60;
 
 int max_iter = 40;
 
@@ -30,9 +30,9 @@ real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 0;
 
-real segment_length = .05;
-real segment_thickness = .02;
-vector<ChSharedBodyPtr> string_vector(1000);
+real segment_length = .03;
+real segment_thickness = .01;
+vector<ChSharedBodyPtr> string_vector(1000000);
 
 int fibers = 0;
 ChSharedPtr<ChMaterialSurface> material_fiber;
@@ -61,13 +61,13 @@ void JoinSegments(T* mSys, ChSharedBodyPtr& A, ChSharedBodyPtr& B) {
 
 	ChCoordsys<> pos1;
 	ChCoordsys<> pos2;
-	pos1.pos = Vector(0,segment_length+segment_thickness, 0);
-	pos2.pos = Vector(0,-segment_length-segment_thickness, 0);
+	pos1.pos = Vector(0, segment_length + segment_thickness, 0);
+	pos2.pos = Vector(0, -segment_length - segment_thickness, 0);
 
 	ChCoordsys<> pos;
 	pos.pos = Vector(0, 0, 0);
 	ChSharedPtr<ChLinkLockRevolute> joint(new ChLinkLockRevolute);
-	joint->Initialize(A, B, true,pos1,pos2);
+	joint->Initialize(A, B, true, pos1, pos2);
 
 	mSys->AddLink(joint);
 
@@ -76,7 +76,7 @@ void JoinSegments(T* mSys, ChSharedBodyPtr& A, ChSharedBodyPtr& B) {
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	int inter_frame_time = 100;
+	int inter_frame_time = 20;
 	real len = segment_length * 2 + segment_thickness * 2;
 	real half_len = len * .5;
 	real total_time = inter_frame_time * timestep;
@@ -84,31 +84,24 @@ void RunTimeStep(T* mSys, const int frame) {
 	int num_seg = 0;
 
 	if (frame == 0) {
-		CreateSegment(mSys, Vector(half_len, 0, 0), Vector(half_len / total_time * 2, 0, 0));
-
-//		JoinSegments(mSys, string_vector[num_seg - 2], string_vector[num_seg - 1]);
-//		CreateSegment(mSys, Vector(-half_len*3, 0, 0), Vector(half_len / total_time * 2, 0, 0));
-//		num_seg += 1;
-//		JoinSegments(mSys, string_vector[num_seg - 2], string_vector[num_seg - 1]);
+		CreateSegment(mSys, Vector(half_len - 1, -1, 0), Vector(half_len / total_time * 2, 0, 0));
 	}
 
-	if (frame == 0) {
-		//CreateSegment(mSys, Vector(-half_len, 0, 0), Vector(half_len / total_time * 2, 0, 0));
+	if (fibers > 5) {
+		//string_vector[fibers - 2]->GetPos_dt().y,string_vector[fibers - 2]->GetPos_dt().z)
+		string_vector[fibers - 1]->SetPos_dt(ChVector<>(half_len / total_time * 2, 0, 0));
+		string_vector[fibers - 2]->SetPos_dt(ChVector<>(half_len / total_time * 2, 0, 0));
+		//string_vector[fibers - 3]->SetPos_dt(ChVector<>(half_len / total_time * 2,0,0));
+		//string_vector[fibers - 4]->SetPos_dt(ChVector<>(half_len / total_time * 2,0,0));
 
-		//JoinSegments(mSys, string_vector[fibers - 2], string_vector[fibers - 1]);
 	}
-if(fibers>5){
-
-	string_vector[fibers - 1]->SetPos_dt(ChVector<>(half_len / total_time * 2,string_vector[fibers - 1]->GetPos_dt().y,string_vector[fibers - 1]->GetPos_dt().z));
-	string_vector[fibers - 2]->SetPos_dt(ChVector<>(half_len / total_time * 2,string_vector[fibers - 2]->GetPos_dt().y,string_vector[fibers - 2]->GetPos_dt().z));
-	string_vector[fibers - 3]->SetPos_dt(ChVector<>(half_len / total_time * 2,string_vector[fibers - 3]->GetPos_dt().y,string_vector[fibers - 3]->GetPos_dt().z));
-	string_vector[fibers - 4]->SetPos_dt(ChVector<>(half_len / total_time * 2,string_vector[fibers - 4]->GetPos_dt().y,string_vector[fibers - 4]->GetPos_dt().z));
-
-}
-	if (frame % inter_frame_time == 0 && frame * timestep < 20) {
-		CreateSegment(mSys, Vector(-half_len, 0, 0), Vector(half_len / total_time * 2, 0, 0));
+	if (frame % inter_frame_time == 0 && frame * timestep < 30) {
+		CreateSegment(mSys, Vector(-half_len - 1, -1, 0), Vector(half_len / total_time * 2, 0, 0));
 		//num_seg += 1;
-		JoinSegments(mSys, string_vector[fibers - 2], string_vector[fibers - 1]);
+		if (fibers%5 == 0) {
+		} else {
+			JoinSegments(mSys, string_vector[fibers - 2], string_vector[fibers - 1]);
+		}
 ////		for (int i = 0; i < 40; i++) {
 ////			CreateFiber(mSys, Vector(2 - 1.6 * 0, 3, i / 8.0));
 ////			CreateFiber(mSys, Vector(2 - 1.6 * 1, 3, i / 8.0));
@@ -137,17 +130,17 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(10);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(10);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
 	system_gpu->SetTol(.1);
 	system_gpu->SetTolSpeeds(.1);
 	system_gpu->SetMaxPenetrationRecoverySpeed(100);
 
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(600);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	mcollisionengine->setBinsPerAxis(I3(50, 50, 50));
@@ -203,12 +196,12 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(Bottom, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Top, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	real tube_size = .05;
-	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 10, container_thickness / 4.0, tube_size), Vector(0, tube_size, 0), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 10, container_thickness / 4.0, tube_size), Vector(0, -tube_size, 0), Quaternion(1, 0, 0, 0));
+	real tube_size = .03;
+	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 5, container_thickness / 6.0, tube_size), Vector(0, tube_size, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 5, container_thickness / 6.0, tube_size), Vector(0, -tube_size, 0), Quaternion(1, 0, 0, 0));
 
-	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 10, tube_size, container_thickness / 4.0), Vector(0, 0, -tube_size), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 10, tube_size, container_thickness / 4.0), Vector(0, 0, tube_size), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 5, tube_size, container_thickness / 6.0), Vector(0, 0, -tube_size), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(Tube, BOX, Vector(tube_size * 5, tube_size, container_thickness / 6.0), Vector(0, 0, tube_size), Quaternion(1, 0, 0, 0));
 
 	FinalizeObject(L, (ChSystemParallel *) system_gpu);
 	FinalizeObject(R, (ChSystemParallel *) system_gpu);
@@ -216,7 +209,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(B, (ChSystemParallel *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
 //FinalizeObject(Top, (ChSystemParallel *) system_gpu);
-	FinalizeObject(Tube, (ChSystemParallel *) system_gpu);
+	//FinalizeObject(Tube, (ChSystemParallel *) system_gpu);
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_fiber->SetFriction(.4);

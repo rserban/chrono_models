@@ -159,6 +159,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
 	system_gpu->SetTol(.1);
 	system_gpu->SetTolSpeeds(.1);
+	system_gpu->SetMaxPenetrationRecoverySpeed(25);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(30);

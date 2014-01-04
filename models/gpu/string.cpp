@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
 			stringstream ss;
 
 			cout << "Frame: " << file << endl;
-			ss << "data/fiber/" << "/" << file << ".txt";
+			ss << "data/string/" << "/" << file << ".txt";
 			//DumpAllObjects(system_gpu, ss.str(), ",", true);
 			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
 			//output.ExportData(ss.str());

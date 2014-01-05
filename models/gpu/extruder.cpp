@@ -32,7 +32,7 @@ real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 0;
 ParticleGenerator *layer_gen;
-
+string data_folder = "data/extruder";
 ChSharedPtr<ChMaterialSurface> material_fiber;
 template<class T>
 void CreateFiber(T* mSys, ChVector<> position) {
@@ -108,7 +108,7 @@ void RunTimeStep(T* mSys, const int frame) {
 		if (frame % 150 == 0 && frame * timestep > 3 && frame * timestep < 5) {
 
 			for (int i = 0; i < 10; i++) {
-				CreateFiber(mSys, Vector(0, 3, i / 8.0));
+				//CreateFiber(mSys, Vector(0, 3, i / 8.0));
 
 			}
 
@@ -137,24 +137,26 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	int threads = 8;
+	//int threads = 8;
 
 	if (argc > 1) {
-		threads = (atoi(argv[1]));
+		cohesion = atof(argv[1]);
+		data_folder=argv[2];
+		//threads = (atoi(argv[1]));
 	}
-	omp_set_num_threads(threads);
+	//omp_set_num_threads(threads);
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
 	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
-	system_gpu->SetParallelThreadNumber(threads);
+	//system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	//((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(30);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(30);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(15);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
 	system_gpu->SetTol(.1);
@@ -257,7 +259,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetRadius(R3(particle_radius));
 
 	layer_gen->material->SetFriction(.5);
-	layer_gen->material->SetCohesion(.1);
+	layer_gen->material->SetCohesion(cohesion);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->SetRadius(R3(particle_radius));
@@ -305,7 +307,7 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/extruder/" << "/" << file << ".txt";
+			ss << data_folder << "/" << file << ".txt";
 			//DumpAllObjects(system_gpu, ss.str(), ",", true);
 			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
 			//output.ExportData(ss.str());

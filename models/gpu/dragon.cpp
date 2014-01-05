@@ -215,7 +215,7 @@ int main(int argc, char* argv[]) {
 //	}
 
 	//layer_gen->loadAscii("dragon.txt", R3(0, .7*4-6+container_thickness, 0), SPHERE, R3(.015*(2), 0, 0), R3(0, -10, 0), R3(4, 4, 4));
-	layer_gen->loadAscii("dragon_hi_.01.txt", R3(0, .7*4-6+container_thickness, 0), SPHERE, R3(.01*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
+	layer_gen->loadAscii("dragon_hi_.01.txt", R3(0, 0, 0), SPHERE, R3(.01*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
 //=========================================================================================================
 //Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();

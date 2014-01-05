@@ -6,7 +6,7 @@ real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 5;
 
-int max_iter = 10;
+int max_iter = 20;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -33,7 +33,7 @@ ParticleGenerator* layer_gen;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
-real cohesion = 200;
+real cohesion = 2000;
 ChSharedBodyPtr Bunny;
 string data_folder = "data/deform";
 template<class T>
@@ -59,7 +59,6 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
-	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
@@ -72,12 +71,12 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(.3);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.3);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(25);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	mcollisionengine->setBinsPerAxis(I3(25, 25, 25));
-	mcollisionengine->setBodyPerBin(200, 100);
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(50, 50, 50));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 
@@ -215,8 +214,9 @@ int main(int argc, char* argv[]) {
 //		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
 //	}
 
-	//layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.02, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
-	layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.005, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
+//	/layer_gen->loadAscii("teapot_thick_low.txt", R3(0, 0, 0), SPHERE, R3(.02, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
+	layer_gen->loadAscii("buddah_.015.txt", R3(0, 0, 0), SPHERE, R3(.015, 0, 0)*1.5, R3(0, -10, 0), R3(2, 2, 2)*1.5);
+	//layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.005, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
 
 //=========================================================================================================
 //Rendering specific stuff:

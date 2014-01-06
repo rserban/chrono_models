@@ -15,7 +15,7 @@ real container_thickness = .1;
 real container_height = 0;
 real container_friction = 1;
 
-real particle_radius = .01;
+real particle_radius = .015;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -40,7 +40,7 @@ ParticleGenerator* layer_gen;
 
 template<class T>
 void CreateSegment(T* mSys, ChVector<> position, ChVector<> velocity) {
-	real mass = 1;
+	real mass = .1;
 	Quaternion q;
 	q.Q_from_AngZ(PI / 2.0);
 
@@ -124,14 +124,13 @@ int main(int argc, char* argv[]) {
 	omp_set_num_threads(threads);
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
-	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
 	system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(10);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(4);
@@ -144,8 +143,8 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(20);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
-	mcollisionengine->setBinsPerAxis(I3(50, 50, 50));
-	mcollisionengine->setBodyPerBin(100, 50);
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(50, 50, 50));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 	((ChSystemParallel*) system_gpu)->SetAABB(R3(-6, -3, -12), R3(6, 6, 12));
@@ -220,18 +219,18 @@ int main(int argc, char* argv[]) {
 	material_fiber->SetCohesion(0);
 
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
-	layer_gen->SetMass(1);
+	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(R3(particle_radius));
 
-	layer_gen->material->SetFriction(0);
-	layer_gen->material->SetCohesion(0);
+	layer_gen->material->SetFriction(.1);
+	layer_gen->material->SetCohesion(.1);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
 	//layer_gen->SetCylinderRadius(4.5);
-	layer_gen->SetNormalDistribution(particle_radius, .002);
+	//layer_gen->SetNormalDistribution(particle_radius, .002);
 	layer_gen->AddMixtureType(MIX_SPHERE);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0,-1,0), I3(100,30,100),R3(0,0,0),R3(0,0,0),0);
+	layer_gen->addPerturbedVolumeMixture(R3(0,-1,0), I3(80,40,80),R3(.1,.1,.1),R3(0,0,0),0);
 
 
 

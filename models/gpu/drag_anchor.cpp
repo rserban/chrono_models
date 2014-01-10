@@ -19,7 +19,7 @@ real particle_radius = .025;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 1;
-real particle_cohesion = .1;
+real particle_cohesion = .01;
 real rolling_fric = 1;
 real spinning_fric = 1;
 
@@ -62,7 +62,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	if (frame * timestep > 1) {
 		Roller->SetBodyFixed(false);
 		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_roller->Get_spe_funct())) {
-			mfun->Set_yconst(10);     // rad/s  angular speed
+			mfun->Set_yconst(1);     // rad/s  angular speed
 		}
 	}
 }
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
 	system_gpu->SetTol(1e-6);
 	system_gpu->SetTolSpeeds(1e-6);
-	system_gpu->SetMaxPenetrationRecoverySpeed(1000);
+	system_gpu->SetMaxPenetrationRecoverySpeed(100000);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-6);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(20000);
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
 	//material->SetRollingFriction(.5);
 	//material->SetSpinningFriction(.5);
 	material->SetCompliance(0);
-	material->SetCohesion(-1000);
+	material->SetCohesion(0);
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
@@ -147,13 +147,20 @@ int main(int argc, char* argv[]) {
 	Vector chain_end(-container_size.x + 2, system_height - roller_rad - chain_radius, 0);
 
 
+	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material_fiber->SetFriction(.4);
+	material_fiber->SetRollingFriction(1);
+	material_fiber->SetSpinningFriction(1);
+	material_fiber->SetCompliance(0);
+	material_fiber->SetCohesion(-1000);
+
 	real rx = anchor_dim;
 	real ry = anchor_dim;
 	real rz = anchor_dim*2;
 	real mass_anchor = 100;
 
 	ChSharedBodyPtr Anchor = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(Anchor, mass_anchor, Vector(-container_size.x + 2+chain_radius*2, system_height - roller_rad - chain_radius, 0), Quaternion(1, 0, 0, 0), material, true, false, -11, -11);
+	InitObject(Anchor, mass_anchor, Vector(-container_size.x + 2+chain_radius*2, system_height - roller_rad - chain_radius, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -11, -11);
 	AddCollisionGeometry(Anchor, BOX, Vector(rx, ry, rz), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Anchor, SPHERE, Vector(.01, .01, .01), Vector(-rx, -ry, -rz), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Anchor, SPHERE, Vector(.01, .01, .01), Vector(-rx, -ry, rz), Quaternion(1, 0, 0, 0));
@@ -164,11 +171,13 @@ int main(int argc, char* argv[]) {
 
 	//Anchor->SetInertiaXX( ChVector<>(1 / 12.0 * mass_anchor * (ry * ry + rz * rz), 1 / 12.0 * mass_anchor * (rx * rx + rz * rz), 1 / 12.0 * mass_anchor * (rx * rx + ry * ry)));
 
+
+
 	Quaternion roller_quat;
 	roller_quat.Q_from_AngX(PI / 2.0);
 
 	Roller = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(Roller, 1, Vector(container_size.x - 2, system_height, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
+	InitObject(Roller, 1, Vector(container_size.x - 2, system_height, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -20, -20);
 	AddCollisionGeometry(Roller, SPHERE, Vector(roller_rad, roller_width, roller_rad), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(Roller, (ChSystemParallel *) system_gpu);
 	Roller->SetBodyFixed(true);
@@ -179,12 +188,7 @@ int main(int argc, char* argv[]) {
 	eng_roller->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 	system_gpu->AddLink(eng_roller);
 
-	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material_fiber->SetFriction(.4);
-	material_fiber->SetRollingFriction(1);
-	material_fiber->SetSpinningFriction(1);
-	material_fiber->SetCompliance(0);
-	material_fiber->SetCohesion(0);
+
 
 	int chain_segments = (chain_start.x - chain_end.x - anchor_dim) / (chain_radius * 2);
 

@@ -104,6 +104,9 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(deform models/gpu/deform.cpp)		
     TARGET_LINK_LIBRARIES(deform	${CHRONO_LIB} ${GPU_LIBS})
     
+    ADD_EXECUTABLE(drag_anchor models/gpu/drag_anchor.cpp)		
+    TARGET_LINK_LIBRARIES(drag_anchor	${CHRONO_LIB} ${GPU_LIBS})
+    
     #ADD_EXECUTABLE(rollers models/gpu/rollers.cpp)		
     #TARGET_LINK_LIBRARIES(rollers	${CHRONO_LIB} ${GPU_LIBS})
 

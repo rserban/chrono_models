@@ -131,6 +131,10 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(pipe models/gpu/pipe)      
     TARGET_LINK_LIBRARIES(pipe   ${CHRONO_LIB} ${GPU_LIBS})
     
+    ADD_EXECUTABLE(convergence_serial models/generic/convergence_serial)      
+    TARGET_LINK_LIBRARIES(convergence_serial   ${CHRONO_LIB} ${GPU_LIBS})
+    
+    
     #ADD_EXECUTABLE(walker models/generic/demo_walker_nonIrr.cpp)		
     #TARGET_LINK_LIBRARIES(walker	${CHRONO_LIB} ${GPU_LIBS})
 

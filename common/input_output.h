@@ -146,21 +146,20 @@ void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 				rad_final.z = rad;
 				pos_final = pos;
 				type = CYLINDER;
-			}else if (asset.IsType<ChConeShape>()) {
+			} else if (asset.IsType<ChConeShape>()) {
 				ChConeShape * cylinder_shape = ((ChConeShape *) (asset.get_ptr()));
 				Vector center = cylinder_shape->GetConeGeometry().center;
 				center = rot.Rotate(center);
 				rad_final.x = cylinder_shape->GetConeGeometry().rad.x;
 				rad_final.y = cylinder_shape->GetConeGeometry().rad.y;
 				rad_final.z = cylinder_shape->GetConeGeometry().rad.z;
-				pos_final = pos+center;
+				pos_final = pos + center;
 				type = CONE;
 			}
 
 			csv_output << R3(pos_final.x, pos_final.y, pos_final.z);
 			csv_output << R4(rot.e0, rot.e1, rot.e2, rot.e3);
-			csv_output << R3(vel.x,vel.y,vel.z);
-
+			csv_output << R3(vel.x, vel.y, vel.z);
 
 			if (asset.IsType<ChSphereShape>()) {
 				csv_output << type;
@@ -277,4 +276,18 @@ void TimingFile(T* mSys, string filename, real current_time) {
 			<< mSys->GetTimerLcp() << " CDbroad time=" << mSys->GetTimerCollisionBroad() << " CDnarrow time=" << mSys->GetTimerCollisionNarrow() << " Iterations="
 			<< ((ChLcpSolverParallel*) (mSys->GetLcpSolverSpeed()))->GetTotalIterations() << "\n";
 	ofile.close();
+}
+
+template<class T>
+void DumpResidualHist(T* mSys, string filename) {
+	CSVGen csv_output;
+	csv_output.OpenFile(filename.c_str());
+
+	std::vector<double> violation = ((ChLcpIterativeSolver*) mSys->GetLcpSolverSpeed())->GetViolationHistory();
+
+	for (int i = 0; i < violation.size(); i++) {
+		csv_output << violation[i];
+		csv_output.Endline();
+	}
+	csv_output.CloseFile();
 }

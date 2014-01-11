@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 	real block_mass = atof(argv[6]);
 	data_folder = argv[7];
 
-	cout<<solver<<" "<<max_iter<<" "<<tolerance<<" "<<particle_radius<<" "<<data_folder<<endl;
+	cout << solver << " " << max_iter << " " << tolerance << " " << particle_radius << " " << data_folder << endl;
 
 	//=========================================================================================================
 	ChSystem * system = new ChSystem;
@@ -141,22 +141,22 @@ int main(int argc, char* argv[]) {
 	layer_gen.material->SetSpinningFriction(0);
 	layer_gen.material->SetCohesion(0);
 	layer_gen.material->SetCompliance(0);
-	int3 num_per_dir = I3(2.0/particle_radius, 4.0/particle_radius, 2.0/particle_radius);
+	int3 num_per_dir = I3(2.0 / particle_radius, 4.0 / particle_radius, 2.0 / particle_radius);
 
 	layer_gen.addPerturbedVolume(R3(0, -.2, 0), SPHERE, num_per_dir, R3(0.0, 0.0, 0.0), R3(0, -4, 0), false);
 
 	//=========================================================================================================
 	//////Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system, 800, 600, 0, 0, "Test_Solvers");
-
-	//openGLView.render_camera->camera_pos = Vector(0, -5, -40);
-	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-	//openGLView.render_camera->mScale = .1;
-
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system, 800, 600, 0, 0, "Test_Solvers");
+//
+//	//openGLView.render_camera->camera_pos = Vector(0, -5, -40);
+//	//openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	//openGLView.render_camera->mScale = .1;
+//
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 	//=========================================================================================================
 	ofstream ofile("convergence.txt");
 	ChTimer<double> timer;
@@ -168,13 +168,13 @@ int main(int argc, char* argv[]) {
 		system->DoStepDynamics(timestep);
 		RunTimeStep(system, i);
 
-		if (i % save_every == 0) {
-			stringstream ss;
-			cout << "Frame: " << file << endl;
-			ss << data_folder << "/" << file << ".txt";
-			DumpResidualHist(system, ss.str());
-			file++;
-		}
+		//if (i % save_every == 0) {
+		stringstream ss;
+		cout << "Frame: " << file << endl;
+		ss << data_folder << "/" << file << ".txt";
+		DumpResidualHist(system, ss.str());
+		file++;
+		//}
 		timer.stop();
 
 	}

@@ -28,7 +28,7 @@ real timestep = .001;
 real seconds_to_simulate = 3;
 int num_steps = seconds_to_simulate / timestep;
 
-int save_every = 1.0 / timestep / 100.0;     //save data every n steps
+int save_every = 1.0 / timestep / 600.0;     //save data every n steps
 ChSharedBodyPtr BLOCK;
 
 string data_folder = "data/convergence";
@@ -44,7 +44,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	//addHCPSheet(10, 10, 0, particle_mass, particle_radius, particle_friction, true, 0, 0, particle_initial_vel, (ChSystemParallel*) mSys);
 	//}
 
-//	std::vector<double> violation = ((ChLcpIterativeSolver*) mSys->GetLcpSolverSpeed())->GetViolationHistory();
+//	/std::vector<double> violation = ((ChLcpIterativeSolver*) mSys->GetLcpSolverSpeed())->GetViolationHistory();
 //	for (int i = 0; i < violation.size(); i++) {
 //		cout << violation[i] << endl;
 //	}
@@ -82,6 +82,8 @@ int main(int argc, char* argv[]) {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_APGD);
 	} else if (solver == "JACOBI") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_JACOBI);
+		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(.5);
+		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(.5);
 	} else if (solver == "SOR") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_SOR);
 	}
@@ -162,22 +164,32 @@ int main(int argc, char* argv[]) {
 	ChTimer<double> timer;
 	timer.start();
 	int file = 0;
+	stringstream s1;
+	s1 << data_folder << "/residual.txt";
+	CSVGen csv_output;
+	csv_output.OpenFile(s1.str().c_str());
 	for (int i = 0; i < num_steps; i++) {
 
 		cout << "step " << i << endl;
 		system->DoStepDynamics(timestep);
 		RunTimeStep(system, i);
 
-		//if (i % save_every == 0) {
-		stringstream ss;
-		cout << "Frame: " << file << endl;
-		ss << data_folder << "/" << file << ".txt";
-		DumpResidualHist(system, ss.str());
-		file++;
-		//}
+		if (i % save_every == 0) {
+			stringstream ss, s2;
+			cout << "Frame: " << file << endl;
+			ss << data_folder << "/reshist" << file << ".txt";
+			s2 << data_folder << "/" << file << ".txt";
+			DumpResidualHist(system, ss.str());
+			DumpAllObjects(system, s2.str(), ",", true);
+			std::vector<double> violation = ((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->GetViolationHistory();
+			csv_output << violation.back();
+			csv_output.Endline();
+			file++;
+		}
 		timer.stop();
 
 	}
+	csv_output.CloseFile();
 	cout << "TIME: " << timer() << endl;
 	ofile.close();
 	return 0;

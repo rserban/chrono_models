@@ -3,7 +3,7 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .001;
 real seconds_to_simulate = 30;
 
 int max_iter = 10;
@@ -13,13 +13,13 @@ int num_steps = seconds_to_simulate / timestep;
 real3 container_size = R3(10, 3, 3);
 real container_thickness = .2;
 real container_height = 0;
-real container_friction = .1;
+real container_friction = 1;
 
 real particle_radius = .025;
 real particle_mass = .05;
 real particle_density = .5;
-real particle_friction = 1;
-real particle_cohesion = .01;
+real particle_friction = .5;
+real particle_cohesion = .1;
 real rolling_fric = 1;
 real spinning_fric = 1;
 
@@ -33,7 +33,7 @@ ChSharedBodyPtr Roller;
 ChSharedPtr<ChMaterialSurface> material_fiber;
 template<class T>
 void CreateSegment(T* mSys, ChVector<> position, ChVector<> velocity) {
-	real mass = .1;
+	real mass = 1;
 	Quaternion q(1, 0, 0, 0);
 	//q.Q_from_AngZ(PI / 2.0);
 
@@ -62,7 +62,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	if (frame * timestep > 1) {
 		Roller->SetBodyFixed(false);
 		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_roller->Get_spe_funct())) {
-			mfun->Set_yconst(1);     // rad/s  angular speed
+			mfun->Set_yconst(2);     // rad/s  angular speed
 		}
 	}
 }
@@ -89,17 +89,18 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(30);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
-	system_gpu->SetTol(1e-6);
-	system_gpu->SetTolSpeeds(1e-6);
-	system_gpu->SetMaxPenetrationRecoverySpeed(100000);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-6);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
+	system_gpu->SetTol(1e-4);
+	system_gpu->SetTolSpeeds(1e-4);
+	system_gpu->SetMaxPenetrationRecoverySpeed(1000);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-4);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(20000);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(60, 10, 20));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(20, 6, 6));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -146,21 +147,20 @@ int main(int argc, char* argv[]) {
 	Vector chain_start(container_size.x - 2, system_height - roller_rad - chain_radius, 0);
 	Vector chain_end(-container_size.x + 2, system_height - roller_rad - chain_radius, 0);
 
-
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material_fiber->SetFriction(.4);
-	material_fiber->SetRollingFriction(1);
-	material_fiber->SetSpinningFriction(1);
+	material_fiber->SetFriction(0);
+	material_fiber->SetRollingFriction(0);
+	material_fiber->SetSpinningFriction(0);
 	material_fiber->SetCompliance(0);
 	material_fiber->SetCohesion(-1000);
 
 	real rx = anchor_dim;
 	real ry = anchor_dim;
-	real rz = anchor_dim*2;
-	real mass_anchor = 100;
+	real rz = anchor_dim;
+	real mass_anchor = 50;
 
 	ChSharedBodyPtr Anchor = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(Anchor, mass_anchor, Vector(-container_size.x + 2+chain_radius*2, system_height - roller_rad - chain_radius, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -11, -11);
+	InitObject(Anchor, mass_anchor, Vector(-container_size.x + 2 + chain_radius * 2, system_height - roller_rad - chain_radius, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -11, -11);
 	AddCollisionGeometry(Anchor, BOX, Vector(rx, ry, rz), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Anchor, SPHERE, Vector(.01, .01, .01), Vector(-rx, -ry, -rz), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(Anchor, SPHERE, Vector(.01, .01, .01), Vector(-rx, -ry, rz), Quaternion(1, 0, 0, 0));
@@ -168,16 +168,13 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(Anchor, SPHERE, Vector(.01, .01, .01), Vector(rx, -ry, -rz), Quaternion(1, 0, 0, 0));
 	FinalizeObject(Anchor, (ChSystemParallel *) system_gpu);
 
-
 	//Anchor->SetInertiaXX( ChVector<>(1 / 12.0 * mass_anchor * (ry * ry + rz * rz), 1 / 12.0 * mass_anchor * (rx * rx + rz * rz), 1 / 12.0 * mass_anchor * (rx * rx + ry * ry)));
-
-
 
 	Quaternion roller_quat;
 	roller_quat.Q_from_AngX(PI / 2.0);
 
 	Roller = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(Roller, 1, Vector(container_size.x - 2, system_height, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -20, -20);
+	InitObject(Roller, 1000, Vector(container_size.x - 2, system_height, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -20, -20);
 	AddCollisionGeometry(Roller, SPHERE, Vector(roller_rad, roller_width, roller_rad), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(Roller, (ChSystemParallel *) system_gpu);
 	Roller->SetBodyFixed(true);
@@ -188,20 +185,18 @@ int main(int argc, char* argv[]) {
 	eng_roller->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 	system_gpu->AddLink(eng_roller);
 
-
-
 	int chain_segments = (chain_start.x - chain_end.x - anchor_dim) / (chain_radius * 2);
 
 	for (int i = 0; i < chain_segments; i++) {
 		CreateSegment(system_gpu, chain_start - ChVector<>(i * chain_radius * 2, 0, 0), Vector(0, 0, 0));
 	}
 
-	for (int i = 2; i < chain_segments+1; i++) {
+	for (int i = 2; i < chain_segments + 1; i++) {
 		JoinSegments(system_gpu, string_vector[i - 2], string_vector[i - 1]);
 	}
 
 	ChCoordsys<> pos1, pos2;
-	pos1.pos = Vector(0, chain_radius,0);
+	pos1.pos = Vector(0, chain_radius, 0);
 	pos2.pos = Vector(0, -roller_rad, 0);
 	//pos2.rot = roller_quat;
 	ChSharedPtr<ChLinkLockLock> joint_roller(new ChLinkLockLock);
@@ -211,15 +206,14 @@ int main(int argc, char* argv[]) {
 	pos1.pos = Vector(-chain_radius, 0, 0);
 	pos2.pos = Vector(anchor_dim, 0, 0);
 	ChSharedPtr<ChLinkLockRevolute> joint_anchor(new ChLinkLockRevolute);
-	joint_anchor->Initialize(string_vector[fibers-1], Anchor, true, pos1, pos2);
+	joint_anchor->Initialize(string_vector[fibers - 1], Anchor, true, pos1, pos2);
 	system_gpu->AddLink(joint_anchor);
-
 
 	int3 num_per_dir;
 	num_per_dir = I3(200, 30, 80);
-
+	//num_per_dir = I3(50, 8, 20);
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
-	layer_gen->SetDensity(1000);
+	layer_gen->SetDensity(50);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius, particle_radius));
 	layer_gen->material->SetFriction(particle_friction);
 	layer_gen->material->SetCohesion(particle_cohesion);

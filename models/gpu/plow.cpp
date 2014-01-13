@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(20);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(40);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(40);
 	system_gpu->SetTol(1e-5);
@@ -385,7 +385,7 @@ int main(int argc, char* argv[]) {
 	//num_per_dir = I3(200, 1, 80);
 	num_per_dir = I3(100, 6, 40);
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
-	layer_gen->SetDensity(50);
+	layer_gen->SetDensity(25);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius, particle_radius));
 	layer_gen->material->SetFriction(.2);
 	layer_gen->material->SetCohesion(.001);

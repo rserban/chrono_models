@@ -401,7 +401,7 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-	//layer_gen->addPerturbedVolumeMixture(R3(0, -2, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
+	layer_gen->addPerturbedVolumeMixture(R3(0, -2, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:

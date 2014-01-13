@@ -147,7 +147,6 @@ int main(int argc, char* argv[]) {
 	//omp_set_num_threads(threads);
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
-	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
@@ -158,7 +157,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(30);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(15);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
 	system_gpu->SetTol(.1);
 	system_gpu->SetTolSpeeds(.1);
 	system_gpu->SetMaxPenetrationRecoverySpeed(25);
@@ -167,8 +166,8 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(30);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
-	mcollisionengine->setBinsPerAxis(I3(50, 50, 50));
-	mcollisionengine->setBodyPerBin(100, 50);
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(30, 30, 30));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 	((ChSystemParallel*) system_gpu)->SetAABB(R3(-6, -6, -6), R3(6, 6, 6));
@@ -266,7 +265,10 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetCylinderRadius(4.5);
 	layer_gen->SetNormalDistribution(particle_radius, .01);
 	layer_gen->AddMixtureType(MIX_SPHERE);
-	//layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	layer_gen->AddMixtureType(MIX_CUBE);
+	layer_gen->AddMixtureType(MIX_CYLINDER);
+	layer_gen->AddMixtureType(MIX_CONE);
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_fiber->SetFriction(.4);

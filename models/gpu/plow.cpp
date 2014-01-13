@@ -276,10 +276,10 @@ void RunTimeStep(T* mSys, const int frame) {
 	engine1->Empty_forces_accumulators();
 	engine2->Empty_forces_accumulators();
 	if (frame * timestep > .2) {
-		engine1->SetWvel_loc(ChVector<>(0, 0, 2));
-		engine2->SetWvel_loc(ChVector<>(0, 0, 2));
+		engine1->SetWvel_loc(ChVector<>(0, 0, 4));
+		engine2->SetWvel_loc(ChVector<>(0, 0, 4));
 		for (int i = 0; i < 6; i++) {
-			rollers[i]->SetWvel_loc(ChVector<>(0, 0, 2));
+			rollers[i]->SetWvel_loc(ChVector<>(0, 0, 4));
 		}
 		//engine1->Accumulate_torque(ChVector<>(0, 0, 400), 1);
 		//engine2->Accumulate_torque(ChVector<>(0, 0, 400), 1);

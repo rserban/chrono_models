@@ -176,7 +176,6 @@ void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 				csv_output << R2(rad_final.x, rad_final.y);
 				csv_output.Endline();
 			} else {
-				csv_output << type;
 				csv_output << -1;
 				csv_output.Endline();
 			}

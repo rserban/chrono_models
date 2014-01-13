@@ -68,11 +68,11 @@ ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation
 ChSharedBodyPtr createChassisM113(ChVector<> &position) {
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(mrigidBody, mass_chasis, position * scale_tank, Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
-	AddCollisionGeometry(mrigidBody, BOX, ChVector<>(1.5, .5, .7) * scale_tank, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, BOX, ChVector<>(1.5, .5, .6) * scale_tank, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 
 	ChSharedBodyPtr mPlow = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mPlow, 50, position + ChVector<>(-2.75, -.2, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
+	InitObject(mPlow, 10, position + ChVector<>(-2.9, -.15, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
 	AddCollisionGeometryTriangleMesh(mPlow, "plow.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//AddCollisionGeometry(mPlow, BOX, ChVector<>(.1, .7, 2.2)*scale_tank, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(mPlow, (ChSystemParallel *) system_gpu);
@@ -383,17 +383,18 @@ int main(int argc, char* argv[]) {
 
 	int3 num_per_dir;
 	//num_per_dir = I3(200, 1, 80);
-	num_per_dir = I3(100, 6, 40);
+	//num_per_dir = I3(150, 1, 50);
+	num_per_dir = I3(150, 8, 50);
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
-	layer_gen->SetDensity(25);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius, particle_radius));
+	layer_gen->SetDensity(10);
+	layer_gen->SetRadius(R3(particle_radius, particle_radius*1.5, particle_radius));
 	layer_gen->material->SetFriction(.2);
-	layer_gen->material->SetCohesion(.001);
+	layer_gen->material->SetCohesion(.0001);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(.001);
 	layer_gen->AddMixtureType(MIX_SPHERE);
-//	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 //	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 //	layer_gen->AddMixtureType(MIX_CUBE);
 //	layer_gen->AddMixtureType(MIX_CYLINDER);
@@ -401,7 +402,7 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0, -2, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
+	layer_gen->addPerturbedVolumeMixture(R3(-2.4, -2.2, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:

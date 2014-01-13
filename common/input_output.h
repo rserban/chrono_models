@@ -113,8 +113,8 @@ void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 			ChSharedPtr<ChAsset> asset = abody->GetAssets().at(j);
 			ChVisualization* visual_asset =  ((ChVisualization *) (asset.get_ptr()));
 			Vector center = visual_asset->Pos;
-			pos_final = pos + center;
 			center = b_rot.Rotate(center);
+			pos_final = pos + center;
 			Quaternion lrot = visual_asset->Rot.Get_A_quaternion();
 			rot = b_rot % lrot;
 

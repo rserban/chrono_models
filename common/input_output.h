@@ -117,7 +117,7 @@ void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 			pos_final = pos + center;
 			Quaternion lrot = visual_asset->Rot.Get_A_quaternion();
 			rot = b_rot % lrot;
-
+			rot.Normalize();
 			if (asset.IsType<ChSphereShape>()) {
 				ChSphereShape * sphere_shape = ((ChSphereShape *) (asset.get_ptr()));
 				float radius = sphere_shape->GetSphereGeometry().rad;

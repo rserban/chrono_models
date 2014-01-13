@@ -89,15 +89,12 @@ void RunTimeStep(T* mSys, const int frame) {
 
 		if (frame % 50 == 0 && frame * timestep < 2.0) {
 
-			//layer_gen.AddMixtureType(MIX_DOUBLESPHERE);
-			//layer_gen.AddMixtureType(MIX_CUBE);
-			//layer_gen.AddMixtureType(MIX_CYLINDER);
-			//layer_gen.AddMixtureType(MIX_CONE);
-
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
 
-			//layer_gen->addPerturbedVolume(R3(0, 0, 0), SPHERE, I3(40, 1, 40), R3(0, 0, 0), R3(0, -5, 0));
 			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(0, 0, 0), R3(0, -5, 0));
+
+			//layer_gen->addPerturbedVolume(R3(0, 0, 0), SPHERE, I3(40, 1, 40), R3(0, 0, 0), R3(0, -5, 0));
+
 			//layer_gen->addPerturbedVolume(R3(-2, 0, 0), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
 			//layer_gen->SetRadius(R3(particle_radius,particle_radius*2.0,particle_radius));
 			//layer_gen->addPerturbedVolume(R3(0, 0, 2), SPHERE, I3(15, 1, 15), R3(0, 0, 0), R3(0, -5, 0));
@@ -129,7 +126,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	}
 	Quaternion q1;
 	q1.Q_from_AngY(ang);
-	spinner->SetPos(Vector(0, container_height - container_size.y + 1, 0));
+	spinner->SetPos(Vector(0, container_height - container_size.y + 1.5, 0));
 	spinner->SetPos_dt(Vector(0, 0, 0));
 	spinner->SetRot(q1);
 
@@ -141,7 +138,7 @@ int main(int argc, char* argv[]) {
 
 	if (argc > 1) {
 		cohesion = atof(argv[1]);
-		data_folder=argv[2];
+		data_folder = argv[2];
 		//threads = (atoi(argv[1]));
 	}
 	//omp_set_num_threads(threads);
@@ -249,8 +246,15 @@ int main(int argc, char* argv[]) {
 //		AddCollisionGeometry(slicer2, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
 //		FinalizeObject(slicer2, (ChSystemParallel *) system_gpu);
 	spinner = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(spinner, 100000, Vector(0, container_size.y / 2.0 + .6 + .4, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
-	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, 1, 3.5), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	InitObject(spinner, 100000, Vector(0, container_height - container_size.y + 1.5, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
+	real spinner_h = .5;
+	AddCollisionGeometry(spinner, CYLINDER, Vector(.5, .4, .5), Vector(0, 0, 0), chrono::Q_from_AngAxis(0, ChVector<>(0, 0, 1)));
+	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, spinner_h, 1.5), Vector(0, 0, 1.75), chrono::Q_from_AngAxis(CH_C_PI / 4.0, ChVector<>(0, 0, 1)));
+	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, spinner_h, 1.5), Vector(0, 0, -1.75), chrono::Q_from_AngAxis(-CH_C_PI / 4.0, ChVector<>(0, 0, 1)));
+
+	AddCollisionGeometry(spinner, BOX, Vector(1.5, spinner_h, container_thickness / 15.0), Vector(1.75, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 4.0, ChVector<>(1, 0, 0)));
+	AddCollisionGeometry(spinner, BOX, Vector(1.5, spinner_h, container_thickness / 15.0), Vector(-1.75, 0, 0), chrono::Q_from_AngAxis(-CH_C_PI / 4.0, ChVector<>(1, 0, 0)));
+
 	FinalizeObject(spinner, (ChSystemParallel *) system_gpu);
 
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);

@@ -127,6 +127,9 @@ IF (ENABLE_UNIT_GPU)
 
     ADD_EXECUTABLE(cones models/gpu/cones)      
     TARGET_LINK_LIBRARIES(cones   ${CHRONO_LIB} ${GPU_LIBS})
+    
+     ADD_EXECUTABLE(plow models/gpu/plow)      
+    TARGET_LINK_LIBRARIES(plow   ${CHRONO_LIB} ${GPU_LIBS})
 
     ADD_EXECUTABLE(pipe models/gpu/pipe)      
     TARGET_LINK_LIBRARIES(pipe   ${CHRONO_LIB} ${GPU_LIBS})

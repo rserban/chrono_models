@@ -104,17 +104,24 @@ void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 		ChBody* abody = mSys->Get_bodylist()->at(i);
 		const Vector pos = abody->GetPos();
 		const Vector vel = abody->GetPos_dt();
-		Quaternion rot = abody->GetRot();
+		Quaternion b_rot = abody->GetRot();
 		Vector pos_final, rad_final;
 		ShapeType type = SPHERE;
 
 		for (int j = 0; j < abody->GetAssets().size(); j++) {
+			Quaternion rot(1, 0, 0, 0);
 			ChSharedPtr<ChAsset> asset = abody->GetAssets().at(j);
+			ChVisualization* visual_asset =  ((ChVisualization *) (asset.get_ptr()));
+			Vector center = visual_asset->Pos;
+			pos_final = pos + center;
+			center = b_rot.Rotate(center);
+			Quaternion lrot = visual_asset->Rot.Get_A_quaternion();
+			rot = b_rot % lrot;
+
 			if (asset.IsType<ChSphereShape>()) {
 				ChSphereShape * sphere_shape = ((ChSphereShape *) (asset.get_ptr()));
 				float radius = sphere_shape->GetSphereGeometry().rad;
-				Vector center = sphere_shape->GetSphereGeometry().center;
-				center = rot.Rotate(center);
+				center = b_rot.Rotate(center);
 				pos_final = pos + center;
 				rad_final.x = radius;
 				rad_final.y = radius;
@@ -123,37 +130,26 @@ void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 			}
 
 			else if (asset.IsType<ChEllipsoidShape>()) {
-
 				ChEllipsoidShape * ellipsoid_shape = ((ChEllipsoidShape *) (asset.get_ptr()));
 				rad_final = ellipsoid_shape->GetEllipsoidGeometry().rad;
-				Vector center = ellipsoid_shape->GetEllipsoidGeometry().center;
-				center = rot.Rotate(center);
-
-				pos_final = pos + center;
-
 				type = ELLIPSOID;
 			} else if (asset.IsType<ChBoxShape>()) {
 				ChBoxShape * box_shape = ((ChBoxShape *) (asset.get_ptr()));
 				rad_final = box_shape->GetBoxGeometry().Size;
-				Vector center = box_shape->GetBoxGeometry().Pos;
-				pos_final = pos + center;
 				type = BOX;
 			} else if (asset.IsType<ChCylinderShape>()) {
 				ChCylinderShape * cylinder_shape = ((ChCylinderShape *) (asset.get_ptr()));
 				double rad = cylinder_shape->GetCylinderGeometry().rad;
+				double height = cylinder_shape->GetCylinderGeometry().p1.y - cylinder_shape->GetCylinderGeometry().p2.y;
 				rad_final.x = rad;
-				rad_final.y = cylinder_shape->GetCylinderGeometry().p2.y - cylinder_shape->GetCylinderGeometry().p1.y;
+				rad_final.y = height;
 				rad_final.z = rad;
-				pos_final = pos;
 				type = CYLINDER;
 			} else if (asset.IsType<ChConeShape>()) {
-				ChConeShape * cylinder_shape = ((ChConeShape *) (asset.get_ptr()));
-				Vector center = cylinder_shape->GetConeGeometry().center;
-				center = rot.Rotate(center);
-				rad_final.x = cylinder_shape->GetConeGeometry().rad.x;
-				rad_final.y = cylinder_shape->GetConeGeometry().rad.y;
-				rad_final.z = cylinder_shape->GetConeGeometry().rad.z;
-				pos_final = pos + center;
+				ChConeShape * cone_shape = ((ChConeShape *) (asset.get_ptr()));
+				rad_final.x = cone_shape->GetConeGeometry().rad.x;
+				rad_final.y = cone_shape->GetConeGeometry().rad.y;
+				rad_final.z = cone_shape->GetConeGeometry().rad.z;
 				type = CONE;
 			}
 

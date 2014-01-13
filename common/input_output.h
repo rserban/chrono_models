@@ -121,8 +121,6 @@ void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
 			if (asset.IsType<ChSphereShape>()) {
 				ChSphereShape * sphere_shape = ((ChSphereShape *) (asset.get_ptr()));
 				float radius = sphere_shape->GetSphereGeometry().rad;
-				center = b_rot.Rotate(center);
-				pos_final = pos + center;
 				rad_final.x = radius;
 				rad_final.y = radius;
 				rad_final.z = radius;

@@ -124,7 +124,7 @@ void ReadAllObjectsWithGeometryChrono(T* mSys, string filename, bool GPU = true)
 		ChSharedPtr<ChMaterialSurface> material;
 		material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 
-		ss >> mass >> active >> family >> nocoll_family;
+		ss >> mass >> active;
 		ss >> material->static_friction;
 		ss >> material->sliding_friction;
 		ss >> material->rolling_friction;
@@ -170,7 +170,7 @@ void ReadAllObjectsWithGeometryChrono(T* mSys, string filename, bool GPU = true)
 		} else {
 			mrigidBody = ChSharedBodyPtr(new ChBody());
 		}
-		InitObject(mrigidBody, mass, pos, rot, material, true, !active, family, nocoll_family);
+		InitObject(mrigidBody, mass, pos, rot, material, true, !active, 2, 4);
 		AddCollisionGeometry(mrigidBody, type, rad, ChVector<>(0, 0, 0), QUNIT);
 		if (GPU) {
 			FinalizeObject(mrigidBody, (ChSystemParallel*) mSys);
@@ -246,7 +246,7 @@ void DumpAllObjectsWithGeometryChrono(T* mSys, string filename, bool GPU = true)
 				nocoll_family = ((ChModelBullet*) abody->GetCollisionModel())->GetFamilyMask();
 
 			}
-			csv_output << R4(abody->GetMass(), abody->IsActive(), family, nocoll_family);
+			csv_output << R2(abody->GetMass(), abody->IsActive());
 
 			csv_output
 					<< R4(abody->GetMaterialSurface()->static_friction, abody->GetMaterialSurface()->sliding_friction, abody->GetMaterialSurface()->rolling_friction,

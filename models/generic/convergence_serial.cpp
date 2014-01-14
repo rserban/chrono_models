@@ -72,6 +72,7 @@ int main(int argc, char* argv[]) {
 	particle_radius = atof(argv[5]);
 	real block_mass = atof(argv[6]);
 	bool save = atoi(argv[7]);
+	bool visual = atoi(argv[8]);
 
 	cout << solver << " " << max_iter << " " << tolerance << " " << particle_radius << " " << data_folder << endl;
 
@@ -102,7 +103,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetRecordViolation(true);
 	//=========================================================================================================
 	if (save == false) {
-		cout<<"read data"<<endl;
+		cout << "read data" << endl;
 		ReadAllObjectsWithGeometryChrono(system, "dump.txt", false);
 	} else {
 		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody());
@@ -117,19 +118,25 @@ int main(int argc, char* argv[]) {
 		material->SetFriction(plate_friction);
 		material->SetCompliance(0);
 
-		InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height, 0), quat, material, true, true, 0, 0);
-		InitObject(R, 100000, Vector(container_width - container_thickness, plate_height, 0), quat, material, true, true, 0, 0);
-		InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, 0, 0);
-		InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, 0, 0);
-		InitObject(BTM, 100000, Vector(0, plate_height - container_height, 0), quat, material, true, true, 1, 1);
-		InitObject(BLOCK, block_mass, Vector(0, 5 - .5, 0), quat, material, true, false, 1, 0);
+		InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height, 0), quat, material, true, true, 2, 4);
+		InitObject(R, 100000, Vector(container_width - container_thickness, plate_height, 0), quat, material, true, true, 2, 4);
+		InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, 2, 4);
+		InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, 2, 4);
+		InitObject(BTM, 100000, Vector(0, plate_height - container_height, 0), quat, material, true, true, 2, 4);
+
+		ChSharedPtr<ChMaterialSurface> material_block;
+		material_block = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+		material_block->SetFriction(0);
+		material_block->SetCompliance(0);
+
+		InitObject(BLOCK, block_mass, Vector(0, 5 - .5, 0), quat, material_block, true, false, 2, 4);
 
 		AddCollisionGeometry(L, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
 		AddCollisionGeometry(R, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
 		AddCollisionGeometry(F, BOX, Vector(container_width * wscale, container_height, container_thickness), lpos, quat);
 		AddCollisionGeometry(B, BOX, Vector(container_width * wscale, container_height, container_thickness), lpos, quat);
 		AddCollisionGeometry(BTM, BOX, Vector(container_width * wscale, container_thickness, container_width), lpos, quat);
-		AddCollisionGeometry(BLOCK, BOX, Vector(container_width, container_thickness, container_width), lpos, quat);
+		AddCollisionGeometry(BLOCK, BOX, Vector(container_width - container_thickness * 2, container_thickness, container_width - container_thickness * 2), lpos, quat);
 
 		FinalizeObject(L, system);
 		FinalizeObject(R, system);
@@ -148,32 +155,34 @@ int main(int argc, char* argv[]) {
 		layer_gen.material->SetSpinningFriction(0);
 		layer_gen.material->SetCohesion(0);
 		layer_gen.material->SetCompliance(0);
-		int3 num_per_dir = I3(2.0 / particle_radius, 4.0 / particle_radius, 2.0 / particle_radius);
+		int3 num_per_dir = I3(1.7 / particle_radius, 4.0 / particle_radius, 1.7 / particle_radius);
 
 		layer_gen.AddMixtureType(MIX_SPHERE);
-		layer_gen.AddMixtureType(MIX_ELLIPSOID);
+		//layer_gen.AddMixtureType(MIX_ELLIPSOID);
 		//layer_gen.AddMixtureType(MIX_CONE);
-		layer_gen.AddMixtureType(MIX_CUBE);
-		layer_gen.AddMixtureType(MIX_CYLINDER);
+		//layer_gen.AddMixtureType(MIX_CUBE);
+		//layer_gen.AddMixtureType(MIX_CYLINDER);
 
 		//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 		//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-		layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(0, .0, 0), R3(0, -4, 0));
+		layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(.4, 0, .4), R3(0, -4, 0));
 	}
 	//layer_gen.addPerturbedVolume(R3(0, -.2, 0), SPHERE, num_per_dir, R3(0.0, 0.0, 0.0), R3(0, -4, 0), false);
 	//=========================================================================================================
 	//////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system, 800, 600, 0, 0, "Test_Solvers");
-//
-//	//openGLView.render_camera->camera_pos = Vector(0, -5, -40);
-//	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	//openGLView.render_camera->mScale = .1;
-//
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	if (visual) {
+		ChOpenGLManager * window_manager = new ChOpenGLManager();
+		ChOpenGL openGLView(window_manager, system, 800, 600, 0, 0, "Test_Solvers");
+
+		//openGLView.render_camera->camera_pos = Vector(0, -5, -40);
+		//openGLView.render_camera->look_at = Vector(0, -5, 0);
+		//openGLView.render_camera->mScale = .1;
+
+		openGLView.SetCustomCallback(RunTimeStep);
+		openGLView.StartSpinning(window_manager);
+		window_manager->CallGlutMainLoop();
+	}
 	//=========================================================================================================
 //	ofstream ofile("convergence.txt");
 //	ChTimer<double> timer;

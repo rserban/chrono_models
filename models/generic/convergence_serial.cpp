@@ -117,12 +117,12 @@ int main(int argc, char* argv[]) {
 		material->SetFriction(plate_friction);
 		material->SetCompliance(0);
 
-		InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height, 0), quat, material, true, true, 1, 1);
-		InitObject(R, 100000, Vector(container_width - container_thickness, plate_height, 0), quat, material, true, true, 1, 1);
-		InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, 1, 1);
-		InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, 1, 1);
+		InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height, 0), quat, material, true, true, 0, 0);
+		InitObject(R, 100000, Vector(container_width - container_thickness, plate_height, 0), quat, material, true, true, 0, 0);
+		InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, 0, 0);
+		InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, 0, 0);
 		InitObject(BTM, 100000, Vector(0, plate_height - container_height, 0), quat, material, true, true, 1, 1);
-		InitObject(BLOCK, block_mass, Vector(0, 5 - .5, 0), quat, material, true, false, 1, 1);
+		InitObject(BLOCK, block_mass, Vector(0, 5 - .5, 0), quat, material, true, false, 1, 0);
 
 		AddCollisionGeometry(L, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
 		AddCollisionGeometry(R, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);

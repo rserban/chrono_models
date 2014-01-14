@@ -155,11 +155,11 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(15);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
-	system_gpu->SetTol(.1);
-	system_gpu->SetTolSpeeds(.1);
+	system_gpu->SetTol(.001);
+	system_gpu->SetTolSpeeds(.001);
 	system_gpu->SetMaxPenetrationRecoverySpeed(25);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.1);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.001);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(1e-4, 1e-4, .2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(30);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
@@ -258,11 +258,12 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(spinner, (ChSystemParallel *) system_gpu);
 
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
-	layer_gen->SetMass(1);
+	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(R3(particle_radius));
 
 	layer_gen->material->SetFriction(.5);
 	layer_gen->material->SetCohesion(cohesion);
+	layer_gen->material->SetCompliance(1e-4);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->SetRadius(R3(particle_radius));
@@ -272,7 +273,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	layer_gen->AddMixtureType(MIX_CUBE);
 	layer_gen->AddMixtureType(MIX_CYLINDER);
-	layer_gen->AddMixtureType(MIX_CONE);
+	//layer_gen->AddMixtureType(MIX_CONE);
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_fiber->SetFriction(.4);

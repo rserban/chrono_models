@@ -2,7 +2,7 @@
 #include <random>
 
 enum MixType {
-	MIX_SPHERE, MIX_ELLIPSOID, MIX_DOUBLESPHERE, MIX_CUBE, MIX_CYLINDER, MIX_CONE, MIX_TYPE1, MIX_TYPE2, MIX_TYPE3, MIX_TYPE4
+	MIX_SPHERE, MIX_ELLIPSOID, MIX_DOUBLESPHERE, MIX_CUBE, MIX_CUBE_SPHERE, MIX_CYLINDER, MIX_CONE, MIX_TYPE1, MIX_TYPE2, MIX_TYPE3, MIX_TYPE4
 };
 class VoronoiSampler {
 	public:
@@ -294,6 +294,16 @@ class ParticleGenerator {
 							AddCollisionGeometry(body, ELLIPSOID, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 						} else if (mixture[mix_type] == MIX_CUBE) {
 							AddCollisionGeometry(body, BOX, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+						} else if (mixture[mix_type] == MIX_CUBE_SPHERE) {
+							AddCollisionGeometry(body, BOX, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(-r.x, -r.y, -r.y), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(-r.x, -r.y, r.y), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(r.x, -r.y, -r.y), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(r.x, -r.y, r.y), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(-r.x, r.y, -r.y), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(r.x, r.y, -r.y), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(-r.x, r.y, r.y), Quaternion(1, 0, 0, 0));
+							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x/10.0, r.y, r.z), Vector(r.x, r.y, r.y), Quaternion(1, 0, 0, 0));
 						} else if (mixture[mix_type] == MIX_CYLINDER) {
 							AddCollisionGeometry(body, CYLINDER, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 						} else if (mixture[mix_type] == MIX_CONE) {
@@ -406,7 +416,7 @@ class ParticleGenerator {
 
 				body = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 
-				createBody(body, pos*scale+origin, mass);
+				createBody(body, pos * scale + origin, mass);
 				AddCollisionGeometry(body, type, ChVector<>(rad.x, rad.y, rad.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 				FinalizeObject(body, (ChSystemParallel *) mSys);
 				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
@@ -723,7 +733,7 @@ class ParticleGeneratorCPU {
 //							mix_type = 0;
 //						}
 
-						FinalizeObject(body,  mSys);
+						FinalizeObject(body, mSys);
 						body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
 						counter++;
 					}
@@ -785,7 +795,7 @@ class ParticleGeneratorCPU {
 
 								AddCollisionGeometry(body, type, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-								FinalizeObject(body,  mSys);
+								FinalizeObject(body, mSys);
 								body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
 							}
 
@@ -812,7 +822,7 @@ class ParticleGeneratorCPU {
 
 				body = ChSharedBodyPtr(new ChBody());
 
-				createBody(body, pos*scale+origin, mass);
+				createBody(body, pos * scale + origin, mass);
 				AddCollisionGeometry(body, type, ChVector<>(rad.x, rad.y, rad.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 				FinalizeObject(body, mSys);
 				body->SetPos_dt(Vector(vel.x, vel.y, vel.z));

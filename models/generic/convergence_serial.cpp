@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
 	real recovery_speed = atof(argv[4]);
 	particle_radius = atof(argv[5]);
 	real block_mass = atof(argv[6]);
-	data_folder = argv[7];
+	bool save = atoi(argv[7]);
 
 	cout << solver << " " << max_iter << " " << tolerance << " " << particle_radius << " " << data_folder << endl;
 
@@ -101,65 +101,66 @@ int main(int argc, char* argv[]) {
 	system->SetStep(timestep);
 	((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetRecordViolation(true);
 	//=========================================================================================================
+	if (save == false) {
+		cout<<"read data"<<endl;
+		ReadAllObjectsWithGeometryChrono(system, "dump.txt", false);
+	} else {
+		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody());
+		ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody());
+		ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody());
+		ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody());
+		ChSharedBodyPtr BTM = ChSharedBodyPtr(new ChBody());
+		BLOCK = ChSharedBodyPtr(new ChBody());
 
-	//ReadAllObjectsWithGeometryChrono(system, "dump.txt", false);
+		ChSharedPtr<ChMaterialSurface> material;
+		material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+		material->SetFriction(plate_friction);
+		material->SetCompliance(0);
 
-	 ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody());
-	 ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody());
-	 ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody());
-	 ChSharedBodyPtr B = ChSharedBodyPtr(new ChBody());
-	 ChSharedBodyPtr BTM = ChSharedBodyPtr(new ChBody());
-	 BLOCK = ChSharedBodyPtr(new ChBody());
+		InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height, 0), quat, material, true, true, 1, 1);
+		InitObject(R, 100000, Vector(container_width - container_thickness, plate_height, 0), quat, material, true, true, 1, 1);
+		InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, 1, 1);
+		InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, 1, 1);
+		InitObject(BTM, 100000, Vector(0, plate_height - container_height, 0), quat, material, true, true, 1, 1);
+		InitObject(BLOCK, block_mass, Vector(0, 5 - .5, 0), quat, material, true, false, 1, 1);
 
-	 ChSharedPtr<ChMaterialSurface> material;
-	 material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	 material->SetFriction(plate_friction);
-	 material->SetCompliance(0);
+		AddCollisionGeometry(L, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
+		AddCollisionGeometry(R, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
+		AddCollisionGeometry(F, BOX, Vector(container_width * wscale, container_height, container_thickness), lpos, quat);
+		AddCollisionGeometry(B, BOX, Vector(container_width * wscale, container_height, container_thickness), lpos, quat);
+		AddCollisionGeometry(BTM, BOX, Vector(container_width * wscale, container_thickness, container_width), lpos, quat);
+		AddCollisionGeometry(BLOCK, BOX, Vector(container_width, container_thickness, container_width), lpos, quat);
 
-	 InitObject(L, 100000, Vector(-container_width + container_thickness, plate_height, 0), quat, material, true, true, 1, 1);
-	 InitObject(R, 100000, Vector(container_width - container_thickness, plate_height, 0), quat, material, true, true, 1, 1);
-	 InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, 1, 1);
-	 InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, 1, 1);
-	 InitObject(BTM, 100000, Vector(0, plate_height - container_height, 0), quat, material, true, true, 1, 1);
-	 InitObject(BLOCK, block_mass, Vector(0, 5 - .5, 0), quat, material, true, false, 1, 1);
+		FinalizeObject(L, system);
+		FinalizeObject(R, system);
+		FinalizeObject(F, system);
+		FinalizeObject(B, system);
+		FinalizeObject(BTM, system);
+		FinalizeObject(BLOCK, system);
+		BLOCK->SetPos_dt(ChVector<>(0, -4, 0));
 
-	 AddCollisionGeometry(L, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
-	 AddCollisionGeometry(R, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
-	 AddCollisionGeometry(F, BOX, Vector(container_width * wscale, container_height, container_thickness), lpos, quat);
-	 AddCollisionGeometry(B, BOX, Vector(container_width * wscale, container_height, container_thickness), lpos, quat);
-	 AddCollisionGeometry(BTM, BOX, Vector(container_width * wscale, container_thickness, container_width), lpos, quat);
-	 AddCollisionGeometry(BLOCK, BOX, Vector(container_width, container_thickness, container_width), lpos, quat);
+		ParticleGeneratorCPU layer_gen(system);
+		layer_gen.SetDensity(1000);
+		layer_gen.SetRadius(R3(particle_radius));
+		//layer_gen.SetNormalDistribution(particle_radius, .01);
+		layer_gen.material->SetFriction(.1);
+		layer_gen.material->SetRollingFriction(0);
+		layer_gen.material->SetSpinningFriction(0);
+		layer_gen.material->SetCohesion(0);
+		layer_gen.material->SetCompliance(0);
+		int3 num_per_dir = I3(2.0 / particle_radius, 4.0 / particle_radius, 2.0 / particle_radius);
 
-	 FinalizeObject(L, system);
-	 FinalizeObject(R, system);
-	 FinalizeObject(F, system);
-	 FinalizeObject(B, system);
-	 FinalizeObject(BTM, system);
-	 FinalizeObject(BLOCK, system);
-	 BLOCK->SetPos_dt(ChVector<>(0, -4, 0));
+		layer_gen.AddMixtureType(MIX_SPHERE);
+		layer_gen.AddMixtureType(MIX_ELLIPSOID);
+		//layer_gen.AddMixtureType(MIX_CONE);
+		layer_gen.AddMixtureType(MIX_CUBE);
+		layer_gen.AddMixtureType(MIX_CYLINDER);
 
-	 ParticleGeneratorCPU layer_gen(system);
-	 layer_gen.SetDensity(1000);
-	 layer_gen.SetRadius(R3(particle_radius));
-	 //layer_gen.SetNormalDistribution(particle_radius, .01);
-	 layer_gen.material->SetFriction(.1);
-	 layer_gen.material->SetRollingFriction(0);
-	 layer_gen.material->SetSpinningFriction(0);
-	 layer_gen.material->SetCohesion(0);
-	 layer_gen.material->SetCompliance(0);
-	 int3 num_per_dir = I3(2.0 / particle_radius, 4.0 / particle_radius, 2.0 / particle_radius);
+		//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
+		//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-	 layer_gen.AddMixtureType(MIX_SPHERE);
-	 layer_gen.AddMixtureType(MIX_ELLIPSOID);
-	 //layer_gen.AddMixtureType(MIX_CONE);
-	 layer_gen.AddMixtureType(MIX_CUBE);
-	 layer_gen.AddMixtureType(MIX_CYLINDER);
-
-	 //layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
-	 //layer_gen->UseNormalCohesion(particle_cohesion, 1);
-
-	 layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(0, .0, 0), R3(0, -4, 0));
-
+		layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(0, .0, 0), R3(0, -4, 0));
+	}
 	//layer_gen.addPerturbedVolume(R3(0, -.2, 0), SPHERE, num_per_dir, R3(0.0, 0.0, 0.0), R3(0, -4, 0), false);
 	//=========================================================================================================
 	//////Rendering specific stuff:
@@ -218,9 +219,9 @@ int main(int argc, char* argv[]) {
 //	csv_output.CloseFile();
 //	cout << "TIME: " << timer() << endl;
 //	ofile.close();
-
-	DumpAllObjectsWithGeometryChrono(system, "dump.txt");
-
+	if (save == true) {
+		DumpAllObjectsWithGeometryChrono(system, "dump.txt");
+	}
 	return 0;
 }
 

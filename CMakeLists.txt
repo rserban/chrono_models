@@ -106,6 +106,9 @@ IF (ENABLE_UNIT_GPU)
     
     ADD_EXECUTABLE(drag_anchor models/gpu/drag_anchor.cpp)		
     TARGET_LINK_LIBRARIES(drag_anchor	${CHRONO_LIB} ${GPU_LIBS})
+
+    ADD_EXECUTABLE(mixer models/gpu/mixer.cpp)		
+    TARGET_LINK_LIBRARIES(mixer	${CHRONO_LIB} ${GPU_LIBS})
     
     #ADD_EXECUTABLE(rollers models/gpu/rollers.cpp)		
     #TARGET_LINK_LIBRARIES(rollers	${CHRONO_LIB} ${GPU_LIBS})

@@ -64,12 +64,12 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	system_gpu->SetTol(.3);
-	system_gpu->SetTolSpeeds(.3);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.3);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(40);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(80);
+	system_gpu->SetTol(0);
+	system_gpu->SetTolSpeeds(0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
@@ -215,8 +215,8 @@ int main(int argc, char* argv[]) {
 //	}
 
 //	/layer_gen->loadAscii("teapot_thick_low.txt", R3(0, 0, 0), SPHERE, R3(.02, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
-	layer_gen->loadAscii("buddah_.015.txt", R3(0, 0, 0), SPHERE, R3(.015, 0, 0)*1.5, R3(0, -10, 0), R3(2, 2, 2)*1.5);
-	//layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.005, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
+	//layer_gen->loadAscii("buddah_.015.txt", R3(0, 0, 0), SPHERE, R3(.015, 0, 0)*1.5, R3(0, -10, 0), R3(2, 2, 2)*1.5);
+	layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.005, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
 
 //=========================================================================================================
 //Rendering specific stuff:

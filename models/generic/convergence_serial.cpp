@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
 		BLOCK->SetPos_dt(ChVector<>(0, -4, 0));
 
 		ParticleGeneratorCPU layer_gen(system);
-		layer_gen.SetDensity(1000);
+		layer_gen.SetMass(1);
 		layer_gen.SetRadius(R3(particle_radius));
 		//layer_gen.SetNormalDistribution(particle_radius, .01);
 		layer_gen.material->SetFriction(.1);

@@ -5,6 +5,7 @@
 real gravity = -9.80665;
 real timestep = .0005;
 real seconds_to_simulate = 5;
+real tolerance = .01;
 
 //#define USEGPU
 
@@ -16,7 +17,7 @@ real seconds_to_simulate = 5;
 #define ch_system ChSystem
 #endif
 
-int max_iter = 30;
+int max_iter = 100;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -89,8 +90,8 @@ int main(int argc, char* argv[]) {
 	//system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	system_gpu->SetTol(.1);
-	system_gpu->SetTolSpeeds(.1);
+	system_gpu->SetTol(tolerance);
+	system_gpu->SetTolSpeeds(tolerance);
 	system_gpu->SetMaxPenetrationRecoverySpeed(30);
 #ifdef USEGPU
 	//((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
@@ -98,7 +99,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(15);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.001);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(1e-4, 1e-4, .2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(30);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);

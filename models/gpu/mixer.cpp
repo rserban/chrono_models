@@ -30,7 +30,7 @@ real particle_radius = .2;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
-real particle_cohesion = .05;
+real particle_cohesion = .1;
 real ang = 2 * CH_C_PI;
 
 ParticleGenerator<ch_system> *layer_gen;
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 
 	if (argc > 1) {
 		solver = argv[1];
-		max_particles = atof(argv[2]);
+		max_particles = atoi(argv[2]);
 		data_folder = argv[3];
 		//threads = (atoi(argv[1]));
 	}
@@ -161,15 +161,22 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(spinner, BOX, Vector(1.5, spinner_h, container_thickness / 15.0), Vector(-1.75, 0, 0), chrono::Q_from_AngAxis(-CH_C_PI / 4.0, ChVector<>(1, 0, 0)));
 
 	FinalizeObject(spinner, (ch_system *) system_gpu);
-
-	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, false);
-
-	layer_gen->SetMass(1);
+#ifdef USEGPU
+	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, true );
+#else
+	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, false );
+#endif
+	layer_gen->SetMass(1/4.0);
 	layer_gen->SetRadius(R3(particle_radius));
 
 	layer_gen->material->SetFriction(.5);
 	layer_gen->material->SetCohesion(particle_cohesion);
+
+#ifdef USEGPU
+	layer_gen->material->SetCompliance(1e-4);
+#else
 	layer_gen->material->SetCompliance(0);
+#endif
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius * 1.1, particle_radius));

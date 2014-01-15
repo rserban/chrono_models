@@ -107,6 +107,7 @@ int main(int argc, char* argv[]) {
 	if (save == false) {
 		cout << "read data" << endl;
 		ReadAllObjectsWithGeometryChrono(system, "dump.txt", false);
+		system->Get_bodylist()->at(5)->SetMass(block_mass);
 	} else {
 		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody());
 		ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody());

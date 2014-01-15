@@ -50,7 +50,7 @@ int read_file = 0;
 
 string data_folder = "data/trough";
 
-ParticleGenerator *layer_gen;
+ParticleGenerator<ChSystemParallel> *layer_gen;
 ChSharedPtr<ChLinkEngine> eng_F, eng_R;
 
 void createWheel(ChSharedBodyPtr &body) {
@@ -165,13 +165,17 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iter);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
+		((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
+		((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+		((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
+	system_gpu->SetMaxPenetrationRecoverySpeed(100);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(8);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .02);
@@ -359,7 +363,7 @@ int main(int argc, char* argv[]) {
 	cout << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 	//addPerturbedLayer(R3(0, -2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .333, 0, 0, R3(0, 0, 0), system_gpu);
 
-	layer_gen = new ParticleGenerator(system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>(system_gpu);
 	layer_gen->SetDensity(1500);
 	layer_gen->SetRadius(R3(particle_radius));
 	//layer_gen->SetNormalDistribution(particle_radius, .005);

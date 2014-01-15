@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .0005;
-real seconds_to_simulate = timestep * 10;
+real seconds_to_simulate = timestep * 1;
 
 int max_iter = 10;
 
@@ -29,7 +29,7 @@ int particle_grid_z = 2;
 real start_height = 1;
 
 ChSharedBodyPtr impactor;
-ParticleGenerator* layer_gen;
+ParticleGenerator<ChSystemParallel>* layer_gen;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
@@ -75,6 +75,9 @@ int main(int argc, char* argv[]) {
 		cout<<"APGDRS"<<endl;
 		((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	}
+
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->solver.SetAPGDParams(1,.9,2.0);
+
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(I3(100, 100, 100));
@@ -198,7 +201,7 @@ int main(int argc, char* argv[]) {
 //
 	num_per_dir = I3(40, 40, 40);
 
-	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(rad);
 	layer_gen->material->SetFriction(particle_friction);

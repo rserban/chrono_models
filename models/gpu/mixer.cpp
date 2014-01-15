@@ -31,11 +31,9 @@ real particle_density = .5;
 real particle_friction = 0;
 real particle_cohesion = .05;
 real ang = 2 * CH_C_PI;
-#ifdef USEGPU
-ParticleGenerator *layer_gen;
-#else
-ParticleGeneratorCPU *layer_gen;
-#endif
+
+ParticleGenerator<ch_system> *layer_gen;
+
 ChSharedBodyPtr spinner;
 
 string data_folder = "data/mixer";
@@ -43,8 +41,8 @@ int max_particles = 1000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < max_particles) {
-		if (frame % 200 == 0 && frame * timestep < 1) {
-			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(.1, 0, .1), R3(0, -5, 0));
+		if (frame % 250 == 0 && frame * timestep < 1) {
+			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(.1, 0, .1), R3(0, -8, 0));
 		}
 	}
 
@@ -91,9 +89,9 @@ int main(int argc, char* argv[]) {
 	//system_gpu->SetParallelThreadNumber(threads);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	system_gpu->SetTol(1);
-	system_gpu->SetTolSpeeds(1);
-	system_gpu->SetMaxPenetrationRecoverySpeed(20);
+	system_gpu->SetTol(.1);
+	system_gpu->SetTolSpeeds(.1);
+	system_gpu->SetMaxPenetrationRecoverySpeed(30);
 #ifdef USEGPU
 	//((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(30);
@@ -162,27 +160,24 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometry(spinner, BOX, Vector(1.5, spinner_h, container_thickness / 15.0), Vector(-1.75, 0, 0), chrono::Q_from_AngAxis(-CH_C_PI / 4.0, ChVector<>(1, 0, 0)));
 
 	FinalizeObject(spinner, (ch_system *) system_gpu);
-#ifdef USEGPU
-	layer_gen = new ParticleGenerator((ch_system *) system_gpu);
-#else
-	layer_gen = new ParticleGeneratorCPU(system_gpu);
-#endif
+
+	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, false);
 
 	layer_gen->SetMass(1);
 	layer_gen->SetRadius(R3(particle_radius));
 
 	layer_gen->material->SetFriction(.5);
 	layer_gen->material->SetCohesion(particle_cohesion);
-	layer_gen->material->SetCompliance(1e-8);
+	layer_gen->material->SetCompliance(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius * 1.5, particle_radius));
+	layer_gen->SetRadius(R3(particle_radius, particle_radius * 1.1, particle_radius));
 	layer_gen->SetCylinderRadius(4);
 	layer_gen->SetNormalDistribution(particle_radius, .01);
 	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
-	layer_gen->AddMixtureType(MIX_CUBE);
 	//layer_gen->AddMixtureType(MIX_CYLINDER);
+	layer_gen->AddMixtureType(MIX_CUBE);
 	//layer_gen->AddMixtureType(MIX_CONE);
 
 //=========================================================================================================

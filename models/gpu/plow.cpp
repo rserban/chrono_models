@@ -44,7 +44,7 @@ double D = .1692;
 double W = .015;
 int roller_sprocker_counter = 0;
 real particle_radius = .02;
-ParticleGenerator* layer_gen;
+ParticleGenerator<ChSystemParallel>* layer_gen;
 ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation) {
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(mrigidBody, mass_shoe, position * scale_tank, rotation, material_shoes, true, false, 3, 3);
@@ -386,7 +386,7 @@ int main(int argc, char* argv[]) {
 	//num_per_dir = I3(150, 1, 50);
 	//num_per_dir = I3(150, 8, 50);
 	num_per_dir = I3(150*2, 8*2, 50*2);
-	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(10);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius*1.5, particle_radius));
 	layer_gen->material->SetFriction(.2);

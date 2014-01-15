@@ -39,7 +39,7 @@ void RunTimeStep(T* mSys, const int frame) {
 		real mass = 1;
 		real3 vel = R3(0, -5, 0);
 		if (frame % 80 == 0) {
-			ParticleGenerator layer_gen(((ChSystemParallel*) mSys));
+			ParticleGenerator<ChSystemParallel> layer_gen(((ChSystemParallel*) mSys));
 			layer_gen.SetDensity(1000);
 			layer_gen.SetRadius(R3(particle_radius));
 			layer_gen.SetNormalDistribution(particle_radius, particle_radius * .1);

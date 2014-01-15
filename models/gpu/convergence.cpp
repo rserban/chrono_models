@@ -1,7 +1,7 @@
 #include "../../common/common.h"
 #include "../../common/generation.h"
 #include "../../common/parser.h"
-
+#include "../../common/input_output.h"
 ChVector<> lpos(0, 0, 0);
 ChQuaternion<> quat(1, 0, 0, 0);
 
@@ -11,7 +11,7 @@ real plate_thickness = 1;
 real plate_radius = 7;
 real plate_friction = 1;
 
-real particle_radius = .2;
+real particle_radius = .15;
 real particle_mass = .5;
 real particle_density = 1.14;
 real particle_friction = 1.0;
@@ -23,11 +23,11 @@ real container_height = 6.0;
 real wscale = 1;
 
 int max_iter = 80;
-real tolerance = .0001;
+real tolerance = 1e-2;
 
 real gravity = -9.810;
 real timestep = .001;
-real seconds_to_simulate = 3;
+real seconds_to_simulate = 1;
 int num_steps = seconds_to_simulate / timestep;
 
 int particle_grid_x = 10;
@@ -41,10 +41,10 @@ int particle_configuration = 0;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
-	BLOCK->SetWvel_loc(ChVector<>(0, 0, 0));
-	BLOCK->SetPos(ChVector<>(0, BLOCK->GetPos().y, 0));
-	BLOCK->SetPos_dt(ChVector<>(0, BLOCK->GetPos_dt().y, 0));
+		mSys->Get_bodylist()->at(5)->SetRot(ChQuaternion<>(1, 0, 0, 0));
+		mSys->Get_bodylist()->at(5)->SetWvel_loc(ChVector<>(0, 0, 0));
+		mSys->Get_bodylist()->at(5)->SetPos(ChVector<>(0, mSys->Get_bodylist()->at(5)->GetPos().y, 0));
+		mSys->Get_bodylist()->at(5)->SetPos_dt(ChVector<>(0, mSys->Get_bodylist()->at(5)->GetPos_dt().y, 0));
 	if (frame % particles_every == 0) {
 		//addHCPSheet(10, 10, 0, particle_mass, particle_radius, particle_friction, true, 0, 0, particle_initial_vel, (ChSystemParallel*) mSys);
 	}
@@ -66,39 +66,33 @@ int main(int argc, char* argv[]) {
 
 	//=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
-	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 	//=========================================================================================================
 	//ReadInputFile("convergence_config.txt",system_gpu);
-	system_gpu->SetMaxiter(max_iter);
-	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(200);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(30);
+	//system_gpu->SetMaxiter(max_iter);
+	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(20);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(200000);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
+	//((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->solver.SetAPGDParams(10, .9, 2.0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
-	mcollisionengine->setBinsPerAxis(I3(20, 20, 20));
-	mcollisionengine->setBodyPerBin(100, 50);
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(20, 20, 20));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
 	//=========================================================================================================
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
-
+	ReadAllObjectsWithGeometryChrono(system_gpu, "dump.txt");
+/*
 	//=========================================================================================================
-//	Quaternion plate_quat;
-//	plate_quat.Q_from_AngAxis(0, Vector(1, 0, 0));
-//
-//	ChSharedBodyGPUPtr PLATE = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelParallel));
-//	InitObject(PLATE, 1, ChVector<>(0, plate_height, 0), plate_quat, plate_friction, plate_friction, 0, true, true, -1000, -20000);
-//	AddCollisionGeometry(PLATE, BOX, ChVector<>(plate_radius, plate_thickness, plate_radius), lpos, quat);
-//	FinalizeObject(PLATE, (ChSystemParallel *) system_gpu);
 
 	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -117,7 +111,7 @@ int main(int argc, char* argv[]) {
 	InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, -20, -20);
 	InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, -20, -20);
 	InitObject(BTM, 100000, Vector(0, plate_height - container_height, 0), quat, material, true, true, -20, -20);
-	InitObject(BLOCK, 100000, Vector(0, 5, 0), quat, material, true, false, -1, -20);
+	InitObject(BLOCK, 100, Vector(0, 5-.5, 0), quat, material, true, false, -1, -20);
 
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
@@ -132,23 +126,30 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(B, (ChSystemParallel *) system_gpu);
 	FinalizeObject(BTM, (ChSystemParallel *) system_gpu);
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
-
+	BLOCK->SetPos_dt(ChVector<>(0,-4,0));
 	ParticleGenerator layer_gen(system_gpu);
-	layer_gen.SetMass(.5);
+	layer_gen.SetDensity(1000);
 	layer_gen.SetRadius(R3(particle_radius));
 
 	layer_gen.material->SetFriction(1);
 	layer_gen.material->SetRollingFriction(0);
 	layer_gen.material->SetSpinningFriction(0);
 	layer_gen.material->SetCohesion(0);
-	layer_gen.material->SetCompliance(0);
-	int3 num_per_dir = I3(10, 20, 10);
-	//layer_gen.addPerturbedVolume(R3(0 + container_pos.x, container_pos.y, 0 + container_pos.z), SPHERE, I3(num_per_dir.x, 1, num_per_dir.z), R3(.1, .1, .1), R3(0, 0, 0), false);
-	//layer_gen.SetNormalDistribution(particle_radius - particle_radius / 6.0, particle_radius / 6.0);
-	layer_gen.addPerturbedVolume(R3(0, -.2, 0), SPHERE, num_per_dir, R3(.0, .0, .0), R3(0, -4, 0), false);
+	layer_gen.material->SetCompliance(1e-5);
+	int3 num_per_dir = I3(2.0 / particle_radius, 4.0 / particle_radius, 2.0 / particle_radius);
 
-	//addHCPCube(23, 1, 23, particle_mass, particle_radius, particle_friction, true, 0, -15, 0, Vector(0, 0, 0), system_gpu);
+	layer_gen.AddMixtureType(MIX_SPHERE);
+	layer_gen.AddMixtureType(MIX_ELLIPSOID);
+	//layer_gen.AddMixtureType(MIX_CONE);
+	layer_gen.AddMixtureType(MIX_CUBE);
+	layer_gen.AddMixtureType(MIX_CYLINDER);
 
+	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
+	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
+
+	layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(0, .0, 0), R3(0, -4, 0));
+
+*/
 	//=========================================================================================================
 	//////Rendering specific stuff:
 	ChOpenGLManager * window_manager = new ChOpenGLManager();
@@ -187,8 +188,11 @@ int main(int argc, char* argv[]) {
 		timer.stop();
 
 	}
+	DumpAllObjectsWithGeometryChrono(system_gpu, "dump.txt");
+
 	cout << "TIME: " << timer() << endl;
 	ofile.close();
+
 	return 0;
 }
 

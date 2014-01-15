@@ -23,7 +23,7 @@ real particle_cohesion = .1;
 real rolling_fric = 1;
 real spinning_fric = 1;
 
-ParticleGenerator* layer_gen;
+ParticleGenerator<ChSystemParallel>* layer_gen;
 vector<ChSharedBodyPtr> string_vector(1000);
 string data_folder = "data/drag_anchor";
 real chain_radius = .1;
@@ -86,21 +86,21 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(30);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(50);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(20);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
-	system_gpu->SetTol(1e-4);
-	system_gpu->SetTolSpeeds(1e-4);
+	system_gpu->SetTol(0);
+	system_gpu->SetTolSpeeds(0);
 	system_gpu->SetMaxPenetrationRecoverySpeed(1000);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-4);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, .0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(20, 6, 6));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(40, 12, 12));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -174,45 +174,45 @@ int main(int argc, char* argv[]) {
 	roller_quat.Q_from_AngX(PI / 2.0);
 
 	Roller = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(Roller, 1000, Vector(container_size.x - 2, system_height, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -20, -20);
-	AddCollisionGeometry(Roller, SPHERE, Vector(roller_rad, roller_width, roller_rad), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	InitObject(Roller, 1000, Vector(container_size.x - 2, system_height, 0), Quaternion(1, 0, 0, 0), material_fiber, true, false, -5, -5);
+	AddCollisionGeometry(Roller, CYLINDER, Vector(roller_rad, roller_width, roller_rad), Vector(0, 0, 0), roller_quat);
 	FinalizeObject(Roller, (ChSystemParallel *) system_gpu);
-	Roller->SetBodyFixed(true);
+	//Roller->SetBodyFixed(true);
 
 	eng_roller = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
 	eng_roller->Initialize(Roller, Bottom, ChCoordsys<>(ChVector<>(container_size.x - 2, system_height, 0), Q_from_AngZ(CH_C_PI / 2.0)));
 	eng_roller->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
 	eng_roller->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
-	system_gpu->AddLink(eng_roller);
+	//system_gpu->AddLink(eng_roller);
 
-	int chain_segments = (chain_start.x - chain_end.x - anchor_dim) / (chain_radius * 2);
-
-	for (int i = 0; i < chain_segments; i++) {
-		CreateSegment(system_gpu, chain_start - ChVector<>(i * chain_radius * 2, 0, 0), Vector(0, 0, 0));
-	}
-
-	for (int i = 2; i < chain_segments + 1; i++) {
-		JoinSegments(system_gpu, string_vector[i - 2], string_vector[i - 1]);
-	}
-
-	ChCoordsys<> pos1, pos2;
-	pos1.pos = Vector(0, chain_radius, 0);
-	pos2.pos = Vector(0, -roller_rad, 0);
-	//pos2.rot = roller_quat;
-	ChSharedPtr<ChLinkLockLock> joint_roller(new ChLinkLockLock);
-	joint_roller->Initialize(string_vector[0], Roller, true, pos1, pos2);
-	system_gpu->AddLink(joint_roller);
+//	int chain_segments = (chain_start.x - chain_end.x - anchor_dim) / (chain_radius * 2);
 //
-	pos1.pos = Vector(-chain_radius, 0, 0);
-	pos2.pos = Vector(anchor_dim, 0, 0);
-	ChSharedPtr<ChLinkLockRevolute> joint_anchor(new ChLinkLockRevolute);
-	joint_anchor->Initialize(string_vector[fibers - 1], Anchor, true, pos1, pos2);
-	system_gpu->AddLink(joint_anchor);
+//	for (int i = 0; i < chain_segments; i++) {
+//		CreateSegment(system_gpu, chain_start - ChVector<>(i * chain_radius * 2, 0, 0), Vector(0, 0, 0));
+//	}
+//
+//	for (int i = 2; i < chain_segments + 1; i++) {
+//		JoinSegments(system_gpu, string_vector[i - 2], string_vector[i - 1]);
+//	}
+//
+//	ChCoordsys<> pos1, pos2;
+//	pos1.pos = Vector(0, chain_radius, 0);
+//	pos2.pos = Vector(0, -roller_rad, 0);
+//	//pos2.rot = roller_quat;
+//	ChSharedPtr<ChLinkLockLock> joint_roller(new ChLinkLockLock);
+//	joint_roller->Initialize(string_vector[0], Roller, true, pos1, pos2);
+//	system_gpu->AddLink(joint_roller);
+////
+//	pos1.pos = Vector(-chain_radius, 0, 0);
+//	pos2.pos = Vector(anchor_dim, 0, 0);
+//	ChSharedPtr<ChLinkLockRevolute> joint_anchor(new ChLinkLockRevolute);
+//	joint_anchor->Initialize(string_vector[fibers - 1], Anchor, true, pos1, pos2);
+//	system_gpu->AddLink(joint_anchor);
 
 	int3 num_per_dir;
 	num_per_dir = I3(200, 30, 80);
 	//num_per_dir = I3(50, 8, 20);
-	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(50);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius, particle_radius));
 	layer_gen->material->SetFriction(particle_friction);
@@ -224,19 +224,19 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0 , -1, 0 ), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
+	//layer_gen->addPerturbedVolumeMixture(R3(0 , -1, 0 ), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
 	//layer_gen.addPerturbedVolume(R3(2, -2, 0), SPHERE, num_per_dir, R3(.1, .1, .1), R3(-22, 0, 0), false);
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	//openGLView.render_camera->mScale = .4;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	//openGLView.render_camera->look_at = Vector(0, -5, 0);
+	//openGLView.render_camera->mScale = .4;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

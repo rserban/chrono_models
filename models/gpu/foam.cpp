@@ -26,7 +26,7 @@ int particle_grid_z = 2;
 real start_height = 1;
 
 ChSharedBodyPtr impactor;
-ParticleGenerator* layer_gen;
+ParticleGenerator<ChSystemParallel>* layer_gen;
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
 	FinalizeObject(Top, (ChSystemParallel *) system_gpu);
 
-	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetMass(1);
 	layer_gen->SetRadius(R3(particle_radius));
 	layer_gen->SetNormalDistribution(particle_radius, particle_radius / 4.0);

@@ -31,7 +31,7 @@ real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 0;
-ParticleGenerator *layer_gen;
+ParticleGenerator<ChSystemParallel> *layer_gen;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {

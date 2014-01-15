@@ -29,7 +29,7 @@ int particle_grid_z = 2;
 real start_height = 1;
 
 ChSharedBodyPtr impactor;
-ParticleGenerator* layer_gen;
+ParticleGenerator<ChSystemParallel>* layer_gen;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(90, 15, 90));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(50, 90, 50));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
 //
 	num_per_dir = I3(40, 40, 40);
 
-	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(rad);
 	layer_gen->material->SetFriction(particle_friction);
@@ -215,17 +215,17 @@ int main(int argc, char* argv[]) {
 //	}
 
 	//layer_gen->loadAscii("dragon.txt", R3(0, .7*4-6+container_thickness, 0), SPHERE, R3(.015*(2), 0, 0), R3(0, -10, 0), R3(4, 4, 4));
-	layer_gen->loadAscii("dragon_hi_.01.txt", R3(0, 0, 0), SPHERE, R3(.01*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
+	layer_gen->loadAscii("buddah_.01.txt", R3(0, 0, 0), SPHERE, R3(.01*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	//openGLView.render_camera->mScale = .4;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	//openGLView.render_camera->look_at = Vector(0, -5, 0);
+	//openGLView.render_camera->mScale = .4;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

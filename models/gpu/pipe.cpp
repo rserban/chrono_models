@@ -22,7 +22,7 @@ int read_file = 0;
 
 string data_folder = "data/trough";
 
-ParticleGenerator *layer_gen;
+ParticleGenerator<ChSystemParallel> *layer_gen;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 	AddCollisionGeometryTriangleMesh(Bottom, "pipe.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
 
-	layer_gen = new ParticleGenerator(system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>(system_gpu);
 	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(R3(particle_radius));
 	layer_gen->SetCylinderRadius(1.5);

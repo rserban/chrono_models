@@ -28,7 +28,7 @@ int particle_grid_x = 2;
 int particle_grid_z = 2;
 real start_height = 1;
 
-ParticleGenerator* layer_gen;
+ParticleGenerator<ChSystemParallel>* layer_gen;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
 
 	real3 rad = R3(particle_radius, particle_radius, particle_radius);
 
-	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(rad);
 	layer_gen->material->SetFriction(particle_friction);

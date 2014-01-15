@@ -31,7 +31,7 @@ real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
 real ang = 2 * CH_C_PI;
-ParticleGenerator *layer_gen;
+ParticleGenerator<ChSystemParallel> *layer_gen;
 string data_folder = "data/extruder";
 ChSharedPtr<ChMaterialSurface> material_fiber;
 template<class T>
@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
 
 	FinalizeObject(spinner, (ChSystemParallel *) system_gpu);
 
-	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
+	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(1000);
 	layer_gen->SetRadius(R3(particle_radius));
 

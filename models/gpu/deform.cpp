@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
 //	}
 
 	//layer_gen->loadAscii("teapot_thick_low.txt", R3(0, 0, 0), SPHERE, R3(.04/2, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
-	layer_gen->loadAscii("buddah_.01.txt", R3(0, 0, 0), SPHERE, R3(.01, 0, 0)*1.5, R3(-10, 0, 0), R3(2, 2, 2)*1.5);
+	layer_gen->loadAscii("buddah_.015.txt", R3(0, 0, 0), SPHERE, R3(.015, 0, 0)*1.5, R3(-10, 0, 0), R3(2, 2, 2)*1.5);
 	//layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.025/2.0, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
 
 //=========================================================================================================

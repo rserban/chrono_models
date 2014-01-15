@@ -9,7 +9,7 @@ real seconds_to_simulate = 30;
 int num_steps = seconds_to_simulate / timestep;
 int max_iter = 100;
 
-real3 container_size = R3(12, 3, 3);
+real3 container_size = R3(6.25, 3, 3);
 real container_thickness = .2;
 real container_height = 0;
 real container_friction = 1;
@@ -299,6 +299,10 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
+	if (argc > 1) {
+		data_folder = argv[1];
+
+	}
 	system_gpu = new ChSystemParallel;
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
@@ -360,7 +364,7 @@ int main(int argc, char* argv[]) {
 	material_chassis->SetCohesion(-1000);
 
 	real height = -2;
-	real x_offset = 7;
+	real x_offset = 1.25;
 	ChVector<> temporary1 = ChVector<>(2.0 + x_offset, .1 + height, 0);
 	ChVector<> temporary2 = ChVector<>(x_offset, height, .8);
 	ChVector<> temporary3 = ChVector<>(x_offset, height, -.8);
@@ -385,7 +389,7 @@ int main(int argc, char* argv[]) {
 	//num_per_dir = I3(200, 1, 80);
 	//num_per_dir = I3(150, 1, 50);
 	//num_per_dir = I3(150, 8, 50);
-	num_per_dir = I3(150*2, 8*2, 50*2);
+	num_per_dir = I3(50 * 2, 16, 50 * 2);
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(10);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius, particle_radius));
@@ -403,7 +407,7 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-	layer_gen->addPerturbedVolumeMixture(R3(-2.4, -2.2, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
+	layer_gen->addPerturbedVolumeMixture(R3(-3.25, -2.2, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:

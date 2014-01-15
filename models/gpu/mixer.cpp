@@ -5,9 +5,9 @@
 real gravity = -9.80665;
 real timestep = .0005;
 real seconds_to_simulate = 5;
-real tolerance = .01;
+real tolerance = 2;
 
-#define USEGPU
+//#define USEGPU
 
 #ifdef USEGPU
 #define ch_body ChBody(new ChCollisionModelParallel)
@@ -17,7 +17,7 @@ real tolerance = .01;
 #define ch_system ChSystem
 #endif
 
-int max_iter = 100;
+int max_iter = 100000;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -42,7 +42,7 @@ int max_particles = 1000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < max_particles) {
-		if (frame % 50 == 0) {
+		if (frame % int(200*particle_radius/.2) == 0) {
 			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(.1, 0, .1), R3(0, -5, 0));
 		}
 	}

@@ -48,7 +48,6 @@ int main(int argc, char* argv[]) {
 	//omp_set_num_threads(8);
 
 	if (argc == 4) {
-
 		cohesion = atof(argv[1]);
 		particle_friction = atof(argv[2]);
 		data_folder=argv[3];
@@ -75,7 +74,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(50, 50, 50));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(100, 200, 100));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -214,12 +213,12 @@ int main(int argc, char* argv[]) {
 //		addPerturbedLayer(R3(0, 2, 0), SPHERE, rad, num_per_dir, R3(.1, .1, .1), .999, 0, 0, R3(0, 0, 0), system_gpu);
 //	}
 
-	layer_gen->loadAscii("teapot_thick_low.txt", R3(0, 0, 0), SPHERE, R3(.04/2, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
-	//layer_gen->loadAscii("buddah_.015.txt", R3(0, 0, 0), SPHERE, R3(.015, 0, 0)*1.5, R3(0, -10, 0), R3(2, 2, 2)*1.5);
+	//layer_gen->loadAscii("teapot_thick_low.txt", R3(0, 0, 0), SPHERE, R3(.04/2, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
+	layer_gen->loadAscii("buddah_.01.txt", R3(0, 0, 0), SPHERE, R3(.01, 0, 0)*1.5, R3(-10, 0, 0), R3(2, 2, 2)*1.5);
 	//layer_gen->loadAscii("teapot_thick.txt", R3(0, 0, 0), SPHERE, R3(.025/2.0, 0, 0), R3(10, 0, 0), R3(1, 1, 1));
 
 //=========================================================================================================
-//Rendering specific stuff:
+////Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();
 //	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
 //	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);

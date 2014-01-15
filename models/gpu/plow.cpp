@@ -388,14 +388,14 @@ int main(int argc, char* argv[]) {
 	num_per_dir = I3(150*2, 8*2, 50*2);
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(10);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius*1.5, particle_radius));
+	layer_gen->SetRadius(R3(particle_radius, particle_radius0, particle_radius));
 	layer_gen->material->SetFriction(.2);
 	layer_gen->material->SetCohesion(.0001);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(.001);
 	layer_gen->AddMixtureType(MIX_SPHERE);
-	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+//	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 //	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 //	layer_gen->AddMixtureType(MIX_CUBE);
 //	layer_gen->AddMixtureType(MIX_CYLINDER);

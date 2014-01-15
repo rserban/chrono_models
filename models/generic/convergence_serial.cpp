@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 		FinalizeObject(BLOCK, system);
 		BLOCK->SetPos_dt(ChVector<>(0, -4, 0));
 
-		ParticleGenerator<ChSystem> layer_gen(system);
+		ParticleGenerator<ChSystem> layer_gen(system, false);
 		layer_gen.SetMass(1);
 		layer_gen.SetRadius(R3(particle_radius));
 		//layer_gen.SetNormalDistribution(particle_radius, .01);

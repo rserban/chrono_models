@@ -150,7 +150,12 @@ class ParticleGenerator {
 			}
 
 			if (use_common_material) {
-				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, 2, mSys->GetNbodiesTotal() + 2);
+				if (useGPU) {
+				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, -1, mSys->GetNbodiesTotal() );
+				}else{
+					InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, 2, mSys->GetNbodiesTotal() +2);
+
+				}
 			} else {
 				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), true, false, 2, mSys->GetNbodiesTotal() + 2);
 				if (use_normal_friction) {

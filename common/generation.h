@@ -153,8 +153,7 @@ class ParticleGenerator {
 				if (useGPU) {
 				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, -1, mSys->GetNbodiesTotal() );
 				}else{
-					InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, 2, mSys->GetNbodiesTotal() +2);
-
+					InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, 2, 4);
 				}
 			} else {
 				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), true, false, 2, mSys->GetNbodiesTotal() + 2);

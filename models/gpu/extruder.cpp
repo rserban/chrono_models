@@ -30,7 +30,7 @@ ChSharedBodyPtr slicer1, slicer2, spinner;
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion = 0;
-real ang = 0;
+real ang = 2 * CH_C_PI;
 ParticleGenerator *layer_gen;
 string data_folder = "data/extruder";
 ChSharedPtr<ChMaterialSurface> material_fiber;
@@ -120,17 +120,17 @@ void RunTimeStep(T* mSys, const int frame) {
 //	slicer2->SetPos(Vector(3.5,(sin(frame*timestep*6+PI)-1),0));
 //	slicer2->SetPos_dt(Vector(0,(cos(frame*timestep*6)*6),0));
 //	slicer2->SetRot(Quaternion(1,0,0,0));
-	ang += CH_C_PI * timestep / 2.0;
-	if (ang >= 2 * CH_C_PI) {
-		ang = 0;
+	ang -= CH_C_PI * timestep / 2.0;
+	if (ang <=0) {
+		ang = 2 * CH_C_PI;
 	}
 	Quaternion q1;
 	q1.Q_from_AngY(ang);
-	spinner->SetPos(Vector(0, container_height - container_size.y + 1.5, 0));
+	spinner->SetPos(Vector(0, container_height - container_size.y + 2, 0));
 	spinner->SetPos_dt(Vector(0, 0, 0));
 	spinner->SetRot(q1);
 
-	spinner->SetWvel_loc(Vector(0, CH_C_PI / 2.0, 0));
+	spinner->SetWvel_loc(Vector(0, -CH_C_PI / 2.0, 0));
 }
 
 int main(int argc, char* argv[]) {
@@ -246,7 +246,7 @@ int main(int argc, char* argv[]) {
 //		AddCollisionGeometry(slicer2, BOX, Vector(container_thickness/15.0, .1, 2), Vector(0,  container_size.y/2.0+.6+.4, 0), Quaternion(1, 0, 0, 0));
 //		FinalizeObject(slicer2, (ChSystemParallel *) system_gpu);
 	spinner = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(spinner, 100000, Vector(0, container_height - container_size.y + 1.5, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
+	InitObject(spinner, 100000, Vector(0, container_height - container_size.y + 2, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 	real spinner_h = .5;
 	AddCollisionGeometry(spinner, CYLINDER, Vector(.5, .4, .5), Vector(0, 0, 0), chrono::Q_from_AngAxis(0, ChVector<>(0, 0, 1)));
 	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, spinner_h, 1.5), Vector(0, 0, 1.75), chrono::Q_from_AngAxis(CH_C_PI / 4.0, ChVector<>(0, 0, 1)));

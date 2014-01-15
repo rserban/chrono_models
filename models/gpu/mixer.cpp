@@ -7,7 +7,7 @@ real timestep = .0005;
 real seconds_to_simulate = 5;
 real tolerance = .01;
 
-//#define USEGPU
+#define USEGPU
 
 #ifdef USEGPU
 #define ch_body ChBody(new ChCollisionModelParallel)
@@ -42,8 +42,8 @@ int max_particles = 1000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < max_particles) {
-		if (frame % 250 == 0) {
-			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(.1, 0, .1), R3(0, -8, 0));
+		if (frame % 50 == 0) {
+			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(.1, 0, .1), R3(0, -5, 0));
 		}
 	}
 
@@ -68,7 +68,11 @@ int main(int argc, char* argv[]) {
 		solver = argv[1];
 		max_particles = atoi(argv[2]);
 		data_folder = argv[3];
+
 		//threads = (atoi(argv[1]));
+	}
+	if (argc == 5) {
+		particle_radius = atof(argv[4]);
 	}
 	//omp_set_num_threads(threads);
 //=========================================================================================================
@@ -164,9 +168,10 @@ int main(int argc, char* argv[]) {
 #ifdef USEGPU
 	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, true );
 #else
-	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, false );
+	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, false);
 #endif
-	layer_gen->SetMass(1/4.0);
+	layer_gen->SetDensity(1000);
+
 	layer_gen->SetRadius(R3(particle_radius));
 
 	layer_gen->material->SetFriction(.5);
@@ -180,7 +185,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius * 1.1, particle_radius));
-	layer_gen->SetCylinderRadius(4);
+	layer_gen->SetCylinderRadius(4.5);
 	layer_gen->SetNormalDistribution(particle_radius, .01);
 	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
@@ -239,8 +244,8 @@ int main(int argc, char* argv[]) {
 		csv_output << UPDT;
 		csv_output << BODS;
 		csv_output << CNTC;
-		csv_output << violation.size();
-		csv_output << violation.back();
+		csv_output << REQ_ITS;
+		csv_output << RESID;
 
 		csv_output.Endline();
 

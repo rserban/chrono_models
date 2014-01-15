@@ -42,7 +42,7 @@ int max_particles = 1000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < max_particles) {
-		if (frame % 250 == 0 && frame * timestep < 1) {
+		if (frame % 250 == 0) {
 			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(.1, 0, .1), R3(0, -8, 0));
 		}
 	}

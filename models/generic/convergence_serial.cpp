@@ -199,21 +199,21 @@ int main(int argc, char* argv[]) {
 //		cout << "step " << i << endl;
 		system->DoStepDynamics(timestep);
 		RunTimeStep(system, i);
-		double TIME = system_gpu->GetChTime();
-		double STEP = system_gpu->GetTimerStep();
-		double BROD = system_gpu->GetTimerCollisionBroad();
-		double NARR = system_gpu->GetTimerCollisionNarrow();
-		double LCP = system_gpu->GetTimerLcp();
-		double UPDT = system_gpu->GetTimerUpdate();
-		std::vector<double> violation = ((ChLcpIterativeSolver*) system_gpu->GetLcpSolverSpeed())->GetViolationHistory();
+		double TIME = system->GetChTime();
+		double STEP = system->GetTimerStep();
+		double BROD = system->GetTimerCollisionBroad();
+		double NARR = system->GetTimerCollisionNarrow();
+		double LCP = system->GetTimerLcp();
+		double UPDT = system->GetTimerUpdate();
+		std::vector<double> violation = ((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->GetViolationHistory();
 		int REQ_ITS = violation.size();
 		double RESID = 0;
 		if (REQ_ITS != 0) {
 			RESID = violation.at(violation.size() - 1);
 		}
 
-		int BODS = system_gpu->GetNbodies();
-		int CNTC = system_gpu->GetNcontacts();
+		int BODS = system->GetNbodies();
+		int CNTC = system->GetNcontacts();
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 		//if (i % save_every == 0) {

@@ -242,7 +242,7 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 		std::stringstream ss(temp_data);
 		ss >> bodyNum >> pos_x >> pos_y >> pos_z >> rot_x >> rot_y >> rot_z;
 		ChVector<> pos_temp = ChVector<>(pos_x, pos_y, 0) + position;
-		rollers[roller_sprocker_counter] = createRollerSprocketM113(pos_temp, chassisBody, 0, 0, 0, .305 * 1.2);
+		rollers[roller_sprocker_counter] = createRollerM113(pos_temp, chassisBody, 0, 0, 0, .305 * 1.2);
 		ChQuaternion<> temp;
 		temp.Q_from_NasaAngles(ChVector<>(rot_x, rot_y, rot_z));
 		rollers[roller_sprocker_counter]->SetRot(temp);

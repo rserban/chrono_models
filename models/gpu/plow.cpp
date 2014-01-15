@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9.80665;
-real timestep = .00025;
+real timestep = .0001;
 real seconds_to_simulate = 30;
 int num_steps = seconds_to_simulate / timestep;
 int max_iter = 100;
@@ -43,7 +43,7 @@ double H2 = .0739;
 double D = .1692;
 double W = .015;
 int roller_sprocker_counter = 0;
-real particle_radius = .02 * 2;
+real particle_radius = .02;
 ParticleGenerator* layer_gen;
 ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation) {
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -315,7 +315,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(40, 20, 20));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(80, 20, 20));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -384,12 +384,13 @@ int main(int argc, char* argv[]) {
 	int3 num_per_dir;
 	//num_per_dir = I3(200, 1, 80);
 	//num_per_dir = I3(150, 1, 50);
-	num_per_dir = I3(150, 8, 50);
+	//num_per_dir = I3(150, 8, 50);
+	num_per_dir = I3(150*2, 8*2, 50*2);
 	layer_gen = new ParticleGenerator((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(10);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius*1.5, particle_radius));
 	layer_gen->material->SetFriction(.2);
-	layer_gen->material->SetCohesion(0);
+	layer_gen->material->SetCohesion(.0001);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(.001);

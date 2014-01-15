@@ -25,7 +25,7 @@ real tolerance = .0001;
 
 real gravity = -9.810;
 real timestep = .001;
-real seconds_to_simulate = 1.5;
+real seconds_to_simulate = timestep*20;
 int num_steps = seconds_to_simulate / timestep;
 
 int save_every = 1.0 / timestep / 600.0;     //save data every n steps
@@ -73,6 +73,8 @@ int main(int argc, char* argv[]) {
 	real block_mass = atof(argv[6]);
 	bool save = atoi(argv[7]);
 	bool visual = atoi(argv[8]);
+
+	data_folder = argv[9];
 
 	cout << solver << " " << max_iter << " " << tolerance << " " << particle_radius << " " << data_folder << endl;
 
@@ -185,13 +187,13 @@ int main(int argc, char* argv[]) {
 	}
 	//=========================================================================================================
 //	ofstream ofile("convergence.txt");
-//	ChTimer<double> timer;
-//	timer.start();
-//	int file = 0;
-//	stringstream s1;
-//	s1 << data_folder << "/residual.txt";
-//	CSVGen csv_output;
-//	csv_output.OpenFile(s1.str().c_str());
+	ChTimer<double> timer;
+	timer.start();
+	int file = 0;
+	stringstream s1;
+	s1 << data_folder << "/residual.txt";
+	CSVGen csv_output;
+	csv_output.OpenFile(s1.str().c_str());
 	for (int i = 0; i < num_steps; i++) {
 //
 //		cout << "step " << i << endl;
@@ -210,23 +212,23 @@ int main(int argc, char* argv[]) {
 		int REQ_ITS = violation.size();
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
-//		if (i % save_every == 0) {
-//			stringstream ss, s2;
-//			cout << "Frame: " << file << endl;
-//			ss << data_folder << "/reshist" << file << ".txt";
-//			s2 << data_folder << "/" << file << ".txt";
-//			DumpResidualHist(system, ss.str());
-//			DumpAllObjects(system, s2.str(), ",", true);
-//
-//			csv_output << violation.back();
-//			csv_output.Endline();
-//			file++;
-//		}
-//		timer.stop();
+		if (i % save_every == 0) {
+			stringstream ss, s2;
+			cout << "Frame: " << file << endl;
+			ss << data_folder << "/reshist" << file << ".txt";
+			s2 << data_folder << "/" << file << ".txt";
+			DumpResidualHist(system, ss.str());
+			//DumpAllObjects(system, s2.str(), ",", true);
+
+			csv_output << violation.back();
+			csv_output.Endline();
+			file++;
+		}
+		timer.stop();
 
 	}
-//	csv_output.CloseFile();
-//	cout << "TIME: " << timer() << endl;
+	csv_output.CloseFile();
+	cout << "TIME: " << timer() << endl;
 //	ofile.close();
 	if (save == true) {
 		DumpAllObjectsWithGeometryChrono(system, "dump.txt");

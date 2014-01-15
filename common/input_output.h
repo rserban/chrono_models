@@ -253,7 +253,8 @@ void DumpAllObjectsWithGeometryChrono(T* mSys, string filename, bool GPU = true)
 							abody->GetMaterialSurface()->spinning_friction);
 
 			csv_output << R3(abody->GetMaterialSurface()->restitution, abody->GetMaterialSurface()->cohesion, abody->GetMaterialSurface()->dampingf);
-			csv_output << R4(abody->GetMaterialSurface()->compliance, abody->GetMaterialSurface()->complianceT, abody->GetMaterialSurface()->complianceRoll, abody->GetMaterialSurface()->complianceSpin);
+			csv_output
+					<< R4(abody->GetMaterialSurface()->compliance, abody->GetMaterialSurface()->complianceT, abody->GetMaterialSurface()->complianceRoll, abody->GetMaterialSurface()->complianceSpin);
 
 			csv_output << R3(pos_final.x, pos_final.y, pos_final.z);
 			csv_output << R4(rot.e0, rot.e1, rot.e2, rot.e3);
@@ -287,8 +288,8 @@ void DumpAllObjectsWithGeometryChrono(T* mSys, string filename, bool GPU = true)
 	}
 	csv_output.CloseFile();
 }
-
-void DumpAllObjectsWithGeometryPovray(ChSystemParallel* mSys, string filename) {
+template<class T>
+void DumpAllObjectsWithGeometryPovray(T* mSys, string filename) {
 
 	CSVGen csv_output;
 	csv_output.OpenFile(filename.c_str());

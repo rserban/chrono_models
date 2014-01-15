@@ -25,7 +25,7 @@ real tolerance = .0001;
 
 real gravity = -9.810;
 real timestep = .001;
-real seconds_to_simulate = timestep*20;
+real seconds_to_simulate = timestep * 20;
 int num_steps = seconds_to_simulate / timestep;
 
 int save_every = 1.0 / timestep / 600.0;     //save data every n steps
@@ -199,31 +199,45 @@ int main(int argc, char* argv[]) {
 //		cout << "step " << i << endl;
 		system->DoStepDynamics(timestep);
 		RunTimeStep(system, i);
-		double TIME = system->GetChTime();
-		double STEP = system->GetTimerStep();
-		double BROD = system->GetTimerCollisionBroad();
-		double NARR = system->GetTimerCollisionNarrow();
-		double LCP = system->GetTimerLcp();
-		double UPDT = system->GetTimerUpdate();
-		std::vector<double> violation = ((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->GetViolationHistory();
-		double RESID = violation.back();
-		int BODS = system->GetNbodies();
-		int CNTC = system->GetNcontacts();
+		double TIME = system_gpu->GetChTime();
+		double STEP = system_gpu->GetTimerStep();
+		double BROD = system_gpu->GetTimerCollisionBroad();
+		double NARR = system_gpu->GetTimerCollisionNarrow();
+		double LCP = system_gpu->GetTimerLcp();
+		double UPDT = system_gpu->GetTimerUpdate();
+		std::vector<double> violation = ((ChLcpIterativeSolver*) system_gpu->GetLcpSolverSpeed())->GetViolationHistory();
 		int REQ_ITS = violation.size();
+		double RESID = 0;
+		if (REQ_ITS != 0) {
+			RESID = violation.at(violation.size() - 1);
+		}
+
+		int BODS = system_gpu->GetNbodies();
+		int CNTC = system_gpu->GetNcontacts();
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
-		if (i % save_every == 0) {
-			stringstream ss, s2;
-			cout << "Frame: " << file << endl;
-			ss << data_folder << "/reshist" << file << ".txt";
-			s2 << data_folder << "/" << file << ".txt";
-			DumpResidualHist(system, ss.str());
-			//DumpAllObjects(system, s2.str(), ",", true);
+		//if (i % save_every == 0) {
+		stringstream ss, s2;
+		cout << "Frame: " << file << endl;
+		ss << data_folder << "/reshist" << file << ".txt";
+		s2 << data_folder << "/" << file << ".txt";
+		DumpResidualHist(system, ss.str());
+		//DumpAllObjects(system, s2.str(), ",", true);
 
-			csv_output << violation.back();
-			csv_output.Endline();
-			file++;
-		}
+		csv_output << TIME;
+		csv_output << STEP;
+		csv_output << BROD;
+		csv_output << NARR;
+		csv_output << LCP;
+		csv_output << UPDT;
+		csv_output << BODS;
+		csv_output << CNTC;
+		csv_output << REQ_ITS;
+		csv_output << RESID;
+
+		csv_output.Endline();
+		file++;
+		//}
 		timer.stop();
 
 	}

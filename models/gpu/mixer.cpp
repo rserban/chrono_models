@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 
 	FinalizeObject(spinner, (ch_system *) system_gpu);
 #ifdef USEGPU
-	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, true );
+	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, true);
 #else
 	layer_gen = new ParticleGenerator<ch_system>((ch_system *) system_gpu, false);
 #endif
@@ -219,10 +219,14 @@ int main(int argc, char* argv[]) {
 		double LCP = system_gpu->GetTimerLcp();
 		double UPDT = system_gpu->GetTimerUpdate();
 		std::vector<double> violation = ((ChLcpIterativeSolver*) system_gpu->GetLcpSolverSpeed())->GetViolationHistory();
-		double RESID = violation.back();
+		int REQ_ITS = violation.size();
+		double RESID = 0;
+		if (REQ_ITS != 0) {
+			RESID = violation.at(violation.size() - 1);
+		}
+
 		int BODS = system_gpu->GetNbodies();
 		int CNTC = system_gpu->GetNcontacts();
-		int REQ_ITS = violation.size();
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 

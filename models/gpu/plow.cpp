@@ -28,11 +28,12 @@ vector<ChBody*> shoes;
 
 double idlerPos = 0;
 int sim_type = 0;
-float mass_shoe = 2;
-float mass_idler = 25;
-float mass_chasis = 500;
-float mass_sprocket = 25;
-float mass_roller = 25;
+float mass_multiplier = 10;
+float mass_shoe = 2*mass_multiplier;
+float mass_idler = 25*mass_multiplier;
+float mass_chasis = 500*mass_multiplier;
+float mass_sprocket = 25*mass_multiplier;
+float mass_roller = 25*mass_multiplier;
 
 float scale_tank = 1;
 
@@ -72,7 +73,7 @@ ChSharedBodyPtr createChassisM113(ChVector<> &position) {
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 
 	ChSharedBodyPtr mPlow = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mPlow, 10, position + ChVector<>(-2.9, -.15, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
+	InitObject(mPlow, 10*mass_multiplier, position + ChVector<>(-2.9, -.15, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
 	AddCollisionGeometryTriangleMesh(mPlow, "plow.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	//AddCollisionGeometry(mPlow, BOX, ChVector<>(.1, .7, 2.2)*scale_tank, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(mPlow, (ChSystemParallel *) system_gpu);
@@ -315,7 +316,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxPenetrationRecoverySpeed(100);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-5);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(.001, .001, .2);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(50);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -391,13 +392,13 @@ int main(int argc, char* argv[]) {
 	//num_per_dir = I3(150, 8, 50);
 	num_per_dir = I3(50 * 2, 16, 50 * 2);
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
-	layer_gen->SetDensity(10);
+	layer_gen->SetDensity(10*200);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius, particle_radius));
 	layer_gen->material->SetFriction(.2);
-	layer_gen->material->SetCohesion(.0001);
+	layer_gen->material->SetCohesion(.0001*200);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
-	layer_gen->material->SetCompliance(.001);
+	layer_gen->material->SetCompliance(.0001);
 	layer_gen->AddMixtureType(MIX_SPHERE);
 //	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 //	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);

@@ -210,8 +210,8 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < num_steps; i++) {
 //
 //		cout << "step " << i << endl;
-		//system->DoStepDynamics(timestep);
-		//RunTimeStep(system, i);
+		system->DoStepDynamics(timestep);
+		RunTimeStep(system, i);
 		double TIME = system->GetChTime();
 		double STEP = system->GetTimerStep();
 		double BROD = system->GetTimerCollisionBroad();

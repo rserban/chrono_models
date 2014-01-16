@@ -7,7 +7,7 @@ real timestep = .0005;
 real seconds_to_simulate = 5;
 real tolerance = 2;
 
-//#define USEGPU
+#define USEGPU
 
 #ifdef USEGPU
 #define ch_body ChBody(new ChCollisionModelParallel)
@@ -26,7 +26,7 @@ real container_thickness = .4;
 real container_height = 0;
 real container_friction = 1;
 
-real particle_radius = .2;
+real particle_radius = .05;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 0;
@@ -99,8 +99,8 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxPenetrationRecoverySpeed(30);
 #ifdef USEGPU
 	//((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(30);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(15);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(60);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(60);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);

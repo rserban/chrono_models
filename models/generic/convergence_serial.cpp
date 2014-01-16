@@ -11,7 +11,7 @@ real plate_thickness = 1;
 real plate_radius = 7;
 real plate_friction = 1;
 
-real particle_radius = .15;
+real particle_radius = .14;
 real particle_mass = 1;
 real particle_friction = 1.0;
 
@@ -20,12 +20,14 @@ real container_thickness = .25;
 real container_height = 6.0;
 real wscale = 1;
 
-int max_iter = 1000;
-real tolerance = .0001;
+int max_iter = 10000000;
 
 real gravity = -9.810;
 real timestep = .001;
-real seconds_to_simulate = timestep * 20;
+real recovery_speed = 50;
+real tolerance = .1;
+
+real seconds_to_simulate = timestep;
 int num_steps = seconds_to_simulate / timestep;
 
 int save_every = 1.0 / timestep / 600.0;     //save data every n steps
@@ -63,33 +65,43 @@ void RunTimeStep(T* mSys, const int frame) {
 
 }
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
+	omp_set_num_threads(1);
+	//max_iter = atof(argv[2]);
+	//tolerance = atof(argv[3]);
+	//real recovery_speed = atof(argv[4]);
+	//particle_radius = atof(argv[5]);
+	bool visual = false;     //atoi(argv[4]);
+	string inputfile;
+
 	string solver = argv[1];
-
-	max_iter = atof(argv[2]);
-	tolerance = atof(argv[3]);
-	real recovery_speed = atof(argv[4]);
-	particle_radius = atof(argv[5]);
-	real block_mass = atof(argv[6]);
-	bool save = atoi(argv[7]);
-	bool visual = atoi(argv[8]);
-
-	data_folder = argv[9];
+	real block_mass = atof(argv[2]);
+	num_steps = atoi(argv[3]);
+	bool save = atoi(argv[4]);
+	real perturb = atof(argv[5]);
+	if (save) {
+		data_folder = argv[6];
+	} else {
+		data_folder = argv[6];
+		string inputfile = argv[7];
+	}
 
 	cout << solver << " " << max_iter << " " << tolerance << " " << particle_radius << " " << data_folder << endl;
 
 	//=========================================================================================================
 	ChSystem * system = new ChSystem;
-	system->SetParallelThreadNumber(8);
+	system->SetParallelThreadNumber(1);
 	system->SetIntegrationType(ChSystem::INT_ANITESCU);
 	if (solver == "APGD") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_APGD);
 	} else if (solver == "JACOBI") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_JACOBI);
-		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(.5);
-		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(.5);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(.5);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(.5);
 	} else if (solver == "SOR") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_SOR);
+		//NORELAX
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(.5);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(.5);
 	}
 	//=========================================================================================================
 	//ReadInputFile("convergence_config.txt",system_gpu);
@@ -106,7 +118,7 @@ int main(int argc, char* argv[]) {
 	//=========================================================================================================
 	if (save == false) {
 		cout << "read data" << endl;
-		ReadAllObjectsWithGeometryChrono(system, "dump.txt", false);
+		ReadAllObjectsWithGeometryChrono(system, inputfile, false);
 		system->Get_bodylist()->at(5)->SetMass(block_mass);
 	} else {
 		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody());
@@ -169,7 +181,7 @@ int main(int argc, char* argv[]) {
 		//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 		//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-		layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(.4, 0, .4), R3(0, -4, 0));
+		layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(perturb, 0, perturb), R3(0, -4, 0));
 	}
 	//layer_gen.addPerturbedVolume(R3(0, -.2, 0), SPHERE, num_per_dir, R3(0.0, 0.0, 0.0), R3(0, -4, 0), false);
 	//=========================================================================================================
@@ -198,8 +210,8 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < num_steps; i++) {
 //
 //		cout << "step " << i << endl;
-		system->DoStepDynamics(timestep);
-		RunTimeStep(system, i);
+		//system->DoStepDynamics(timestep);
+		//RunTimeStep(system, i);
 		double TIME = system->GetChTime();
 		double STEP = system->GetTimerStep();
 		double BROD = system->GetTimerCollisionBroad();
@@ -223,7 +235,7 @@ int main(int argc, char* argv[]) {
 		ss << data_folder << "/reshist" << file << ".txt";
 		s2 << data_folder << "/" << file << ".txt";
 		DumpResidualHist(system, ss.str());
-		//DumpAllObjects(system, s2.str(), ",", true);
+		//DumpAllObjectsWithGeometryPovray(system, "wakawaka.txt");
 
 		csv_output << TIME;
 		csv_output << STEP;
@@ -246,7 +258,9 @@ int main(int argc, char* argv[]) {
 	cout << "TIME: " << timer() << endl;
 //	ofile.close();
 	if (save == true) {
-		DumpAllObjectsWithGeometryChrono(system, "dump.txt");
+		stringstream asd;
+		asd << data_folder << "/dump.txt";
+		DumpAllObjectsWithGeometryChrono(system, asd.str());
 	}
 	return 0;
 }

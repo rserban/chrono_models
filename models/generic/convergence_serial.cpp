@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 		data_folder = argv[6];
 	} else {
 		data_folder = argv[6];
-		string inputfile = argv[7];
+		inputfile = argv[7];
 	}
 
 	cout << solver << " " << max_iter << " " << tolerance << " " << particle_radius << " " << data_folder << endl;

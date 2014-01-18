@@ -37,7 +37,7 @@ string data_folder = "data/convergence";
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-
+	mSys->Get_bodylist()->at(5)->SetBodyFixed(false);
 	mSys->Get_bodylist()->at(5)->SetRot(ChQuaternion<>(1, 0, 0, 0));
 	mSys->Get_bodylist()->at(5)->SetWvel_loc(ChVector<>(0, 0, 0));
 	mSys->Get_bodylist()->at(5)->SetPos(ChVector<>(0, mSys->Get_bodylist()->at(5)->GetPos().y, 0));
@@ -91,17 +91,20 @@ int main(int argc, char* argv[]) {
 	ChSystem * system = new ChSystem;
 	system->SetParallelThreadNumber(1);
 	system->SetIntegrationType(ChSystem::INT_ANITESCU);
+
 	if (solver == "APGD") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_APGD);
+		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(true);
 	} else if (solver == "JACOBI") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_JACOBI);
 		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(.5);
 		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(.5);
 	} else if (solver == "SOR") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_SOR);
+		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(true);
 		//NORELAX
-		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(.5);
-		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(.5);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(1.2);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(1.5);
 	}
 	//=========================================================================================================
 	//ReadInputFile("convergence_config.txt",system_gpu);
@@ -120,6 +123,13 @@ int main(int argc, char* argv[]) {
 		cout << "read data" << endl;
 		ReadAllObjectsWithGeometryChrono(system, inputfile, false);
 		system->Get_bodylist()->at(5)->SetMass(block_mass);
+
+		real rx = container_width - container_thickness * 2;
+		real ry = container_thickness;
+		real rz = container_width - container_thickness * 2;
+
+		system->Get_bodylist()->at(5)->SetInertiaXX(ChVector<>(1 / 12.0 * block_mass * (ry * ry + rz * rz), 1 / 12.0 * block_mass * (rx * rx + rz * rz), 1 / 12.0 * block_mass * (rx * rx + ry * ry)));
+
 	} else {
 		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody());
 		ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody());

@@ -172,6 +172,10 @@ void ReadAllObjectsWithGeometryChrono(T* mSys, string filename, bool GPU = true)
 		}
 		InitObject(mrigidBody, mass, pos, rot, material, true, !active, 2, 4);
 		AddCollisionGeometry(mrigidBody, type, rad, ChVector<>(0, 0, 0), QUNIT);
+		if(type==SPHERE){
+			mrigidBody->SetInertiaXX(ChVector<>(2 / 5.0 * mass * rad.x * rad.x, 2 / 5.0 * mass * rad.x * rad.x, 2 / 5.0 * mass * rad.x * rad.x));
+		}
+
 		if (GPU) {
 			FinalizeObject(mrigidBody, (ChSystemParallel*) mSys);
 		} else {

@@ -5,7 +5,7 @@
 real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 2;
-real tolerance = 0;
+real tolerance = 30;
 
 //#define USEGPU
 
@@ -17,7 +17,7 @@ real tolerance = 0;
 #define ch_system ChSystem
 #endif
 
-int max_iter = 100;
+int max_iter = 1000;
 
 int num_steps = seconds_to_simulate / timestep;
 

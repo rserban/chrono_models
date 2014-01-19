@@ -3,8 +3,8 @@
 #include "../../common/parser.h"
 #include "../../common/input_output.h"
 real gravity = -9.80665;
-real timestep = .0005;
-real seconds_to_simulate = 5;
+real timestep = .001;
+real seconds_to_simulate = 1;
 real tolerance = 2;
 
 //#define USEGPU

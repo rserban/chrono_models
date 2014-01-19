@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
-real seconds_to_simulate = 1;
+real seconds_to_simulate = 3;
 real tolerance = 2;
 
 //#define USEGPU
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 	if (argc == 5) {
 		particle_radius = atof(argv[4]);
 	}
-	//omp_set_num_threads(threads);
+	omp_set_num_threads(1);
 //=========================================================================================================
 	ch_system * system_gpu = new ch_system;
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 #endif
 	((ChLcpIterativeSolver*) system_gpu->GetLcpSolverSpeed())->SetRecordViolation(true);
 //=========================================================================================================
-	//system_gpu->SetParallelThreadNumber(threads);
+	system_gpu->SetParallelThreadNumber(1);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	system_gpu->SetTol(tolerance);

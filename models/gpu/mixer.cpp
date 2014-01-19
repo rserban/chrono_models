@@ -5,7 +5,7 @@
 real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 2;
-real tolerance = 4;
+real tolerance = 0;
 
 //#define USEGPU
 
@@ -17,7 +17,7 @@ real tolerance = 4;
 #define ch_system ChSystem
 #endif
 
-int max_iter = 10000;
+int max_iter = 100;
 
 int num_steps = seconds_to_simulate / timestep;
 
@@ -177,11 +177,11 @@ int main(int argc, char* argv[]) {
 	layer_gen->material->SetFriction(.5);
 	layer_gen->material->SetCohesion(particle_cohesion);
 
-#ifdef USEGPU
-	layer_gen->material->SetCompliance(0);
-#else
-	layer_gen->material->SetCompliance(0);
-#endif
+//#ifdef USEGPU
+//	layer_gen->material->SetCompliance(0);
+//#else
+	layer_gen->material->SetCompliance(1e-6);
+//#endif
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius * 1.1, particle_radius));

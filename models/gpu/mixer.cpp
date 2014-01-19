@@ -4,8 +4,8 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
-real seconds_to_simulate = 3;
-real tolerance = 2;
+real seconds_to_simulate = 2;
+real tolerance = 4;
 
 //#define USEGPU
 
@@ -42,7 +42,7 @@ int max_particles = 1000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < max_particles) {
-		if (frame % int(200*particle_radius/.2) == 0) {
+		if (frame % int(100*particle_radius/.2) == 0) {
 			layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(100, 1, 100), R3(.1, 0, .1), R3(0, -5, 0));
 		}
 	}
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
 	//layer_gen->AddMixtureType(MIX_CONE);
 
 //=========================================================================================================
-//Rendering specific stuff:
+////Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();
 //	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
 //

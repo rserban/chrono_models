@@ -124,6 +124,9 @@ IF (ENABLE_UNIT_GPU)
     
     ADD_EXECUTABLE(string models/gpu/string.cpp)      
     TARGET_LINK_LIBRARIES(string   ${CHRONO_LIB} ${GPU_LIBS})
+
+	ADD_EXECUTABLE(mixer_fast models/gpu/mixer_fast.cpp)      
+    TARGET_LINK_LIBRARIES(mixer_fast   ${CHRONO_LIB} ${GPU_LIBS})
     
      ADD_EXECUTABLE(snowball_smash models/gpu/snowball_smash.cpp)      
     TARGET_LINK_LIBRARIES(snowball_smash   ${CHRONO_LIB} ${GPU_LIBS})

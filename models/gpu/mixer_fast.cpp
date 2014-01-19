@@ -7,7 +7,7 @@ real timestep = .001;
 real seconds_to_simulate = 2;
 real tolerance = 4;
 
-//#define USEGPU
+#define USEGPU
 
 #ifdef USEGPU
 #define ch_body ChBody(new ChCollisionModelParallel)

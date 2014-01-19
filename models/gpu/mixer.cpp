@@ -7,7 +7,7 @@ real timestep = .001;
 real seconds_to_simulate = 2;
 real tolerance = 4;
 
-//#define USEGPU
+#define USEGPU
 
 #ifdef USEGPU
 #define ch_body ChBody(new ChCollisionModelParallel)
@@ -99,13 +99,13 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxPenetrationRecoverySpeed(30);
 #ifdef USEGPU
 	//((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(60);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(60);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter/2);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter/2);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(1e-4, 1e-4, .2);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(30);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(5);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(30, 30, 30));
@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->material->SetCohesion(particle_cohesion);
 
 #ifdef USEGPU
-	layer_gen->material->SetCompliance(1e-4);
+	layer_gen->material->SetCompliance(0);
 #else
 	layer_gen->material->SetCompliance(0);
 #endif

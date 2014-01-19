@@ -231,15 +231,15 @@ int main(int argc, char* argv[]) {
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
 		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
-		if (i % save_every == 0) {
-			stringstream ss;
-			cout << "Frame: " << file << endl;
-			ss << data_folder << "/" << file << ".txt";
-			//DumpAllObjects(system_gpu, ss.str(), ",", true);
-			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
-			file++;
-
-		}
+//		if (i % save_every == 0) {
+//			stringstream ss;
+//			cout << "Frame: " << file << endl;
+//			ss << data_folder << "/" << file << ".txt";
+//			//DumpAllObjects(system_gpu, ss.str(), ",", true);
+//			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
+//			file++;
+//
+//		}
 		csv_output << TIME;
 		csv_output << STEP;
 		csv_output << BROD;

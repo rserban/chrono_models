@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9.80665;
-real timestep = .0001;
+real timestep = .0005;
 real seconds_to_simulate = 30;
 int num_steps = seconds_to_simulate / timestep;
 int max_iter = 100;
@@ -393,14 +393,14 @@ int main(int argc, char* argv[]) {
 	num_per_dir = I3(50 * 2, 16, 50 * 2);
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(10*200);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius, particle_radius));
+	layer_gen->SetRadius(R3(particle_radius, particle_radius*.5, particle_radius));
 	layer_gen->material->SetFriction(.2);
 	layer_gen->material->SetCohesion(.001);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(.0001);
-	layer_gen->AddMixtureType(MIX_SPHERE);
-//	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+//	layer_gen->AddMixtureType(MIX_SPHERE);
+	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 //	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 //	layer_gen->AddMixtureType(MIX_CUBE);
 //	layer_gen->AddMixtureType(MIX_CYLINDER);

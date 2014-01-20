@@ -20,12 +20,12 @@ real container_thickness = .25;
 real container_height = 6.0;
 real wscale = 1;
 
-int max_iter = 10000000;
+int max_iter = 1000000;
 
 real gravity = -9.810;
 real timestep = .001;
 real recovery_speed = 50;
-real tolerance = .1;
+real tolerance = .2;
 
 real seconds_to_simulate = timestep;
 int num_steps = seconds_to_simulate / timestep;
@@ -94,18 +94,21 @@ int main(int argc, char* argv[]) {
 
 	if (solver == "APGD") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_APGD);
-		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(true);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(false);
 	} else if (solver == "JACOBI") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_JACOBI);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(false);
 		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(.5);
 		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(.5);
 	} else if (solver == "SOR") {
 		system->SetLcpSolverType(ChSystem::LCP_ITERATIVE_SOR);
-		((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(true);
+		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(false);
 		//NORELAX
 		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetOmega(1.2);
 		//((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetSharpnessLambda(1.5);
 	}
+
+	((ChLcpIterativeSolver*) system->GetLcpSolverSpeed())->SetVerbose(true);
 	//=========================================================================================================
 	//ReadInputFile("convergence_config.txt",system_gpu);
 	system->SetMaxiter(max_iter);
@@ -129,6 +132,11 @@ int main(int argc, char* argv[]) {
 		real rz = container_width - container_thickness * 2;
 
 		system->Get_bodylist()->at(5)->SetInertiaXX(ChVector<>(1 / 12.0 * block_mass * (ry * ry + rz * rz), 1 / 12.0 * block_mass * (rx * rx + rz * rz), 1 / 12.0 * block_mass * (rx * rx + ry * ry)));
+//
+		for(int i=0; i<system->Get_bodylist()->size(); i++){
+			system->Get_bodylist()->at(i)->GetMaterialSurface()->SetFriction(.1);
+		}
+
 
 	} else {
 		ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody());
@@ -272,6 +280,30 @@ int main(int argc, char* argv[]) {
 		asd << data_folder << "/dump.txt";
 		DumpAllObjectsWithGeometryChrono(system, asd.str());
 	}
+//	DumpAllObjectsWithGeometryChrono(system, "dump_matlab.txt");
+//	chrono::ChSparseMatrix mdM;
+//	chrono::ChSparseMatrix mdCq;
+//	chrono::ChSparseMatrix mdE;
+//	chrono::ChMatrixDynamic<double> mdf;
+//	chrono::ChMatrixDynamic<double> mdb;
+//	chrono::ChMatrixDynamic<double> mdfric;
+//	system->GetLcpSystemDescriptor()->ConvertToMatrixForm(&mdCq, &mdM, &mdE, &mdf, &mdb, &mdfric);
+//
+//	cout<<mdCq.GetRows()<<endl;
+//
+//	chrono::ChStreamOutAsciiFile file_M("H_dump_M.dat");
+//	mdM.StreamOUTsparseMatlabFormat(file_M);
+//	chrono::ChStreamOutAsciiFile file_Cq("H_dump_Cq.dat");
+//	mdCq.StreamOUTsparseMatlabFormat(file_Cq);
+//	chrono::ChStreamOutAsciiFile file_E("H_dump_E.dat");
+//	mdE.StreamOUTsparseMatlabFormat(file_E);
+//	chrono::ChStreamOutAsciiFile file_f("H_dump_f.dat");
+//	mdf.StreamOUTdenseMatlabFormat(file_f);
+//	chrono::ChStreamOutAsciiFile file_b("H_dump_b.dat");
+//	mdb.StreamOUTdenseMatlabFormat(file_b);
+//	chrono::ChStreamOutAsciiFile file_fric("H_dump_fric.dat");
+//	mdfric.StreamOUTdenseMatlabFormat(file_fric);
+
 	return 0;
 }
 

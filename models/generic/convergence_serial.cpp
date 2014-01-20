@@ -83,6 +83,8 @@ int main(int argc, char* argv[]) {
 	} else {
 		data_folder = argv[6];
 		inputfile = argv[7];
+		tolerance = atof(argv[8]);
+		max_iter = atoi(argv[9]);
 	}
 
 	cout << solver << " " << max_iter << " " << tolerance << " " << particle_radius << " " << data_folder << endl;

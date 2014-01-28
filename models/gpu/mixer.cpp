@@ -5,7 +5,7 @@
 real gravity = -9.80665;
 real timestep = .001;
 real seconds_to_simulate = 2;
-real tolerance = 30;
+real tolerance = 2;
 
 //#define USEGPU
 
@@ -55,9 +55,9 @@ void RunTimeStep(T* mSys, const int frame) {
 	q1.Q_from_AngY(ang);
 	spinner->SetPos(Vector(0, container_height - container_size.y + 2, 0));
 	spinner->SetPos_dt(Vector(0, 0, 0));
-	//spinner->SetRot(q1);
+	spinner->SetRot(q1);
 
-	//spinner->SetWvel_loc(Vector(0, -CH_C_PI / 2.0, 0));
+	spinner->SetWvel_loc(Vector(0, -CH_C_PI / 2.0, 0));
 }
 
 int main(int argc, char* argv[]) {
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
-	system_gpu->SetMaxPenetrationRecoverySpeed(30);
+	//system_gpu->SetMaxPenetrationRecoverySpeed(10);
 #ifdef USEGPU
 	//((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIteration(max_iteration);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter/2);
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 	ChSharedBodyPtr Tube = ChSharedBodyPtr(new ch_body);
 	ChSharedPtr<ChMaterialSurface> material;
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material->SetFriction(.4);
+	material->SetFriction(.1);
 	material->SetRollingFriction(0);
 	material->SetSpinningFriction(0);
 	material->SetCompliance(0);
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	spinner = ChSharedBodyPtr(new ch_body);
-	InitObject(spinner, 100000, Vector(0, container_height - container_size.y + 2, 0), Quaternion(1, 0, 0, 0), material, true, false, 1, 1);
+	InitObject(spinner, 10, Vector(0, container_height - container_size.y + 2, 0), Quaternion(1, 0, 0, 0), material, true, false, 1, 1);
 	real spinner_h = .5;
 	AddCollisionGeometry(spinner, CYLINDER, Vector(.5, .4, .5), Vector(0, 0, 0), chrono::Q_from_AngAxis(0, ChVector<>(0, 0, 1)));
 	AddCollisionGeometry(spinner, BOX, Vector(container_thickness / 15.0, spinner_h, 1.5), Vector(0, 0, 1.75), chrono::Q_from_AngAxis(CH_C_PI / 4.0, ChVector<>(0, 0, 1)));
@@ -174,13 +174,13 @@ int main(int argc, char* argv[]) {
 
 	layer_gen->SetRadius(R3(particle_radius));
 
-	layer_gen->material->SetFriction(.5);
+	layer_gen->material->SetFriction(.1);
 	layer_gen->material->SetCohesion(particle_cohesion);
 
 //#ifdef USEGPU
 //	layer_gen->material->SetCompliance(0);
 //#else
-	layer_gen->material->SetCompliance(1e-6);
+	layer_gen->material->SetCompliance(0);
 //#endif
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetRollingFriction(0);
@@ -188,22 +188,22 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetCylinderRadius(4.5);
 	layer_gen->SetNormalDistribution(particle_radius, .01);
 	layer_gen->AddMixtureType(MIX_SPHERE);
-	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	//layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_CYLINDER);
-	layer_gen->AddMixtureType(MIX_CUBE);
+	//layer_gen->AddMixtureType(MIX_CUBE);
 	//layer_gen->AddMixtureType(MIX_CONE);
 
 //=========================================================================================================
 ////Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//
-//	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	//	openGLView.render_camera->mScale = .1;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+
+	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	//	openGLView.render_camera->mScale = .1;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	stringstream s1;
 	s1 << data_folder << "/residual.txt";

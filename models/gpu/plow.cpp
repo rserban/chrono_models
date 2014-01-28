@@ -4,10 +4,11 @@
 #include "../../common/input_output.h"
 
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .001;
 real seconds_to_simulate = 30;
 int num_steps = seconds_to_simulate / timestep;
 int max_iter = 100;
+real tolerance = 8e-5;
 
 real3 container_size = R3(6.25, 3, 3);
 real container_thickness = .2;
@@ -29,11 +30,11 @@ vector<ChBody*> shoes;
 double idlerPos = 0;
 int sim_type = 0;
 float mass_multiplier = 10;
-float mass_shoe = 2*mass_multiplier;
-float mass_idler = 25*mass_multiplier;
-float mass_chasis = 500*mass_multiplier;
-float mass_sprocket = 25*mass_multiplier;
-float mass_roller = 25*mass_multiplier;
+float mass_shoe = 2 * mass_multiplier;
+float mass_idler = 25 * mass_multiplier;
+float mass_chasis = 500 * mass_multiplier;
+float mass_sprocket = 25 * mass_multiplier;
+float mass_roller = 25 * mass_multiplier;
 
 float scale_tank = 1;
 
@@ -48,7 +49,7 @@ real particle_radius = .02;
 ParticleGenerator<ChSystemParallel>* layer_gen;
 ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation) {
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_shoe, position * scale_tank, rotation, material_shoes, true, false, 3, 3);
+	InitObject(mrigidBody, mass_shoe, position * scale_tank, rotation, material_shoes, true, false, -5, 3);
 
 	AddCollisionGeometry(mrigidBody, SPHERE, ChVector<>(R, D * .2, R) * scale_tank, ChVector<>(L, 0, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
 	AddCollisionGeometry(mrigidBody, BOX, ChVector<>((L + 2 * R) * .5, W, D) * scale_tank, ChVector<>(0, -H2 + W, 0) * scale_tank, Quaternion(1, 0, 0, 0));
@@ -73,9 +74,26 @@ ChSharedBodyPtr createChassisM113(ChVector<> &position) {
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 
 	ChSharedBodyPtr mPlow = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mPlow, 10*mass_multiplier, position + ChVector<>(-2.9, -.15, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
-	AddCollisionGeometryTriangleMesh(mPlow, "plow.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//AddCollisionGeometry(mPlow, BOX, ChVector<>(.1, .7, 2.2)*scale_tank, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0));
+	InitObject(mPlow, 10 * mass_multiplier, position + ChVector<>(-2.9, -.6, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
+
+	//AddCollisionGeometryTriangleMesh(mPlow, "plow.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+
+	real h = .2;
+	real offset = -1;
+	real angle_a = 25 * CH_C_PI / 180.0;
+	real angle_b = 15 * CH_C_PI / 180.0;
+	real angle_c = -15 * CH_C_PI / 180.0;
+	real angle_d = -45 * CH_C_PI / 180.0;
+
+	Vector pos_d = Vector(-sin(angle_d) * h, cos(angle_d) * h, 0);
+	Vector pos_c = Vector(-sin(angle_c) * h, cos(angle_c) * h, 0);
+	Vector pos_b = Vector(-sin(angle_b) * h, cos(angle_b) * h, 0);
+	Vector pos_a = Vector(-sin(angle_a) * h, cos(angle_a) * h, 0);
+
+	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d, Q_from_AngAxis(angle_d, Vector(0, 0, 1)));
+	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c, Q_from_AngAxis(angle_c, Vector(0, 0, 1)));
+	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c * 2 + pos_b, Q_from_AngAxis(angle_b, Vector(0, 0, 1)));
+	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c * 2 + pos_b * 2 + pos_a, Q_from_AngAxis(angle_a, Vector(0, 0, 1)));
 	FinalizeObject(mPlow, (ChSystemParallel *) system_gpu);
 	real rx = .1;
 	real ry = .7;
@@ -310,13 +328,13 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(40);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(40);
-	system_gpu->SetTol(1e-5);
-	system_gpu->SetTolSpeeds(1e-5);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
+	system_gpu->SetTol(tolerance);
+	system_gpu->SetTolSpeeds(tolerance);
 	system_gpu->SetMaxPenetrationRecoverySpeed(100);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(1e-5);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(.001, .001, .2);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -392,13 +410,13 @@ int main(int argc, char* argv[]) {
 	//num_per_dir = I3(150, 8, 50);
 	num_per_dir = I3(50 * 2, 16, 50 * 2);
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
-	layer_gen->SetDensity(10*200);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius*.5, particle_radius));
+	layer_gen->SetDensity(10 * 200);
+	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
 	layer_gen->material->SetFriction(.2);
 	layer_gen->material->SetCohesion(.001);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
-	layer_gen->material->SetCompliance(.0001);
+	layer_gen->material->SetCompliance(0);
 //	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 //	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
@@ -412,14 +430,14 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-////openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-////	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .075;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	openGLView.render_camera->mScale = .075;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

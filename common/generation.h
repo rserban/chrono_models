@@ -90,6 +90,7 @@ class ParticleGenerator {
 			use_mixture = false;
 			volume_cylinder = false;
 			useGPU = GPU;
+			total_volume = total_mass = 0;
 		}
 
 		void SetMass(real m) {
@@ -183,7 +184,7 @@ class ParticleGenerator {
 				}
 			}
 		}
-		void computeMassMixture(MixType type, real3 r) {
+		real computeMassMixture(MixType type, real3 r) {
 
 			if (use_density) {
 				if (type == MIX_SPHERE) {
@@ -192,6 +193,8 @@ class ParticleGenerator {
 					mass = density * 4.0 / 3.0 * PI * r.x * r.x * r.x * 2;
 				} else if (type == MIX_ELLIPSOID) {
 					mass = density * 4.0 / 3.0 * PI * r.x * r.y * r.z;
+				} else if (type == MIX_CUBE) {
+					mass = density *  r.x*2 * r.y*2 * r.z*2;
 				} else if (type == MIX_TYPE1) {
 					mass = density * 4.0 / 3.0 * PI * r.x * r.x * r.x * 2;
 				} else if (type == MIX_TYPE2) {
@@ -204,6 +207,7 @@ class ParticleGenerator {
 					mass = 1;
 				}
 			}
+			return mass;
 		}
 		void computeRadius(real3 & r) {
 
@@ -291,8 +295,8 @@ class ParticleGenerator {
 						}
 
 						computeRadius(r);
-						computeMassMixture(mixture[mix_type], r);
-
+						real mass = computeMassMixture(mixture[mix_type], r);
+						total_mass += mass;
 						createBody(body, pos, mass);
 
 						if (mixture[mix_type] == MIX_SPHERE) {
@@ -330,7 +334,6 @@ class ParticleGenerator {
 								body->SetInertiaXX(ChVector<>(1 / 12.0 * mass * (3 * r.x * r.x + r.y * r.y), 1 / 2.0 * mass * (r.x * r.x), 1 / 12.0 * mass * (3 * r.x * r.x + r.y * r.y)));
 							}
 
-
 						} else if (mixture[mix_type] == MIX_PILL) {
 							AddCollisionGeometry(body, CYLINDER, ChVector<>(r.x, r.y, r.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 							AddCollisionGeometry(body, SPHERE, ChVector<>(r.x, r.y, r.z), Vector(0, r.y, 0), Quaternion(1, 0, 0, 0));
@@ -359,6 +362,8 @@ class ParticleGenerator {
 
 						FinalizeObject(body, (T *) mSys);
 						body->SetPos_dt(Vector(vel.x, vel.y, vel.z));
+
+						if (useGPU == true) {total_volume+=((ChCollisionModelParallel*) body->GetCollisionModel())->getVolume();}
 						counter++;
 					}
 				}
@@ -496,6 +501,7 @@ class ParticleGenerator {
 		real mass;
 		real density;
 		real3 radius;
+		real total_volume, total_mass;
 		bool use_normal_dist;
 		bool use_density;
 		bool use_common_material;

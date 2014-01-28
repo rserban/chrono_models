@@ -62,6 +62,9 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(convergence models/gpu/convergence.cpp)		
     TARGET_LINK_LIBRARIES(convergence	${CHRONO_LIB} ${GPU_LIBS})
     
+    ADD_EXECUTABLE(anchor models/gpu/anchor.cpp)		
+    TARGET_LINK_LIBRARIES(anchor	${CHRONO_LIB} ${GPU_LIBS})
+    
     #ADD_EXECUTABLE(aor models/gpu/aor.cpp)		
     #TARGET_LINK_LIBRARIES(aor	${CHRONO_LIB} ${GPU_LIBS})
     
@@ -106,7 +109,7 @@ IF (ENABLE_UNIT_GPU)
     
     ADD_EXECUTABLE(drag_anchor models/gpu/drag_anchor.cpp)		
     TARGET_LINK_LIBRARIES(drag_anchor	${CHRONO_LIB} ${GPU_LIBS})
-
+    
     ADD_EXECUTABLE(mixer models/gpu/mixer.cpp)		
     TARGET_LINK_LIBRARIES(mixer	${CHRONO_LIB} ${GPU_LIBS})
     

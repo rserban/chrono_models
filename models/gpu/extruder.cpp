@@ -76,18 +76,12 @@ void CreateFiber(T* mSys, ChVector<> position) {
 	}
 
 }
-
+int number_of_particles = 1000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-	if (mSys->GetNbodies() < 1071630) {
-		ChSharedBodyPtr sphere;
-		real3 rad = R3(particle_radius, particle_radius, particle_radius);
-		real3 size = container_size;
-		size.y = container_size.y / 3.0;
+	if (mSys->GetNbodies() < number_of_particles) {
 
-		//int3 num_per_dir = I3(1, 10, 10);
-
-		if (frame % 50 == 0 && frame * timestep < 2.0) {
+		if (frame % 50 == 0 ) {
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
 
@@ -121,7 +115,7 @@ void RunTimeStep(T* mSys, const int frame) {
 //	slicer2->SetPos_dt(Vector(0,(cos(frame*timestep*6)*6),0));
 //	slicer2->SetRot(Quaternion(1,0,0,0));
 	ang -= CH_C_PI * timestep / 2.0;
-	if (ang <=0) {
+	if (ang <= 0) {
 		ang = 2 * CH_C_PI;
 	}
 	Quaternion q1;
@@ -141,6 +135,10 @@ int main(int argc, char* argv[]) {
 		data_folder = argv[2];
 		//threads = (atoi(argv[1]));
 	}
+	if (argc == 4) {
+		number_of_particles = atoi(argv[3]);
+	}
+
 	//omp_set_num_threads(threads);
 //=========================================================================================================
 	ChSystemParallel * system_gpu = new ChSystemParallel;
@@ -157,9 +155,9 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
 	system_gpu->SetTol(.001);
 	system_gpu->SetTolSpeeds(.001);
-	system_gpu->SetMaxPenetrationRecoverySpeed(25);
+	system_gpu->SetMaxPenetrationRecoverySpeed(30);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.001);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(1e-4, 1e-4, .2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(.2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(30);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
@@ -272,7 +270,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	layer_gen->AddMixtureType(MIX_CUBE);
-	layer_gen->AddMixtureType(MIX_CYLINDER);
+	//layer_gen->AddMixtureType(MIX_CYLINDER);
 	//layer_gen->AddMixtureType(MIX_CONE);
 
 	material_fiber = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
@@ -284,15 +282,15 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-//	ChOpenGLManager * window_manager = new ChOpenGLManager();
-//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//
-//	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	//	openGLView.render_camera->mScale = .1;
-//	openGLView.SetCustomCallback(RunTimeStep);
-//	openGLView.StartSpinning(window_manager);
-//	window_manager->CallGlutMainLoop();
+	ChOpenGLManager * window_manager = new ChOpenGLManager();
+	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+
+	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+	//	openGLView.render_camera->mScale = .1;
+	openGLView.SetCustomCallback(RunTimeStep);
+	openGLView.StartSpinning(window_manager);
+	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

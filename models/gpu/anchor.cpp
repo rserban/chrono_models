@@ -14,7 +14,7 @@ int num_steps = seconds_to_simulate / timestep;
 real3 container_size = R3(.3, .6, .3);
 real container_thickness = .05;
 real container_height = 0;
-real container_friction = 0;
+real container_friction = .1;
 real container_cohesion = -1000;
 
 real particle_radius = .003;
@@ -30,19 +30,19 @@ ParticleGenerator<ChSystemParallel>* layer_gen;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-	real amplitude = 0;     //.005;
+	real amplitude = .001;
 	real frequency = 40;
 	real t = frame * timestep * PI * 2 * frequency;
 
 	BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
 	BLOCK->SetWvel_loc(ChVector<>(0, 0, 0));
-	BLOCK->SetPos(ChVector<>(sin(t) * amplitude, BLOCK->GetPos().y, cos(t) * amplitude));
-	BLOCK->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, BLOCK->GetPos_dt().y, -sin(t) * amplitude * 2 * PI * frequency));
+	BLOCK->SetPos(ChVector<>(sin(t) * amplitude, BLOCK->GetPos().y, 0));
+	BLOCK->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, BLOCK->GetPos_dt().y, 0));
 
-//	CONTAINER->SetPos(ChVector<>(sin(t)* amplitude, 0, cos(t)* amplitude));
-//	CONTAINER->SetPos_dt(ChVector<>(cos(t)* amplitude * 2 * PI * frequency, 0, -sin(t)* amplitude * 2 * PI * frequency));
-//	CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
-//	CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
+	CONTAINER->SetPos(ChVector<>(sin(t)* amplitude, 0, 0));
+	CONTAINER->SetPos_dt(ChVector<>(cos(t)* amplitude * 2 * PI * frequency, 0, 0));
+	CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
+	CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
 
 	real cont_vol = .4 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * .4;
 	cout << layer_gen->total_volume << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
 	material->SetCohesion(-100);
 
 	CONTAINER = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(CONTAINER, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(CONTAINER, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
 			Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
 //	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
 //	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
 //	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .4;
+//	openGLView.render_camera->mScale = .2;
 //	openGLView.SetCustomCallback(RunTimeStep);
 //	openGLView.StartSpinning(window_manager);
 //	window_manager->CallGlutMainLoop();

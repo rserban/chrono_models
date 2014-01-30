@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 	if (argc > 1) {
 		particle_slide_friction = atof(argv[1]);
 		particle_roll_friction = atof(argv[2]);
-		particle_std_dev = atof(argv[2]);
+		particle_std_dev = atof(argv[3]);
 	}
 
 //=========================================================================================================

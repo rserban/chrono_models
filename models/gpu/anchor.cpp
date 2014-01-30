@@ -27,11 +27,12 @@ real start_height = 1;
 
 ChSharedBodyPtr BLOCK, CONTAINER;
 ParticleGenerator<ChSystemParallel>* layer_gen;
+real amplitude = .001;
+real frequency = 40;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-	real amplitude = .001;
-	real frequency = 40;
+
 	real t = frame * timestep * PI * 2 * frequency;
 
 	BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
@@ -39,8 +40,8 @@ void RunTimeStep(T* mSys, const int frame) {
 	BLOCK->SetPos(ChVector<>(sin(t) * amplitude, BLOCK->GetPos().y, 0));
 	BLOCK->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, BLOCK->GetPos_dt().y, 0));
 
-	CONTAINER->SetPos(ChVector<>(sin(t)* amplitude, 0, 0));
-	CONTAINER->SetPos_dt(ChVector<>(cos(t)* amplitude * 2 * PI * frequency, 0, 0));
+	CONTAINER->SetPos(ChVector<>(sin(t) * amplitude, 0, 0));
+	CONTAINER->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, 0, 0));
 	CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
 	CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
 
@@ -55,6 +56,7 @@ int main(int argc, char* argv[]) {
 		particle_slide_friction = atof(argv[1]);
 		particle_roll_friction = atof(argv[2]);
 		particle_std_dev = atof(argv[3]);
+		amplitude = atof(argv[4]);
 	}
 
 //=========================================================================================================
@@ -111,7 +113,7 @@ int main(int argc, char* argv[]) {
 
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(particle_density);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius * 1.5, particle_radius));
+	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
 	layer_gen->SetNormalDistribution(particle_radius, particle_std_dev);
 	layer_gen->material->SetFriction(particle_slide_friction);
 	layer_gen->material->SetCohesion(particle_cohesion);

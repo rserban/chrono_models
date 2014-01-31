@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9.80665;
-real timestep = .0005;
+real timestep = .00025;
 real seconds_to_simulate = 1.5;
 real tolerance = .0005;
 
@@ -17,7 +17,7 @@ real container_height = 0;
 real container_friction = .1;
 real container_cohesion = -1000;
 
-real particle_radius = .003;
+real particle_radius = .0015;
 real particle_density = 2650;
 real particle_slide_friction = .3;
 real particle_roll_friction = .3;
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(particle_radius);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(particle_radius);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(.1);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(.05);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(30, 30, 30));

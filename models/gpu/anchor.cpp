@@ -68,13 +68,13 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter / 2);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter / 2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(particle_radius);
 	system_gpu->SetTolSpeeds(particle_radius);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(particle_radius);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(.05);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(30, 30, 30));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
@@ -117,8 +117,8 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetNormalDistribution(particle_radius, particle_std_dev);
 	layer_gen->material->SetFriction(particle_slide_friction);
 	layer_gen->material->SetCohesion(particle_cohesion);
-	layer_gen->material->SetRollingFriction(particle_roll_friction);
-	layer_gen->material->SetSpinningFriction(particle_roll_friction);
+	layer_gen->material->SetRollingFriction(0);
+	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);

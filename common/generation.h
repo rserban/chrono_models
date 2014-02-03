@@ -1,4 +1,5 @@
 #include "common.h"
+#include "initialization.h"
 #include <random>
 
 enum MixType {
@@ -210,11 +211,11 @@ class ParticleGenerator {
 			return mass;
 		}
 		void computeRadius(real3 & r) {
-
+			real num_std_dev = 2;
 			if (use_normal_dist) {
-				r.x = fmaxf(fminf(distribution->operator()(generator), radius.x + 1 * std_dev), mean - 1 * std_dev);
-				r.y = fmaxf(fminf(distribution->operator()(generator), radius.y + 1 * std_dev), mean - 1 * std_dev);
-				r.z = fmaxf(fminf(distribution->operator()(generator), radius.z + 1 * std_dev), mean - 1 * std_dev);
+				r.x = fmaxf(fminf(distribution->operator()(generator), radius.x + num_std_dev * std_dev), mean - num_std_dev * std_dev);
+				r.y = fmaxf(fminf(distribution->operator()(generator), radius.y + num_std_dev * std_dev), mean - num_std_dev * std_dev);
+				r.z = fmaxf(fminf(distribution->operator()(generator), radius.z + num_std_dev * std_dev), mean - num_std_dev * std_dev);
 			} else {
 				r = radius;
 			}
@@ -222,7 +223,7 @@ class ParticleGenerator {
 
 		bool computePerturbedPos(real3 percent_perturbation, int3 num_per_dir, int3 index, real3 origin, real3 & pos) {
 
-			real3 r = radius + radius / 4.0 + R3(std_dev) * use_normal_dist;
+			real3 r = R3(max(max(radius.x,radius.y),radius.z)) + R3(std_dev)*2 * use_normal_dist;
 
 			real3 a = r * percent_perturbation;
 			real3 d = a + 2 * r;     //compute cell length

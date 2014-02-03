@@ -11,8 +11,8 @@ real tolerance = .0005;
 int max_iter = 30;
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(300, 600, 300);
-real container_thickness = 50;
+real3 container_size = R3(200, 50, 200);
+real container_thickness = 10;
 real container_height = 0;
 real container_friction = .1;
 real container_cohesion = -1000;
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(CONTAINER, (ChSystemParallel *) system_gpu);
 
 	BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(BLOCK, 1, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
+	InitObject(BLOCK, 1000, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
 	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(40, 12 * 7, 40), R3(.01, .01, .01), R3(0, 0, 0));
+	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(85, 20, 85), R3(0,0,0), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 //	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
 //	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
 //	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .2;
+//	openGLView.render_camera->mScale = 20;
 //	openGLView.SetCustomCallback(RunTimeStep);
 //	openGLView.StartSpinning(window_manager);
 //	window_manager->CallGlutMainLoop();

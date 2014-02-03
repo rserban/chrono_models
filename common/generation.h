@@ -211,7 +211,7 @@ class ParticleGenerator {
 			return mass;
 		}
 		void computeRadius(real3 & r) {
-			real num_std_dev = 2;
+
 			if (use_normal_dist) {
 				r.x = fmaxf(fminf(distribution->operator()(generator), radius.x + num_std_dev * std_dev), mean - num_std_dev * std_dev);
 				r.y = fmaxf(fminf(distribution->operator()(generator), radius.y + num_std_dev * std_dev), mean - num_std_dev * std_dev);
@@ -223,7 +223,7 @@ class ParticleGenerator {
 
 		bool computePerturbedPos(real3 percent_perturbation, int3 num_per_dir, int3 index, real3 origin, real3 & pos) {
 
-			real3 r = R3(max(max(radius.x,radius.y),radius.z)) + R3(std_dev)*2 * use_normal_dist;
+			real3 r = R3(max(max(radius.x,radius.y),radius.z)) + R3(std_dev)*num_std_dev * use_normal_dist;
 
 			real3 a = r * percent_perturbation;
 			real3 d = a + 2 * r;     //compute cell length
@@ -462,10 +462,11 @@ class ParticleGenerator {
 			ifile.close();
 		}
 
-		void SetNormalDistribution(real _mean, real _std_dev) {
+		void SetNormalDistribution(real _mean, real _std_dev, int _num_std_dev = 1) {
 			mean = _mean;
 			std_dev = _std_dev;
 			use_normal_dist = true;
+			num_std_dev = _num_std_dev;
 			distribution = new std::normal_distribution<double>(mean, std_dev);
 		}
 
@@ -520,7 +521,7 @@ class ParticleGenerator {
 		real mean_cohesion, std_dev_cohesion;
 
 		vector<real3> position;
-
+		int num_std_dev;
 		bool use_mixture;
 		vector<MixType> mixture;
 

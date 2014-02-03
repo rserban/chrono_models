@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(particle_density);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
-	layer_gen->SetNormalDistribution(particle_radius, particle_std_dev);
+	layer_gen->SetNormalDistribution(particle_radius, particle_std_dev, 1);
 	layer_gen->material->SetFriction(particle_slide_friction);
 	layer_gen->material->SetCohesion(particle_cohesion);
 	layer_gen->material->SetRollingFriction(0);

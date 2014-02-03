@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .0002;
+real timestep = .0005;
 real seconds_to_simulate = 1.5;
 real tolerance = .0005;
 

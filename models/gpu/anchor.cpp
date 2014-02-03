@@ -11,7 +11,7 @@ real tolerance = .0005;
 int max_iter = 10;
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(200, 50, 200);
+real3 container_size = R3(200, 90, 200);
 real container_thickness = 10;
 real container_height = 0;
 real container_friction = .1;
@@ -22,7 +22,7 @@ real particle_density = .00265;
 real particle_slide_friction = .3;
 real particle_roll_friction = .3;
 real particle_cohesion = 0;
-real particle_std_dev = particle_radius / 6.0;
+real particle_std_dev = .5;
 
 ChSharedBodyPtr BLOCK, CONTAINER;
 ParticleGenerator<ChSystemParallel>* layer_gen;
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(85, 20, 85), R3(0,0,0), R3(0, 0, 0));
+	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(70, 30, 70), R3(0,0,0), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:

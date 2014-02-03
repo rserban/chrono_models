@@ -26,8 +26,8 @@ real particle_std_dev = particle_radius / 6.0;
 
 ChSharedBodyPtr BLOCK, CONTAINER;
 ParticleGenerator<ChSystemParallel>* layer_gen;
-real amplitude = 1;
-real frequency = 40;
+real amplitude = particle_radius;
+real frequency = 10;
 
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(particle_radius);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(particle_radius);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(20);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(30, 30, 30));

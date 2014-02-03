@@ -8,7 +8,7 @@ real timestep = .0005;
 real seconds_to_simulate = 1.5;
 real tolerance = .0005;
 
-int max_iter = 30;
+int max_iter = 10;
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(200, 50, 200);
@@ -45,7 +45,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
 
 	real cont_vol = .4 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * .4;
-	cout << layer_gen->total_volume << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
+	cout << layer_gen->total_volume<<" "<<layer_gen->total_mass << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
 
 }
 
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(CONTAINER, (ChSystemParallel *) system_gpu);
 
 	BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(BLOCK, 1000, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
+	InitObject(BLOCK, 100, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
 	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 

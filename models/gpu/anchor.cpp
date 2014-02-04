@@ -11,7 +11,7 @@ real tolerance = .0005;
 int max_iter = 15;
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(200, 90, 200);
+real3 container_size = R3(100, 220, 100);
 real container_thickness = 10;
 real container_height = 0;
 real container_friction = .1;
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(70, 30, 70), R3(0,0,0), R3(0, 0, 0));
+	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(40, 100, 40), R3(0,0,0), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:

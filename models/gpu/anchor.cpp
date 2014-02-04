@@ -4,11 +4,11 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .0005;
+real timestep = .00025;
 real seconds_to_simulate = 1.5;
 real tolerance = .0005;
 
-int max_iter = 15;
+int max_iter = 20;
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(100, 220, 100);
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(CONTAINER, (ChSystemParallel *) system_gpu);
 
 	BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(BLOCK, 100, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
+	InitObject(BLOCK, 1000, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
 	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 

@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .0005;
+real timestep = .0003;
 real seconds_to_simulate = 1.5;
 real tolerance = .00001;
 
@@ -44,7 +44,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
 	CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
 
-	real cont_vol = .4 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * .4;
+	real cont_vol = (container_size.x-container_thickness*2)*2 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * (container_size.z-container_thickness*2)*2;
 	cout << layer_gen->total_volume<<" "<<layer_gen->total_mass << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
 
 }
@@ -106,8 +106,8 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(CONTAINER, (ChSystemParallel *) system_gpu);
 
 	BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(BLOCK, 10, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -19);
-	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x-container_thickness*2.1, container_thickness, container_size.z-container_thickness*2.1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	InitObject(BLOCK, 10, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
+	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);

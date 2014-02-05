@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter);
 	system_gpu->SetTol(particle_radius);
 	system_gpu->SetTolSpeeds(particle_radius);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(particle_radius);
@@ -116,8 +116,8 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetNormalDistribution(particle_radius, particle_std_dev, 1);
 	layer_gen->material->SetFriction(particle_slide_friction);
 	layer_gen->material->SetCohesion(particle_cohesion);
-	layer_gen->material->SetRollingFriction(0);
-	layer_gen->material->SetSpinningFriction(0);
+	layer_gen->material->SetRollingFriction(particle_roll_friction);
+	layer_gen->material->SetSpinningFriction(particle_roll_friction);
 	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);

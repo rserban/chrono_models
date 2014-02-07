@@ -48,8 +48,6 @@ int roller_sprocker_counter = 0;
 real particle_radius = .04;
 real cohesion = 500;
 
-
-
 ParticleGenerator<ChSystemParallel>* layer_gen;
 ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation) {
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -57,7 +55,9 @@ ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation
 
 	AddCollisionGeometry(mrigidBody, SPHERE, ChVector<>(R, D * .2, R) * scale_tank, ChVector<>(L, 0, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
 	AddCollisionGeometry(mrigidBody, BOX, ChVector<>((L + 2 * R) * .45, W, D) * scale_tank, ChVector<>(0, -H2 + W, 0) * scale_tank, Quaternion(1, 0, 0, 0));
-
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, D, W) * scale_tank, ChVector<>(0, -H2*1.2+W , 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(0,  -H2*1.2+W ,  D), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(0,  -H2*1.2+W ,  -D), Quaternion(1, 0, 0, 0));
 	real rx = (L + 2 * R) * .45;
 	real ry = W;
 	real rz = D;
@@ -65,13 +65,12 @@ ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation
 	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, D, W) * scale_tank, ChVector<>(rx, -H2 + W, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
 
 	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, (L + 2 * R) * .45, W) * scale_tank, ChVector<>(0, -H2 + W, -rz) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
-		AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, (L + 2 * R) * .45, W) * scale_tank, ChVector<>(0, -H2 + W, rz) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, (L + 2 * R) * .45, W) * scale_tank, ChVector<>(0, -H2 + W, rz) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
 
-
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, - H2 + W, -rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, - H2 + W, rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, - H2 + W, rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, - H2 + W, -rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, -H2 + W, -rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, -H2 + W, rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, -H2 + W, rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, -H2 + W, -rz), Quaternion(1, 0, 0, 0));
 
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 	//mrigidBody->SetInertiaXX(ChVector<>(.00067, .00082, .00017));
@@ -95,12 +94,14 @@ ChSharedBodyPtr createChassisM113(ChVector<> &position) {
 	real angle_b = 15 * CH_C_PI / 180.0;
 	real angle_c = -15 * CH_C_PI / 180.0;
 	real angle_d = -45 * CH_C_PI / 180.0;
-
 	Vector pos_d = Vector(-sin(angle_d) * h, cos(angle_d) * h, 0);
 	Vector pos_c = Vector(-sin(angle_c) * h, cos(angle_c) * h, 0);
 	Vector pos_b = Vector(-sin(angle_b) * h, cos(angle_b) * h, 0);
 	Vector pos_a = Vector(-sin(angle_a) * h, cos(angle_a) * h, 0);
 
+	AddCollisionGeometry(mPlow, CYLINDER, ChVector<>(.025, 1, .025) * scale_tank, Vector(0,0,0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+	AddCollisionGeometry(mPlow, SPHERE, Vector(.025, .01, .01), Vector(0, 0, 1), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mPlow, SPHERE, Vector(.025, .01, .01), Vector(0, 0, -1), Quaternion(1, 0, 0, 0));
 	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d, Q_from_AngAxis(angle_d, Vector(0, 0, 1)));
 	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c, Q_from_AngAxis(angle_c, Vector(0, 0, 1)));
 	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c * 2 + pos_b, Q_from_AngAxis(angle_b, Vector(0, 0, 1)));
@@ -324,7 +325,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 	//Vector pos = chassis->GetPos();
 
-	//((ChSystemParallel*) mSys)->SetAABB(R3(pos.x - 4, pos.y - 3, pos.z - 2), R3(pos.x + 2, pos.y + 3, pos.z + 2));
+	((ChSystemParallel*) mSys)->SetAABB(R3(-6.25, -2+container_height, -3), R3(6.25, 2+container_height, 3));
 
 }
 
@@ -425,7 +426,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetDensity(10 * 200);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
 	layer_gen->material->SetFriction(.2);
-	layer_gen->material->SetCohesion(500*timestep);
+	layer_gen->material->SetCohesion(500 * timestep);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(0);
@@ -438,12 +439,11 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
+	layer_gen->addPerturbedVolumeMixture(R3(0, -2.7, 0), I3(130, 3, 50), R3(.01, .01, .01), R3(0, 0, 0));
 
-	layer_gen->addPerturbedVolumeMixture(R3(0, -2.7, 0), I3(130,3,50), R3(.01, .01, .01), R3(0, 0, 0));
-	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius)*.5);
+	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius) * .5);
 	num_per_dir = I3(100, 16, 100);
 	layer_gen->addPerturbedVolumeMixture(R3(-2.5, -1.9, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
-
 
 //=========================================================================================================
 //Rendering specific stuff:

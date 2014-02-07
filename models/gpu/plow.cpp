@@ -10,9 +10,9 @@ int num_steps = seconds_to_simulate / timestep;
 int max_iter = 100;
 real tolerance = 8e-5;
 
-real3 container_size = R3(6.25, 3, 3);
+real3 container_size = R3(6.25, 2, 3);
 real container_thickness = .2;
-real container_height = 0;
+real container_height = -1;
 real container_friction = 1;
 
 string data_folder = "data/plow";
@@ -45,22 +45,33 @@ double H2 = .0739;
 double D = .1692;
 double W = .015;
 int roller_sprocker_counter = 0;
-real particle_radius = .02;
+real particle_radius = .04;
+real cohesion = 500;
+
+
+
 ParticleGenerator<ChSystemParallel>* layer_gen;
 ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation) {
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(mrigidBody, mass_shoe, position * scale_tank, rotation, material_shoes, true, false, -5, 3);
 
 	AddCollisionGeometry(mrigidBody, SPHERE, ChVector<>(R, D * .2, R) * scale_tank, ChVector<>(L, 0, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, BOX, ChVector<>((L + 2 * R) * .5, W, D) * scale_tank, ChVector<>(0, -H2 + W, 0) * scale_tank, Quaternion(1, 0, 0, 0));
-	real rx = (L + 2 * R) * .5;
+	AddCollisionGeometry(mrigidBody, BOX, ChVector<>((L + 2 * R) * .45, W, D) * scale_tank, ChVector<>(0, -H2 + W, 0) * scale_tank, Quaternion(1, 0, 0, 0));
+
+	real rx = (L + 2 * R) * .45;
 	real ry = W;
 	real rz = D;
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, D, W) * scale_tank, ChVector<>(-rx, -H2 + W, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, D, W) * scale_tank, ChVector<>(rx, -H2 + W, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
 
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(.01, .01, .01), Vector(-rx, ry - H2 - W, -rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(.01, .01, .01), Vector(-rx, ry - H2 - W, rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(.01, .01, .01), Vector(rx, ry - H2 - W, rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(.01, .01, .01), Vector(rx, ry - H2 - W, -rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, (L + 2 * R) * .45, W) * scale_tank, ChVector<>(0, -H2 + W, -rz) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
+		AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, (L + 2 * R) * .45, W) * scale_tank, ChVector<>(0, -H2 + W, rz) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
+
+
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, - H2 + W, -rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, - H2 + W, rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, - H2 + W, rz), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, - H2 + W, -rz), Quaternion(1, 0, 0, 0));
 
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 	//mrigidBody->SetInertiaXX(ChVector<>(.00067, .00082, .00017));
@@ -325,7 +336,7 @@ int main(int argc, char* argv[]) {
 	system_gpu = new ChSystemParallel;
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
+	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(40);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(40);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
@@ -337,8 +348,9 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoCollision(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(80, 20, 20));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(60, 20, 30));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -382,7 +394,7 @@ int main(int argc, char* argv[]) {
 	material_chassis->SetFriction(0);
 	material_chassis->SetCohesion(-1000);
 
-	real height = -2;
+	real height = -1.8;
 	real x_offset = 1.25;
 	ChVector<> temporary1 = ChVector<>(2.0 + x_offset, .1 + height, 0);
 	ChVector<> temporary2 = ChVector<>(x_offset, height, .8);
@@ -408,12 +420,12 @@ int main(int argc, char* argv[]) {
 	//num_per_dir = I3(200, 1, 80);
 	//num_per_dir = I3(150, 1, 50);
 	//num_per_dir = I3(150, 8, 50);
-	num_per_dir = I3(50 * 2, 16, 50 * 2);
+
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(10 * 200);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
 	layer_gen->material->SetFriction(.2);
-	layer_gen->material->SetCohesion(.001);
+	layer_gen->material->SetCohesion(500*timestep);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(0);
@@ -426,7 +438,12 @@ int main(int argc, char* argv[]) {
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-	layer_gen->addPerturbedVolumeMixture(R3(-3.25, -2.2, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
+
+	layer_gen->addPerturbedVolumeMixture(R3(0, -2.7, 0), I3(130,3,50), R3(.01, .01, .01), R3(0, 0, 0));
+	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius)*.5);
+	num_per_dir = I3(100, 16, 100);
+	layer_gen->addPerturbedVolumeMixture(R3(-2.5, -1.9, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
+
 
 //=========================================================================================================
 //Rendering specific stuff:

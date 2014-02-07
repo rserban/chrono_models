@@ -44,8 +44,8 @@ void RunTimeStep(T* mSys, const int frame) {
 	CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
 	CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
 
-	real cont_vol = (container_size.x-container_thickness*2)*2 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * (container_size.z-container_thickness*2)*2;
-	cout << layer_gen->total_volume<<" "<<layer_gen->total_mass << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
+	real cont_vol = (container_size.x - container_thickness * 2) * 2 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * (container_size.z - container_thickness * 2) * 2;
+	cout << layer_gen->total_volume << " " << layer_gen->total_mass << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
 
 }
 
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter * 2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(particle_radius);
@@ -118,11 +118,11 @@ int main(int argc, char* argv[]) {
 	layer_gen->material->SetCohesion(particle_cohesion);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
-	//layer_gen->AddMixtureType(MIX_SPHERE);
+	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 
-	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(40, 100, 40), R3(0,0,0), R3(0, 0, 0));
+	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(40, 100, 40), R3(0, 0, 0), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:
@@ -152,13 +152,13 @@ int main(int argc, char* argv[]) {
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
 		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
-//		if (i % save_every == 0) {
-//			stringstream ss;
-//			cout << "Frame: " << file << endl;
-//			ss << "data/foam/" << "/" << file << ".txt";
-//			//DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
-//			file++;
-//		}
+		if (i % save_every == 0) {
+			stringstream ss;
+			cout << "Frame: " << file << endl;
+			ss << "data/anchor_density/" << "/" << file << ".txt";
+			DumpAllObjectsWithGeometryChrono(system_gpu, ss.str());
+			file++;
+		}
 		RunTimeStep(system_gpu, i);
 	}
 }

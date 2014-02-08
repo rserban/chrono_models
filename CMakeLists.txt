@@ -80,8 +80,8 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(trough models/gpu/trough.cpp)		
     TARGET_LINK_LIBRARIES(trough	${CHRONO_LIB} ${GPU_LIBS})
 
-    #ADD_EXECUTABLE(density models/gpu/density.cpp)		
-    #TARGET_LINK_LIBRARIES(density	${CHRONO_LIB} ${GPU_LIBS})
+    ADD_EXECUTABLE(density models/gpu/density.cpp)		
+    TARGET_LINK_LIBRARIES(density	${CHRONO_LIB} ${GPU_LIBS})
 
     #ADD_EXECUTABLE(fluid_tank models/gpu/fluid_tank.cpp)		
     #TARGET_LINK_LIBRARIES(fluid_tank	${CHRONO_LIB} ${GPU_LIBS})

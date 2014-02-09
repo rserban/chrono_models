@@ -11,7 +11,7 @@ real tolerance = .00001;
 int max_iter = 20;
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(100, 220, 100);
+real3 container_size = R3(100, 150, 100);
 real container_thickness = 10;
 real container_height = 0;
 real container_friction = .1;
@@ -28,21 +28,40 @@ ChSharedBodyPtr BLOCK, CONTAINER;
 ParticleGenerator<ChSystemParallel>* layer_gen;
 real amplitude = particle_radius;
 real frequency = 10;
-
+int layers = 0;
+bool both = false;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	real t = frame * timestep * PI * 2 * frequency;
+	if (frame * timestep > .6) {
+		real t = frame * timestep * PI * 2 * frequency;
 
-	BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
-	BLOCK->SetWvel_loc(ChVector<>(0, 0, 0));
-	BLOCK->SetPos(ChVector<>(sin(t) * amplitude, BLOCK->GetPos().y, 0));
-	BLOCK->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, BLOCK->GetPos_dt().y, 0));
+		BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
+		BLOCK->SetWvel_loc(ChVector<>(0, 0, 0));
+		BLOCK->SetPos(ChVector<>(sin(t) * amplitude, BLOCK->GetPos().y, 0));
+		BLOCK->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, BLOCK->GetPos_dt().y, 0));
 
-	CONTAINER->SetPos(ChVector<>(sin(t) * amplitude, 0, 0));
-	CONTAINER->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, 0, 0));
-	CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
-	CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
+		CONTAINER->SetPos(ChVector<>(sin(t) * amplitude, 0, 0));
+		CONTAINER->SetPos_dt(ChVector<>(cos(t) * amplitude * 2 * PI * frequency, 0, 0));
+		CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
+		CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
+	} else {
+		BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
+		BLOCK->SetWvel_loc(ChVector<>(0, 0, 0));
+		BLOCK->SetPos(ChVector<>(0, BLOCK->GetPos().y, 0));
+		BLOCK->SetPos_dt(ChVector<>(0, 0, 0));
+
+		CONTAINER->SetPos(ChVector<>(0, 0, 0));
+		CONTAINER->SetPos_dt(ChVector<>(0, 0, 0));
+		CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
+		CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
+
+	}
+	if (layers < 100 && frame % 20 == 0) {
+
+		layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 8.0, 0), I3(40, 1, 40), R3(0, 0, 0), R3(0, 0, 0));
+		layers++;
+	}
 
 	real cont_vol = (container_size.x - container_thickness * 2) * 2 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * (container_size.z - container_thickness * 2) * 2;
 	cout << layer_gen->total_volume << " " << layer_gen->total_mass << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
@@ -56,6 +75,7 @@ int main(int argc, char* argv[]) {
 		particle_roll_friction = atof(argv[2]);
 		particle_std_dev = atof(argv[3]);
 		amplitude = atof(argv[4]);
+		both = atoi(argv[5]);
 	}
 
 //=========================================================================================================
@@ -65,7 +85,7 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter * 2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(particle_radius);
@@ -118,11 +138,13 @@ int main(int argc, char* argv[]) {
 	layer_gen->material->SetCohesion(particle_cohesion);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
-	layer_gen->AddMixtureType(MIX_SPHERE);
-	layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	if (both) {
+		layer_gen->AddMixtureType(MIX_SPHERE);
+		layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	} else {
+		layer_gen->AddMixtureType(MIX_ELLIPSOID);
+	}
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
-
-	layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(40, 100, 40), R3(0, 0, 0), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:

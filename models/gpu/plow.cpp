@@ -440,7 +440,7 @@ int main(int argc, char* argv[]) {
 	layer_gen_bottom->SetDensity(10 * 200);
 	layer_gen_bottom->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
 	layer_gen_bottom->material->SetFriction(1);
-	layer_gen_bottom->material->SetCohesion(100 * timestep);
+	layer_gen_bottom->material->SetCohesion(500 * timestep);
 	layer_gen_bottom->material->SetRollingFriction(0);
 	layer_gen_bottom->material->SetSpinningFriction(0);
 	layer_gen_bottom->material->SetCompliance(0);

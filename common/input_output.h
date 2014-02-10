@@ -1,3 +1,5 @@
+#ifndef CHRONOMODELS_INOUT_H
+#define CHRONOMODELS_INOUT_H
 #include "common.h"
 
 class CSVGen {
@@ -481,3 +483,4 @@ void DumpResidualHist(T* mSys, string filename) {
 	}
 	csv_output.CloseFile();
 }
+#endif

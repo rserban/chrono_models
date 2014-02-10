@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
-real seconds_to_simulate = 5;
+real seconds_to_simulate = 9;
 
 int max_iter = 10;
 
@@ -39,10 +39,10 @@ string data_folder = "data/teddy";
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame % 5 == 0) {
-
-		bear_inside->addPerturbedVolumeMixture(R3(.56*4, 1.23*4-2, .09*4), I3(10,1, 10), R3(.01, .01, .01), R3(0, -10, 0));
-	}
+//	if (frame % 5 == 0) {
+//
+//		bear_inside->addPerturbedVolumeMixture(R3(.56*4, 1.23*4-2, .09*4), I3(10,1, 10), R3(.01, .01, .01), R3(0, -10, 0));
+//	}
 }
 
 int main(int argc, char* argv[]) {
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(0);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(.5);
 	system_gpu->SetTolSpeeds(.5);
@@ -220,18 +220,18 @@ int main(int argc, char* argv[]) {
 	bear_inside->material->SetCompliance(0);
 	bear_inside->AddMixtureType(MIX_SPHERE);
 	bear_inside->SetCylinderRadius(.015*(2)*5);
-	//bear_inside->loadAscii("bear_inside_h_015.txt", R3(0, -2, 0), SPHERE, R3(.015*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
+	bear_inside->loadAscii("bear_inside_02.txt", R3(0, -2, 0), SPHERE, R3(.02*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
 
 //=========================================================================================================
 //Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-	//openGLView.render_camera->mScale = .4;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	//openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	//openGLView.render_camera->mScale = .4;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {
@@ -251,15 +251,17 @@ int main(int argc, char* argv[]) {
 
 		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
 		if (i % save_every == 0) {
-			stringstream ss;
-			cout << "Frame: " << file << endl;
-			ss << data_folder << "/" << file << ".txt";
-			DumpAllObjects(system_gpu, ss.str(), ",", true);
-			//output.ExportData(ss.str());
-			file++;
+			bear_inside->DumpAscii("BEAR_INSIDE.txt",true);
+//			stringstream ss;
+//			cout << "Frame: " << file << endl;
+//			ss << data_folder << "/" << file << ".txt";
+//			DumpAllObjects(system_gpu, ss.str(), ",", true);
+//			//output.ExportData(ss.str());
+//			file++;
 		}
 		RunTimeStep(system_gpu, i);
 	}
+
 
 	//DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
 

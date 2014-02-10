@@ -92,12 +92,15 @@ class ParticleGenerator {
 			volume_cylinder = false;
 			useGPU = GPU;
 			total_volume = total_mass = 0;
+			active = false;
 		}
 
 		void SetMass(real m) {
 			mass = m;
 		}
-
+		void SetActive(bool act) {
+			active = act;
+		}
 		void SetDensity(real d) {
 			density = d;
 			use_density = true;
@@ -153,12 +156,12 @@ class ParticleGenerator {
 
 			if (use_common_material) {
 				if (useGPU) {
-					InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, -1, mSys->GetNbodiesTotal());
+					InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, active, -1, mSys->GetNbodiesTotal());
 				} else {
-					InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, false, 2, 4);
+					InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), material, true, active, 2, 4);
 				}
 			} else {
-				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), true, false, 2, mSys->GetNbodiesTotal() + 2);
+				InitObject(body, mass, Vector(pos.x, pos.y, pos.z), Quaternion(1, 0, 0, 0), true, active, 2, mSys->GetNbodiesTotal() + 2);
 				if (use_normal_friction) {
 					body->GetMaterialSurface()->SetFriction(distribution_friction->operator()(generator));
 				} else {
@@ -212,9 +215,9 @@ class ParticleGenerator {
 		}
 		void computeRadius(real3 & r) {
 
-			if (use_normal_dist&& std_dev>0) {
-				real3 min_r = R3(radius.x - num_std_dev * std_dev,radius.y - num_std_dev * std_dev,radius.z - num_std_dev * std_dev);
-				real3 max_r = R3(radius.x + num_std_dev * std_dev,radius.y + num_std_dev * std_dev,radius.z + num_std_dev * std_dev);
+			if (use_normal_dist && std_dev > 0) {
+				real3 min_r = R3(radius.x - num_std_dev * std_dev, radius.y - num_std_dev * std_dev, radius.z - num_std_dev * std_dev);
+				real3 max_r = R3(radius.x + num_std_dev * std_dev, radius.y + num_std_dev * std_dev, radius.z + num_std_dev * std_dev);
 				r.x = distribution->operator()(generator);
 				while (r.x < min_r.x || r.x > max_r.x) {
 					r.x = distribution->operator()(generator);
@@ -523,7 +526,7 @@ class ParticleGenerator {
 		bool use_density;
 		bool use_common_material;
 		bool useGPU;
-
+		bool active;
 		real cylinder_rad;
 		bool volume_cylinder;
 		ChSharedPtr<ChMaterialSurface> material;

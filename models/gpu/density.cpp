@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .0003;
+real timestep = .0005;
 real seconds_to_simulate = 2.0;
 real tolerance = .00001;
 
@@ -14,8 +14,8 @@ int num_steps = seconds_to_simulate / timestep;
 real3 container_size = R3(100, 150, 100);
 real container_thickness = 10;
 real container_height = 0;
-real container_friction = .1;
-real container_cohesion = -1000;
+real container_friction = 0;
+real container_cohesion = 0;
 
 real particle_radius = 1.5;
 real particle_density = .00265;
@@ -26,14 +26,14 @@ real particle_std_dev = .5;
 
 ChSharedBodyPtr BLOCK, CONTAINER;
 ParticleGenerator<ChSystemParallel>* layer_gen;
-real amplitude = particle_radius;
-real frequency = 10;
+real amplitude = particle_radius * 2;
+real frequency = 5;
 int layers = 0;
 bool both = false;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame * timestep > .6 && frame * timestep <1.5) {
+	if (frame * timestep > .6 && frame * timestep < 1.5) {
 		real t = frame * timestep * PI * 2 * frequency;
 
 		BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter * 2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(particle_radius);
@@ -111,23 +111,19 @@ int main(int argc, char* argv[]) {
 
 	CONTAINER = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(CONTAINER, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, container_size.z - container_thickness),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(-container_size.x + container_thickness, container_height - container_thickness, 0));
+	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(container_size.x - container_thickness, container_height - container_thickness, 0));
+	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, -container_size.z + container_thickness));
+	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, container_size.z - container_thickness));
+	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height - container_size.y, 0));
 	//AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0));
 
 	CONTAINER->GetMaterialSurface()->SetCohesion(container_cohesion);
 	FinalizeObject(CONTAINER, (ChSystemParallel *) system_gpu);
 
 	BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(BLOCK, 100, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
-	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	InitObject(BLOCK, 10, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
+	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x, container_thickness, container_size.z));
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);

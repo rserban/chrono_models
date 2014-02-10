@@ -104,6 +104,9 @@ IF (ENABLE_UNIT_GPU)
     ADD_EXECUTABLE(dragon models/gpu/dragon.cpp)		
     TARGET_LINK_LIBRARIES(dragon	${CHRONO_LIB} ${GPU_LIBS})
     
+    ADD_EXECUTABLE(teddy models/gpu/teddy.cpp)		
+    TARGET_LINK_LIBRARIES(teddy	${CHRONO_LIB} ${GPU_LIBS})
+    
     ADD_EXECUTABLE(deform models/gpu/deform.cpp)		
     TARGET_LINK_LIBRARIES(deform	${CHRONO_LIB} ${GPU_LIBS})
     

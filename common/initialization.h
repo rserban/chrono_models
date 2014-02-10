@@ -1,5 +1,9 @@
+#ifndef CHASSETHELPER_INIT_H
+#define CHASSETHELPER_INIT_H
+
 #include "common.h"
-void InitObject(ChSharedBodyPtr &body, double mass, ChVector<> pos, ChQuaternion<> rot, ChSharedPtr<ChMaterialSurface> &material, bool do_collide, bool is_fixed, int collision_family, int do_not_collide_with) {
+
+void InitObject(ChSharedBodyPtr &body, double mass, ChVector<> pos, ChQuaternion<> rot, ChSharedPtr<ChMaterialSurface> &material, bool do_collide = true, bool is_fixed = false, int collision_family = 2, int do_not_collide_with = 4) {
     body->SetMass(mass);
     body->SetPos(pos);
     body->SetRot(rot);
@@ -13,7 +17,7 @@ void InitObject(ChSharedBodyPtr &body, double mass, ChVector<> pos, ChQuaternion
     //body->SetUseSleeping(true);
 }
 
-void InitObject(ChSharedBodyPtr &body, double mass, ChVector<> pos, ChQuaternion<> rot, bool do_collide, bool is_fixed, int collision_family, int do_not_collide_with) {
+void InitObject(ChSharedBodyPtr &body, double mass, ChVector<> pos, ChQuaternion<> rot, bool do_collide = true, bool is_fixed = false, int collision_family = 2, int do_not_collide_with = 4) {
     body->SetMass(mass);
     body->SetPos(pos);
     body->SetRot(rot);
@@ -26,7 +30,7 @@ void InitObject(ChSharedBodyPtr &body, double mass, ChVector<> pos, ChQuaternion
     //body->SetUseSleeping(true);
 }
 
-void AddCollisionGeometry(ChSharedBodyPtr &body, ShapeType type, ChVector<> dimension, ChVector<> local_position, ChQuaternion<> local_rotation) {
+void AddCollisionGeometry(ChSharedBodyPtr &body, ShapeType type, ChVector<> dimension, ChVector<> local_position = ChVector<>(0,0,0), ChQuaternion<> local_rotation = ChQuaternion<>(1,0,0,0)) {
     ChMatrix33<> rotation = local_rotation;
     ChCollisionModel *model = (ChCollisionModel *) body->GetCollisionModel();
     if (type == SPHERE) {
@@ -71,7 +75,7 @@ void AddCollisionGeometry(ChSharedBodyPtr &body, ShapeType type, ChVector<> dime
         body->GetAssets().push_back(cone_shape);
     }
 }
-void AddCollisionGeometryTriangleMesh(ChSharedBodyPtr &body, string file_name, ChVector<> local_position, ChQuaternion<> local_rotation) {
+void AddCollisionGeometryTriangleMesh(ChSharedBodyPtr &body, string file_name, ChVector<> local_position = ChVector<>(0,0,0), ChQuaternion<> local_rotation = ChQuaternion<>(1,0,0,0)) {
     ChMatrix33<> rotation = local_rotation;
     ChCollisionModel *model = (ChCollisionModel *) body->GetCollisionModel();
     ChTriangleMeshConnected trimesh;
@@ -90,3 +94,4 @@ template<class S> void FinalizeObject(ChSharedBodyPtr body, S *chrono_system) {
     body->GetCollisionModel()->BuildModel();
     chrono_system->AddBody(body);
 }
+#endif

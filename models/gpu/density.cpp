@@ -5,7 +5,7 @@
 
 real gravity = -9806.65;
 real timestep = .0003;
-real seconds_to_simulate = 1.5;
+real seconds_to_simulate = 2.0;
 real tolerance = .00001;
 
 int max_iter = 20;
@@ -33,7 +33,7 @@ bool both = false;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	if (frame * timestep > .6) {
+	if (frame * timestep > .6 && frame * timestep <1.5) {
 		real t = frame * timestep * PI * 2 * frequency;
 
 		BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
@@ -48,10 +48,10 @@ void RunTimeStep(T* mSys, const int frame) {
 	} else {
 		BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
 		BLOCK->SetWvel_loc(ChVector<>(0, 0, 0));
-		BLOCK->SetPos(ChVector<>(0, BLOCK->GetPos().y, 0));
+		BLOCK->SetPos(ChVector<>(BLOCK->GetPos().x, BLOCK->GetPos().y, BLOCK->GetPos().z));
 		BLOCK->SetPos_dt(ChVector<>(0, 0, 0));
 
-		CONTAINER->SetPos(ChVector<>(0, 0, 0));
+		CONTAINER->SetPos(ChVector<>(CONTAINER->GetPos().x, CONTAINER->GetPos().y, CONTAINER->GetPos().z));
 		CONTAINER->SetPos_dt(ChVector<>(0, 0, 0));
 		CONTAINER->SetWvel_loc(ChVector<>(0, 0, 0));
 		CONTAINER->SetRot(ChQuaternion<>(1, 0, 0, 0));
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(particle_radius);
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(CONTAINER, (ChSystemParallel *) system_gpu);
 
 	BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(BLOCK, 10, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
+	InitObject(BLOCK, 100, Vector(0, container_size.y, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -20);
 	AddCollisionGeometry(BLOCK, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 

@@ -49,6 +49,7 @@ real particle_radius = .04;
 real cohesion = 500;
 
 ParticleGenerator<ChSystemParallel>* layer_gen;
+ParticleGenerator<ChSystemParallel>* layer_gen_bottom;
 ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation) {
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(mrigidBody, mass_shoe, position * scale_tank, rotation, material_shoes, true, false, -5, 3);
@@ -424,26 +425,27 @@ int main(int argc, char* argv[]) {
 
 	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	layer_gen->SetDensity(10 * 200);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
-	layer_gen->material->SetFriction(.2);
+	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius) * .5);
+	layer_gen->material->SetFriction(1);
 	layer_gen->material->SetCohesion(10 * timestep);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(0);
-//	layer_gen->AddMixtureType(MIX_SPHERE);
 	layer_gen->AddMixtureType(MIX_ELLIPSOID);
-//	layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
-//	layer_gen->AddMixtureType(MIX_CUBE);
-//	layer_gen->AddMixtureType(MIX_CYLINDER);
 
-	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
-	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
-
-	layer_gen->addPerturbedVolumeMixture(R3(0, -2.7, 0), I3(130, 3, 50), R3(.01, .01, .01), R3(0, 0, 0));
-
-	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius) * .5);
 	num_per_dir = I3(100, 16, 100);
 	layer_gen->addPerturbedVolumeMixture(R3(-2.5, -1.9, 0), I3(num_per_dir.x, num_per_dir.y, num_per_dir.z), R3(.01, .01, .01), R3(0, 0, 0));
+
+	layer_gen_bottom = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
+	layer_gen_bottom->SetDensity(10 * 200);
+	layer_gen_bottom->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
+	layer_gen_bottom->material->SetFriction(1);
+	layer_gen_bottom->material->SetCohesion(100 * timestep);
+	layer_gen_bottom->material->SetRollingFriction(0);
+	layer_gen_bottom->material->SetSpinningFriction(0);
+	layer_gen_bottom->material->SetCompliance(0);
+	layer_gen_bottom->AddMixtureType(MIX_ELLIPSOID);
+	layer_gen_bottom->addPerturbedVolumeMixture(R3(0, -2.7, 0), I3(130, 3, 50), R3(.01, .01, .01), R3(0, 0, 0));
 
 //=========================================================================================================
 //Rendering specific stuff:

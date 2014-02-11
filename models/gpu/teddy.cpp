@@ -15,7 +15,7 @@ real container_thickness = .2;
 real container_height = 0;
 real container_friction = .1;
 
-real particle_radius = .06;
+real particle_radius = .02;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 1;
@@ -65,18 +65,18 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter*2);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(.5);
 	system_gpu->SetTolSpeeds(.5);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.5);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(.0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(25);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
-	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(50, 90, 50));
+	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(100, 100, 100));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
@@ -201,11 +201,11 @@ int main(int argc, char* argv[]) {
 	bear_outside->SetDensity(1000);
 	bear_outside->SetRadius(rad);
 	bear_outside->material->SetFriction(particle_friction);
-	bear_outside->material->SetCohesion(1000*timestep);
+	bear_outside->material->SetCohesion(10000*timestep);
 	bear_outside->material->SetRollingFriction(0);
 	bear_outside->material->SetSpinningFriction(0);
 	bear_outside->material->SetCompliance(0);
-	bear_outside->SetActive(true);
+	//bear_outside->SetActive(false);
 
 	bear_outside->loadAscii("bear_02.txt", R3(0, -2, 0), SPHERE, R3(.02*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
 
@@ -214,13 +214,14 @@ int main(int argc, char* argv[]) {
 	bear_inside->SetDensity(1000);
 	bear_inside->SetRadius(rad);
 	bear_inside->material->SetFriction(.01);
-	bear_inside->material->SetCohesion(-2000*timestep);
+	bear_inside->material->SetCohesion(-20000*timestep);
 	bear_inside->material->SetRollingFriction(0);
 	bear_inside->material->SetSpinningFriction(0);
 	bear_inside->material->SetCompliance(0);
 	bear_inside->AddMixtureType(MIX_SPHERE);
 	bear_inside->SetCylinderRadius(.015*(2)*5);
-	bear_inside->loadAscii("bear_inside_02.txt", R3(0, -2, 0), SPHERE, R3(.02*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
+	//bear_inside->loadAscii("bear_inside_02.txt", R3(0, -2, 0), SPHERE, R3(.02*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
+	bear_inside->loadAscii("bear_in_trim_.02.txt", R3(0, 0, 0), SPHERE, R3(.035, 0, 0), R3(0, 0, 0), R3(1,1,1));
 
 //=========================================================================================================
 //Rendering specific stuff:
@@ -251,13 +252,12 @@ int main(int argc, char* argv[]) {
 
 		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
 		if (i % save_every == 0) {
-			bear_inside->DumpAscii("BEAR_INSIDE.txt",true);
-//			stringstream ss;
-//			cout << "Frame: " << file << endl;
-//			ss << data_folder << "/" << file << ".txt";
-//			DumpAllObjects(system_gpu, ss.str(), ",", true);
-//			//output.ExportData(ss.str());
-//			file++;
+			//bear_inside->DumpAscii("BEAR_INSIDE.txt",true);
+			stringstream ss;
+			cout << "Frame: " << file << endl;
+			ss << data_folder << "/" << file << ".txt";
+			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
+			file++;
 		}
 		RunTimeStep(system_gpu, i);
 	}

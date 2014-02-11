@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
-real seconds_to_simulate = 9;
+real seconds_to_simulate = 20;
 
 int max_iter = 10;
 

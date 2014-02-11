@@ -427,7 +427,7 @@ int main(int argc, char* argv[]) {
 	layer_gen->SetDensity(10 * 200);
 	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius) * .5);
 	layer_gen->material->SetFriction(1);
-	layer_gen->material->SetCohesion(10 * timestep);
+	layer_gen->material->SetCohesion(1 * timestep);
 	layer_gen->material->SetRollingFriction(0);
 	layer_gen->material->SetSpinningFriction(0);
 	layer_gen->material->SetCompliance(0);

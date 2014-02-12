@@ -10,12 +10,12 @@ int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(5, 5, 10);
+real3 container_size = R3(3, 5, 10);
 real container_thickness = .2;
 real container_height = -6;
 real container_friction = .1;
 
-real particle_radius = .02;
+real particle_radius = .04;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = .001;
@@ -39,13 +39,13 @@ ChSharedBodyPtr Wheel;
 string data_folder = "data/waterwheel";
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-	if (frame % 10 == 0) {
-		water_generator->addPerturbedVolumeMixture(R3(0, .4, 9.2), I3(20, 1, 20), R3(.05, .05, 0), R3(0, -5, 0));
+	if (frame % 20 == 0) {
+		water_generator->addPerturbedVolumeMixture(R3(0, .4, 9.5), I3(10, 1, 10), R3(.05, .05, 0), R3(0, -5, 0));
 	}
 
-	Wheel->SetPos(Vector(0, -6, 4) );
-	Wheel->SetPos_dt(Vector(0, 0, 0) );
-
+	//Wheel->SetPos(Vector(0, -6, 4) );
+	//Wheel->SetPos_dt(Vector(0, 0, 0) );
+	//Wheel->SetWvel_loc(Vector(Wheel->GetWvel_loc().x, 0, 0) );
 
 }
 
@@ -70,6 +70,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(max_iter * 2);
 	system_gpu->SetTol(.5);
 	system_gpu->SetTolSpeeds(.5);
 	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.5);
@@ -135,17 +136,13 @@ int main(int argc, char* argv[]) {
 	Quaternion quat;
 	quat.Q_from_AngAxis(90, Vector(0, 1, 0));
 
-
-
 	ChSharedPtr<ChMaterialSurface> material_spout;
 	material_spout = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_spout->SetFriction(0);
-		//material->SetRollingFriction(.5);
-		//material->SetSpinningFriction(.5);
+	//material->SetRollingFriction(.5);
+	//material->SetSpinningFriction(.5);
 	material_spout->SetCompliance(0);
 	material_spout->SetCohesion(-1000);
-
-
 
 	ChSharedBodyPtr Spout = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(Spout, 100000, Vector(0, 0, 8), Quaternion(1, 0, 0, 0), material_spout, true, true, -20, -20);
@@ -163,23 +160,22 @@ int main(int argc, char* argv[]) {
 
 	FinalizeObject(Spout, (ChSystemParallel *) system_gpu);
 
-
 	real wheel_rad = 3;
-	real paddle_len = .5 ;
+	real paddle_len = .5;
 	real thickness = .05;
 	real wheel_width = 1;
-	 Wheel = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	Wheel = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(Wheel, 100, Vector(0, -6, 4), Quaternion(1, 0, 0, 0), material, true, false, -20, -20);
 
 	AddCollisionGeometry(Wheel, CYLINDER, Vector(wheel_rad, wheel_width, wheel_rad), Vector(0, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
-	AddCollisionGeometry(Wheel, CYLINDER, Vector(wheel_rad+paddle_len*2, thickness, wheel_rad+paddle_len*2), Vector(-wheel_width, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
-	AddCollisionGeometry(Wheel, CYLINDER, Vector(wheel_rad+paddle_len*2, thickness, wheel_rad+paddle_len*2), Vector(wheel_width, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
+	AddCollisionGeometry(Wheel, CYLINDER, Vector(wheel_rad + paddle_len * 2, thickness, wheel_rad + paddle_len * 2), Vector(-wheel_width, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
+	AddCollisionGeometry(Wheel, CYLINDER, Vector(wheel_rad + paddle_len * 2, thickness, wheel_rad + paddle_len * 2), Vector(wheel_width, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
 
 	for (int i = 0; i < 360; i += 30) {
 
 		real angle = i * PI / 180.0;
-		real x = cos(angle) * (wheel_rad+paddle_len);
-		real z = sin(angle) * (wheel_rad+paddle_len);
+		real x = cos(angle) * (wheel_rad + paddle_len);
+		real z = sin(angle) * (wheel_rad + paddle_len);
 		Quaternion q;
 		q.Q_from_AngAxis(-angle, Vector(1, 0, 0));
 
@@ -188,6 +184,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	FinalizeObject(Wheel, (ChSystemParallel *) system_gpu);
+
+	ChSharedPtr<ChLinkLockRevolute> my_link1(new ChLinkLockRevolute);
+	my_link1->Initialize(Bottom, Wheel, ChCoordsys<>(Vector(0, -6, 4), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Y)));
+	system_gpu->AddLink(my_link1);
 
 	water_generator = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	water_generator->SetDensity(1000);

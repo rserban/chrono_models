@@ -76,7 +76,7 @@ void CreateFiber(T* mSys, ChVector<> position) {
 	}
 
 }
-int number_of_particles = 300000;
+int number_of_particles = 260000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < number_of_particles) {

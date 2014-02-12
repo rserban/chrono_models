@@ -135,8 +135,20 @@ int main(int argc, char* argv[]) {
 	Quaternion quat;
 	quat.Q_from_AngAxis(90, Vector(0, 1, 0));
 
+
+
+	ChSharedPtr<ChMaterialSurface> material_spout;
+	material_spout = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+	material_spout->SetFriction(0);
+		//material->SetRollingFriction(.5);
+		//material->SetSpinningFriction(.5);
+	material_spout->SetCompliance(0);
+	material_spout->SetCohesion(-1000);
+
+
+
 	ChSharedBodyPtr Spout = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(Spout, 100000, Vector(0, 0, 8), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
+	InitObject(Spout, 100000, Vector(0, 0, 8), Quaternion(1, 0, 0, 0), material_spout, true, true, -20, -20);
 
 	real width = 1;
 	real thick = .1;

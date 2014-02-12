@@ -29,7 +29,7 @@ ChSharedBodyPtr slicer1, slicer2, spinner;
 
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
-real cohesion = 0;
+real cohesion = .1;
 real ang = 2 * CH_C_PI;
 ParticleGenerator<ChSystemParallel> *layer_gen;
 string data_folder = "data/extruder";
@@ -76,7 +76,7 @@ void CreateFiber(T* mSys, ChVector<> position) {
 	}
 
 }
-int number_of_particles = 1000;
+int number_of_particles = 300000;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < number_of_particles) {
@@ -282,15 +282,15 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-
-	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	//	openGLView.render_camera->mScale = .1;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//
+//	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
+//	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
+//	//	openGLView.render_camera->mScale = .1;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 	for (int i = 0; i < num_steps; i++) {

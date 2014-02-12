@@ -4,18 +4,18 @@
 #include "../../common/input_output.h"
 real gravity = -9.80665;
 real timestep = .001;
-real seconds_to_simulate = 20;
+real seconds_to_simulate = 5;
 
 int max_iter = 10;
 
 int num_steps = seconds_to_simulate / timestep;
 
-real3 container_size = R3(20, 6, 20);
+real3 container_size = R3(10, 2, 10);
 real container_thickness = .2;
-real container_height = 0;
+real container_height = -4;
 real container_friction = .1;
 
-real particle_radius = .02;
+real particle_radius = .015;
 real particle_mass = .05;
 real particle_density = .5;
 real particle_friction = 1;
@@ -33,16 +33,12 @@ ParticleGenerator<ChSystemParallel>* bear_outside;
 ParticleGenerator<ChSystemParallel>* bear_inside;
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
-real cohesion = .25;
+real cohesion_bear = 10000*timestep;
+real cohesion_goop = 1*timestep;
 ChSharedBodyPtr Bunny;
 string data_folder = "data/teddy";
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
-
-//	if (frame % 5 == 0) {
-//
-//		bear_inside->addPerturbedVolumeMixture(R3(.56*4, 1.23*4-2, .09*4), I3(10,1, 10), R3(.01, .01, .01), R3(0, -10, 0));
-//	}
 }
 
 int main(int argc, char* argv[]) {
@@ -50,12 +46,10 @@ int main(int argc, char* argv[]) {
 
 	if (argc == 4) {
 
-		cohesion = atof(argv[1]);
-		particle_friction = atof(argv[2]);
+		cohesion_bear = atof(argv[1]);
+		cohesion_goop = atof(argv[2]);
 		data_folder=argv[3];
-		//rolling_fric = atof(argv[3]);
-		//spinning_fric = atof(argv[4]);
-		cout<<cohesion<<" "<<particle_friction<<" "<<data_folder<<endl;
+		cout<<cohesion_bear<<" "<<cohesion_goop<<" "<<data_folder<<endl;
 	}
 
 //=========================================================================================================
@@ -81,7 +75,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
 
-	((ChSystemParallel*) system_gpu)->SetAABB(R3(-6, -6, -6), R3(6, 6, 6));
+	//((ChSystemParallel*) system_gpu)->SetAABB(R3(-6, -6, -6), R3(6, 6, 6));
 //=========================================================================================================
 //cout << num_per_dir.x << " " << num_per_dir.y << " " << num_per_dir.z << " " << num_per_dir.x * num_per_dir.y * num_per_dir.z << endl;
 //addPerturbedLayer(R3(0, -5 +container_thickness-particle_radius.y, 0), ELLIPSOID, particle_radius, num_per_dir, R3(.01, .01, .01), 10, 1, system_gpu);
@@ -145,10 +139,10 @@ int main(int argc, char* argv[]) {
 
 	//AddCollisionGeometry(Float, BOX, Vector(1, 1, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
 
-	//FinalizeObject(L, (ChSystemParallel *) system_gpu);
-	//FinalizeObject(R, (ChSystemParallel *) system_gpu);
-	//FinalizeObject(F, (ChSystemParallel *) system_gpu);
-	//FinalizeObject(B, (ChSystemParallel *) system_gpu);
+	FinalizeObject(L, (ChSystemParallel *) system_gpu);
+	FinalizeObject(R, (ChSystemParallel *) system_gpu);
+	FinalizeObject(F, (ChSystemParallel *) system_gpu);
+	FinalizeObject(B, (ChSystemParallel *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
 
 	//FinalizeObject(Float, (ChSystemParallel *) system_gpu);
@@ -156,72 +150,36 @@ int main(int argc, char* argv[]) {
 	Quaternion quat;
 	quat.Q_from_AngAxis(90, Vector(0, 1, 0));
 
-	ChSharedPtr<ChMaterialSurface> material_monkey;
-	material_monkey = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material_monkey->SetFriction(container_friction);
-	material_monkey->SetCompliance(0);
-	material_monkey->SetCohesion(10);
 
-	//ChSharedBodyPtr Monkey = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	//InitObject(Monkey, 100000, Vector(0,-2,0), quat, material_monkey, true, true, -20, -20);
-	//AddCollisionGeometryTriangleMesh(Monkey, "monkey.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-	//FinalizeObject(Monkey, (ChSystemParallel *) system_gpu);
-
-//		ifstream ifile("bunny_init.txt");
-//		string temp;
-//
-//		for (int i = 0; i < 27000; i++) {
-//			if (i > 0) {
-//				//cout<<i<<endl;
-//				getline(ifile, temp);
-//				stringstream ss(temp);
-//				Vector pos;
-//				Vector vel;
-//				ss >> pos.x >> pos.y >> pos.z >> vel.x >> vel.y >> vel.z;
-//				ChSharedBodyGPUPtr sphere = ChSharedBodyGPUPtr(new ChBody(new ChCollisionModelGPU));
-//				InitObject(sphere, 1, pos, Quaternion(1, 0, 0, 0), 1, 1, 0, true, false, 1, 0);
-//				AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius, particle_radius, particle_radius), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-//				FinalizeObject(sphere, (ChSystemParallel *) system_gpu);
-//				sphere->SetCohesion(cohesion);
-//				sphere->SetPos_dt(vel);
-//			}
-//		}
 
 	real3 rad = R3(particle_radius, particle_radius, particle_radius);
-//		real3 size = container_size;
-//		size.y = container_size.y / 3.0;
-//
-	int3 num_per_dir;
-//		cout << num_per_dir.x * num_per_dir.y * num_per_dir.z * 3 << endl;
-	//num_per_dir = I3(1, size.y / rad.y * .85, 1);
-//
-	num_per_dir = I3(40, 40, 40);
 
 	bear_outside = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	bear_outside->SetDensity(1000);
 	bear_outside->SetRadius(rad);
 	bear_outside->material->SetFriction(particle_friction);
-	bear_outside->material->SetCohesion(10000*timestep);
+	bear_outside->material->SetCohesion(cohesion_bear);
 	bear_outside->material->SetRollingFriction(0);
 	bear_outside->material->SetSpinningFriction(0);
 	bear_outside->material->SetCompliance(0);
-	//bear_outside->SetActive(false);
+	//bear_outside->SetActive(true);
 
-	bear_outside->loadAscii("bear_02.txt", R3(0, -2, 0), SPHERE, R3(.02*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
+	bear_outside->loadAscii("bear_015.txt", R3(0, -2, 0), SPHERE, R3(.015*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
 
 	rad = R3(.02, .02, .02);
 	bear_inside = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 	bear_inside->SetDensity(1000);
 	bear_inside->SetRadius(rad);
-	bear_inside->material->SetFriction(.01);
-	bear_inside->material->SetCohesion(-20000*timestep);
+	bear_inside->material->SetFriction(.5);
+	bear_inside->material->SetCohesion(cohesion_goop);
 	bear_inside->material->SetRollingFriction(0);
 	bear_inside->material->SetSpinningFriction(0);
 	bear_inside->material->SetCompliance(0);
 	bear_inside->AddMixtureType(MIX_SPHERE);
 	bear_inside->SetCylinderRadius(.015*(2)*5);
-	//bear_inside->loadAscii("bear_inside_02.txt", R3(0, -2, 0), SPHERE, R3(.02*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
-	bear_inside->loadAscii("bear_in_trim_.02.txt", R3(0, 0, 0), SPHERE, R3(.035, 0, 0), R3(0, 0, 0), R3(1,1,1));
+	//bear_outside->SetActive(true);
+	bear_inside->loadAscii("bear_inside_015.txt", R3(0, -2, 0), SPHERE, R3(.015*(2), 0, 0), R3(0, 0, 0), R3(4,4,4));
+	//bear_inside->loadAscii("bear_in_trim_.02.txt", R3(0, 0, 0), SPHERE, R3(.035, 0, 0), R3(0, 0, 0), R3(1,1,1));
 
 //=========================================================================================================
 //Rendering specific stuff:
@@ -250,9 +208,8 @@ int main(int argc, char* argv[]) {
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
-		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
+		int save_every = 1.0 / timestep / 600.0;     //save data every n steps
 		if (i % save_every == 0) {
-			//bear_inside->DumpAscii("BEAR_INSIDE.txt",true);
 			stringstream ss;
 			cout << "Frame: " << file << endl;
 			ss << data_folder << "/" << file << ".txt";

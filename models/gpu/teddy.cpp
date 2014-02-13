@@ -34,7 +34,7 @@ ParticleGenerator<ChSystemParallel>* bear_inside;
 real3 mass = R3(1, 1, 1);
 real3 friction = R3(0, .1, 0);
 real cohesion_bear = 10000*timestep;
-real cohesion_goop = 1*timestep;
+real cohesion_goop = 10*timestep;
 ChSharedBodyPtr Bunny;
 string data_folder = "data/teddy";
 template<class T>
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 	//material->SetRollingFriction(.5);
 	//material->SetSpinningFriction(.5);
 	material->SetCompliance(0);
-	material->SetCohesion(-1000);
+	material->SetCohesion(0);
 
 	InitObject(L, 100000, Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 	InitObject(R, 100000, Vector(container_size.x - container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);

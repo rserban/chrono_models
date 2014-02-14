@@ -81,7 +81,7 @@ template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 	if (mSys->GetNbodies() < number_of_particles) {
 
-		if (frame % 50 == 0 ) {
+		if (frame % 100 == 0 ) {
 
 			//addPerturbedLayer(R3(-2, 0, 0), SPHERE, rad, num_per_dir, R3(1, 0, 1), mass.x, friction.x, cohesion.x, R3(0, 5, 0), (ChSystemParallel*) mSys);
 

@@ -100,10 +100,10 @@ void RunTimeStep(T* mSys, const int frame) {
 	double NARR = mSys->GetTimerCollisionNarrow();
 	double LCP = mSys->GetTimerLcp();
 	double UPDT = mSys->GetTimerUpdate();
-	double RESID = ((ChLcpSolverParallel *) (mSys->GetLcpSolverSpeed()))->GetResidual();
+	double RESID = ((ChLcpSolverParallelDVI *) (mSys->GetLcpSolverSpeed()))->GetResidual();
 	int BODS = ((ChSystemParallel*) mSys)->GetNbodies();
 	int CNTC = ((ChSystemParallel*) mSys)->GetNcontacts();
-	int REQ_ITS = ((ChLcpSolverParallel*) (mSys->GetLcpSolverSpeed()))->GetTotalIterations();
+	int REQ_ITS = ((ChLcpSolverParallelDVI*) (mSys->GetLcpSolverSpeed()))->GetTotalIterations();
 
 	printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
@@ -158,26 +158,26 @@ int main(int argc, char* argv[]) {
 		data_folder = argv[3];
 	}
 //=========================================================================================================
-	ChSystemParallel * system_gpu = new ChSystemParallel;
+	ChSystemParallelDVI * system_gpu = new ChSystemParallelDVI;
 	ChCollisionSystemParallel *mcollisionengine = new ChCollisionSystemParallel();
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
-		((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
-		((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-		((ChLcpSolverParallel*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
+	((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
+		((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(10);
+		((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+		((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
 	system_gpu->SetMaxPenetrationRecoverySpeed(100);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance( 0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(8);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance( 0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(8);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .02);
 	mcollisionengine->setBinsPerAxis(I3(100, 50, 200));
 	mcollisionengine->setBodyPerBin(100, 50);

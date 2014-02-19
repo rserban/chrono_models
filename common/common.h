@@ -8,7 +8,6 @@
 
 //System level Includes
 #include "physics/ChSystem.h"
-#include "physics/ChSystemOpenMP.h"
 #include "physics/ChApidll.h"
 #include "physics/ChContactContainer.h"
 

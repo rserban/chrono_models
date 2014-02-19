@@ -27,7 +27,7 @@ real tolerance = 1e-2;
 
 real gravity = -9.810;
 real timestep = .001;
-real seconds_to_simulate = 1;
+real seconds_to_simulate = 2;
 int num_steps = seconds_to_simulate / timestep;
 
 int particle_grid_x = 10;
@@ -49,10 +49,10 @@ void RunTimeStep(T* mSys, const int frame) {
 		//addHCPSheet(10, 10, 0, particle_mass, particle_radius, particle_friction, true, 0, 0, particle_initial_vel, (ChSystemParallel*) mSys);
 	}
 
-	real residual = ((ChLcpSolverParallel *) (mSys->GetLcpSolverSpeed()))->GetResidual() * .5;
+	real residual = ((ChLcpSolverParallelDVI *) (mSys->GetLcpSolverSpeed()))->GetResidual() * .5;
 	mSys->SetTol(residual);
 	mSys->SetTolSpeeds(residual);
-	((ChLcpSolverParallel *) (mSys->GetLcpSolverSpeed()))->SetTolerance(residual);
+	((ChLcpSolverParallelDVI *) (mSys->GetLcpSolverSpeed()))->SetTolerance(residual);
 
 //	if(frame >300){
 //
@@ -62,35 +62,39 @@ void RunTimeStep(T* mSys, const int frame) {
 
 }
 int main(int argc, char* argv[]) {
-	omp_set_num_threads(8);
+	//omp_set_num_threads(8);
 
 	//=========================================================================================================
-	ChSystemParallel * system_gpu = new ChSystemParallel;
+	ChSystemParallelDVI * system_gpu = new ChSystemParallelDVI;
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 	//=========================================================================================================
 	//ReadInputFile("convergence_config.txt",system_gpu);
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(20);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(20);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(15);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance( 0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
-	//((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->solver.SetAPGDParams(10, .9, 2.0);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
-	((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance( 0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1000);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
+	//((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->solver.SetAPGDParams(10, .9, 2.0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(false);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->DoCollision(false);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .01);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(20, 20, 20));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
 	//=========================================================================================================
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
-	ReadAllObjectsWithGeometryChrono(system_gpu, "dump.txt");
+	ReadAllObjectsWithGeometryChrono(system_gpu, "dump_sor_heavy_.4.txt");
+	system_gpu->Get_bodylist()->at(5)->SetMass(100000);
+
+
 /*
 	//=========================================================================================================
 
@@ -111,7 +115,7 @@ int main(int argc, char* argv[]) {
 	InitObject(F, 100000, Vector(0, plate_height, -container_width + container_thickness), quat, material, true, true, -20, -20);
 	InitObject(B, 100000, Vector(0, plate_height, container_width - container_thickness), quat, material, true, true, -20, -20);
 	InitObject(BTM, 100000, Vector(0, plate_height - container_height, 0), quat, material, true, true, -20, -20);
-	InitObject(BLOCK, 100, Vector(0, 5-.5, 0), quat, material, true, false, -1, -20);
+	InitObject(BLOCK, 10000, Vector(0, 5-.5, 0), quat, material, true, false, -1, -20);
 
 	AddCollisionGeometry(L, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
 	AddCollisionGeometry(R, BOX, Vector(container_thickness, container_height, container_width), lpos, quat);
@@ -127,7 +131,7 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(BTM, (ChSystemParallel *) system_gpu);
 	FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 	BLOCK->SetPos_dt(ChVector<>(0,-4,0));
-	ParticleGenerator layer_gen(system_gpu);
+	ParticleGenerator<ChSystemParallel> layer_gen(system_gpu);
 	layer_gen.SetDensity(1000);
 	layer_gen.SetRadius(R3(particle_radius));
 
@@ -139,15 +143,15 @@ int main(int argc, char* argv[]) {
 	int3 num_per_dir = I3(2.0 / particle_radius, 4.0 / particle_radius, 2.0 / particle_radius);
 
 	layer_gen.AddMixtureType(MIX_SPHERE);
-	layer_gen.AddMixtureType(MIX_ELLIPSOID);
+	//layer_gen.AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen.AddMixtureType(MIX_CONE);
-	layer_gen.AddMixtureType(MIX_CUBE);
-	layer_gen.AddMixtureType(MIX_CYLINDER);
+	//layer_gen.AddMixtureType(MIX_CUBE);
+	//layer_gen.AddMixtureType(MIX_CYLINDER);
 
 	//layer_gen.SetNormalDistribution(rad.x, rad.x/4.0);
 	//layer_gen->UseNormalCohesion(particle_cohesion, 1);
 
-	layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(0, .0, 0), R3(0, -4, 0));
+	layer_gen.addPerturbedVolumeMixture(R3(0, -.8, 0), num_per_dir, R3(0.1, .1, 0.1), R3(0, -4, 0));
 
 */
 	//=========================================================================================================
@@ -177,18 +181,18 @@ int main(int argc, char* argv[]) {
 		system_gpu->DoStepDynamics(timestep);
 		RunTimeStep(system_gpu, i);
 
-		if (i % save_every == 0) {
-			ofile << ((ChLcpSolverParallel *) (system_gpu->GetLcpSolverSpeed()))->GetResidual() << endl;
+		//if (i % save_every == 0) {
+			ofile << ((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->GetResidual() << endl;
 //			stringstream ss;
 //			cout << "Frame: " << file << endl;
 //			DumpObjects(system_gpu, ss.str());
 //			//output.ExportData(ss.str());
 //			file++;
-		}
+		//}
 		timer.stop();
 
 	}
-	DumpAllObjectsWithGeometryChrono(system_gpu, "dump.txt");
+	//DumpAllObjectsWithGeometryChrono(system_gpu, "dump.txt");
 
 	cout << "TIME: " << timer() << endl;
 	ofile.close();

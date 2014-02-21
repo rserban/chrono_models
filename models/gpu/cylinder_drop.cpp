@@ -52,9 +52,9 @@ void RunTimeStep(T* mSys, const int frame) {
 
 				InitObject(sphere, 1, position, quat, particle_friction, particle_friction, 0, true, false, -1, i);
 				AddCollisionGeometry(sphere, CYLINDER, ChVector<>(particle_radius.x, particle_radius.y, particle_radius.z), Vector(0, 0, 0), quat);
-				AddCollisionGeometry(sphere, ELLIPSOID, ChVector<>(particle_radius.x, particle_radius.x*2, particle_radius.z), Vector(0, particle_radius.y, 0), quat);
-				AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius.x, 0, 0), Vector(particle_radius.x, -particle_radius.y,particle_radius.x ), quat);
-				AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius.x, 0, 0), Vector(-particle_radius.x, -particle_radius.y,particle_radius.x ), quat);
+				//AddCollisionGeometry(sphere, ELLIPSOID, ChVector<>(particle_radius.x, particle_radius.x*2, particle_radius.z), Vector(0, particle_radius.y, 0), quat);
+				//AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius.x, 0, 0), Vector(particle_radius.x, -particle_radius.y,particle_radius.x ), quat);
+				//AddCollisionGeometry(sphere, SPHERE, ChVector<>(particle_radius.x, 0, 0), Vector(-particle_radius.x, -particle_radius.y,particle_radius.x ), quat);
 
 				real3 r = particle_radius;
 				real mass = 1;

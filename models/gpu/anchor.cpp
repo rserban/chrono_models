@@ -5,7 +5,7 @@
 
 real gravity = -9806.65;
 real timestep = .0005;
-real seconds_to_simulate = 2;
+real seconds_to_simulate = 5;
 real tolerance = 0;
 
 int max_iter = 20;

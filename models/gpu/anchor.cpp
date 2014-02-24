@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(40);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
 	system_gpu->SetMaxPenetrationRecoverySpeed(100);
@@ -105,6 +105,8 @@ int main(int argc, char* argv[]) {
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
+	((ChSystemParallel*) system_gpu)->SetAABB(R3(-150, -300, -150), R3(150,300,150));
+
 //=========================================================================================================
 
 	ChSharedPtr<ChMaterialSurface> material;

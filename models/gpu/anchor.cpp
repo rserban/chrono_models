@@ -4,8 +4,8 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .0005;
-real seconds_to_simulate = 5;
+real timestep = .001;
+real seconds_to_simulate = 300;
 real tolerance = 0;
 
 int max_iter = 20;
@@ -16,7 +16,6 @@ real container_thickness = 10;
 real container_height = 0;
 real container_friction = .1;
 real container_cohesion = -1000;
-
 
 real particle_radius = 1.5;
 real particle_density = .00265;
@@ -34,7 +33,9 @@ real anchor_density = 0.00785;
 real anchor_vel = -20;
 real anchor_rot = -30;     //rpm
 int layers = 0;
+ChFunction_Ramp* motionFunc1, *motionFunc2;
 ChSharedPtr<ChLinkLockLock> actuator_anchor;
+bool once = true;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
@@ -54,22 +55,32 @@ void RunTimeStep(T* mSys, const int frame) {
 //	real cont_vol = (container_size.x - container_thickness * 2) * 2 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * (container_size.z - container_thickness * 2) * 2;
 //	cout << layer_gen->total_volume << " " << layer_gen->total_mass << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
 //
-	if (layers < 110 && frame % 40 == 0) {
-		cout<<layers<<endl;
-		layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 8.0, 0), I3(64, 1, 64), R3(0, 0, 0), R3(0, 0, 0));
-		layers++;
+//	if (layers < 110 && frame % 40 == 0) {
+//		cout<<layers<<endl;
+//		layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 8.0, 0), I3(64, 1, 64), R3(0, 0, 0), R3(0, 0, 0));
+//		layers++;
+//	}
+		//300 - 457.2
+		double time = actuator_anchor->GetChTime();
+	if (ANCHOR->GetPos().y <= 300 - 457.2&&once) {
+		motionFunc1->Set_y0(time* -anchor_vel);
+		motionFunc1->Set_ang(-2);
+		motionFunc2->Set_y0(time* -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
+		motionFunc2->Set_ang(0);
+
+		once = false;
 	}
 
 }
 
 int main(int argc, char* argv[]) {
 
-	if (argc > 1) {
-		particle_slide_friction = atof(argv[1]);
-		particle_roll_friction = atof(argv[2]);
-		particle_std_dev = atof(argv[3]);
-		amplitude = atof(argv[4]);
-	}
+//	if (argc > 1) {
+//		particle_slide_friction = atof(argv[1]);
+//		particle_roll_friction = atof(argv[2]);
+//		particle_std_dev = atof(argv[3]);
+//		amplitude = atof(argv[4]);
+//	}
 
 //=========================================================================================================
 	ChSystemParallelDVI * system_gpu = new ChSystemParallelDVI;
@@ -78,7 +89,7 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter );
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
@@ -96,7 +107,6 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetStep(timestep);
 //=========================================================================================================
 
-	//ReadAllObjectsWithGeometryChrono(system_gpu, "anchor.dat");
 
 
 	ChSharedPtr<ChMaterialSurface> material;
@@ -108,19 +118,19 @@ int main(int argc, char* argv[]) {
 	material->SetCohesion(-100);
 
 	CONTAINER = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(CONTAINER, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, container_size.z - container_thickness),
-			Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0));
-	//AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0));
+	InitObject(CONTAINER, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, false, true, -20, -20);
+//	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
+//			Quaternion(1, 0, 0, 0));
+//	AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
+//			Quaternion(1, 0, 0, 0));
+//	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
+//			Quaternion(1, 0, 0, 0));
+//	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, container_size.z - container_thickness),
+//			Quaternion(1, 0, 0, 0));
+//	AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0));
+//	//AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0));
 
-	CONTAINER->GetMaterialSurface()->SetCohesion(container_cohesion);
+	//CONTAINER->GetMaterialSurface()->SetCohesion(container_cohesion);
 	FinalizeObject(CONTAINER, (ChSystemParallel *) system_gpu);
 
 //	BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -141,55 +151,57 @@ int main(int argc, char* argv[]) {
 	real anchor_mass = 6208;
 	real number_sections = 150;
 
-//	ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-//	InitObject(ANCHOR, anchor_mass, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -1);
-//	AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
-//	AddCollisionGeometry(ANCHOR, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
-////
-//	for (int i = 0; i < number_sections; i++) {
-//		ChQuaternion<> quat, quat2;
-//		quat.Q_from_AngAxis(i / number_sections * 2 * PI, ChVector<>(0, 1, 0));
-//		quat2.Q_from_AngAxis(6 * 2 * PI / 360.0, ChVector<>(0, 0, 1));
-//		quat = quat % quat2;
-//		ChVector<> pos(sin(i / number_sections * 2 * PI) * anchor_R, i / number_sections * anchor_h, cos(i / number_sections * 2 * PI) * anchor_R);
-//		//ChMatrix33<> mat(quat);
-//		AddCollisionGeometry(ANCHOR, BOX, ChVector<>(anchor_blade_width, anchor_thickness, anchor_R), pos, quat);
-//	}
+	ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+	InitObject(ANCHOR, anchor_mass, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -1);
+	AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(ANCHOR, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
 //
-//	FinalizeObject(ANCHOR, (ChSystemParallel *) system_gpu);
-//
-////	real vol = ((ChCollisionModelParallel *) ANCHOR->GetCollisionModel())->getVolume();
-////	real den = .00785;
-////	anchor_mass = den*vol;
-////	cout<<vol<<" "<<anchor_mass<<endl;
-////	ANCHOR->SetMass(anchor_mass);
-//
-//	ANCHOR->SetInertiaXX(
-//			ChVector<>(1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R), 1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
-//					1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
-//
-//	actuator_anchor = ChSharedPtr<ChLinkLockLock>(new ChLinkLockLock());
-//	actuator_anchor->Initialize(CONTAINER, ANCHOR, ChCoordsys<>(ChVector<>(0,0,0), QUNIT));
-//	system_gpu->AddLink(actuator_anchor);
-//
-//	// apply motion
-//	ChFunction_Ramp* motionFunc3 = new ChFunction_Ramp(0, -anchor_vel);
-//	actuator_anchor->SetMotion_Y(motionFunc3);
-//
-//	ChFunction_Ramp* motionFunc4 = new ChFunction_Ramp(0, -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
-//
-//	actuator_anchor->SetMotion_ang(motionFunc4);
-//	actuator_anchor->SetMotion_axis(ChVector<>(0,1,0));
+	for (int i = 0; i < number_sections; i++) {
+		ChQuaternion<> quat, quat2;
+		quat.Q_from_AngAxis(i / number_sections * 2 * PI, ChVector<>(0, 1, 0));
+		quat2.Q_from_AngAxis(6 * 2 * PI / 360.0, ChVector<>(0, 0, 1));
+		quat = quat % quat2;
+		ChVector<> pos(sin(i / number_sections * 2 * PI) * anchor_R, i / number_sections * anchor_h, cos(i / number_sections * 2 * PI) * anchor_R);
+		//ChMatrix33<> mat(quat);
+		AddCollisionGeometry(ANCHOR, BOX, ChVector<>(anchor_blade_width, anchor_thickness, anchor_R), pos, quat);
+	}
 
-	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
-	layer_gen->SetDensity(particle_density);
-	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
-	layer_gen->SetNormalDistribution(particle_radius, particle_std_dev, 1);
-	layer_gen->material->SetFriction(particle_slide_friction);
-	layer_gen->material->SetCohesion(particle_cohesion);
-	layer_gen->material->SetRollingFriction(0);
-	layer_gen->material->SetSpinningFriction(0);
-	layer_gen->AddMixtureType(MIX_SPHERE);
+	FinalizeObject(ANCHOR, (ChSystemParallel *) system_gpu);
+
+//	real vol = ((ChCollisionModelParallel *) ANCHOR->GetCollisionModel())->getVolume();
+//	real den = .00785;
+//	anchor_mass = den*vol;
+//	cout<<vol<<" "<<anchor_mass<<endl;
+//	ANCHOR->SetMass(anchor_mass);
+
+	ANCHOR->SetInertiaXX(
+			ChVector<>(1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R), 1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
+					1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
+
+	actuator_anchor = ChSharedPtr<ChLinkLockLock>(new ChLinkLockLock());
+	actuator_anchor->Initialize(CONTAINER, ANCHOR, ChCoordsys<>(ChVector<>(0, 0, 0), QUNIT));
+	system_gpu->AddLink(actuator_anchor);
+
+	// apply motion
+	motionFunc1 = new ChFunction_Ramp(0, -anchor_vel);
+	actuator_anchor->SetMotion_Y(motionFunc1);
+	motionFunc2 = new ChFunction_Ramp(0, -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
+
+	actuator_anchor->SetMotion_ang(motionFunc2);
+	actuator_anchor->SetMotion_axis(ChVector<>(0, 1, 0));
+
+
+	ReadAllObjectsWithGeometryChrono(system_gpu, "anchor.dat");
+
+//	layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
+//	layer_gen->SetDensity(particle_density);
+//	layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
+//	layer_gen->SetNormalDistribution(particle_radius, particle_std_dev, 1);
+//	layer_gen->material->SetFriction(particle_slide_friction);
+//	layer_gen->material->SetCohesion(particle_cohesion);
+//	layer_gen->material->SetRollingFriction(0);
+//	layer_gen->material->SetSpinningFriction(0);
+//	layer_gen->AddMixtureType(MIX_SPHERE);
 	//layer_gen->AddMixtureType(MIX_ELLIPSOID);
 	//layer_gen->AddMixtureType(MIX_DOUBLESPHERE);
 	//layer_gen->addPerturbedVolumeMixture(R3(0, 0, 0), I3(64, 1, 64), R3(0, 0, 0), R3(0, 0, 0));
@@ -206,6 +218,10 @@ int main(int argc, char* argv[]) {
 //	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
+
+	ofstream reactionfile("data/anchor/reactions.txt");
+
+
 	for (int i = 0; i < num_steps; i++) {
 		system_gpu->DoStepDynamics(timestep);
 		double TIME = system_gpu->GetChTime();
@@ -225,10 +241,18 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/anchor_density/" << "/" << file << ".txt";
-			DumpAllObjectsWithGeometryChrono(system_gpu, "anchor.dat");
+			ss << "data/anchor/" << "/" << file << ".txt";
+			//DumpAllObjectsWithGeometryChrono(system_gpu, "anchor.dat");
+			DumpAllObjectsWithGeometryPovray(system_gpu, ss.str());
 			file++;
 		}
+
+
+		Vector force = actuator_anchor->Get_react_force();
+		Vector torque = actuator_anchor->Get_react_torque();
+		reactionfile<<force.x<<" "<<force.y<<" "<<force.z<<torque.x<<" "<<torque.y<<" "<<torque.z<<" "<<ANCHOR->GetPos().y<<endl;
+
 		RunTimeStep(system_gpu, i);
 	}
+	reactionfile.close();
 }

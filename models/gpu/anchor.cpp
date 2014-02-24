@@ -55,7 +55,7 @@ void RunTimeStep(T* mSys, const int frame) {
 //	real cont_vol = (container_size.x - container_thickness * 2) * 2 * (BLOCK->GetPos().y + container_size.y - 2 * container_thickness) * (container_size.z - container_thickness * 2) * 2;
 //	cout << layer_gen->total_volume << " " << layer_gen->total_mass << " " << cont_vol << " " << layer_gen->total_mass / cont_vol << endl;
 //
-	if (layers < 145 && frame % 30 == 0) {
+	if (layers < 145 && frame % 60 == 0) {
 		cout<<layers<<endl;
 		layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 8.0, 0), I3(32, 1, 32), R3(0, 0, 0), R3(0, 0, 0));
 		layers++;

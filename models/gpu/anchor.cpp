@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .001;
+real timestep = .0005;
 real seconds_to_simulate = 5;
 real tolerance = 0;
 
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
-	((ChSystemParallel*) system_gpu)->SetAABB(R3(-150, -300, -150), R3(150,300,150));
+	((ChSystemParallel*) system_gpu)->SetAABB(R3(-250, -600, -250), R3(250,600,250));
 
 //=========================================================================================================
 

@@ -114,7 +114,7 @@ void ReadAssets(ChSharedBodyPtr & mrigidBody, stringstream & ss) {
 		ss >> rot.e0 >> rot.e1 >> rot.e2 >> rot.e3;
 		ss >> temp_type;
 		type = ShapeType(temp_type);
-		cout << "reading asset " << type << endl;
+		//cout << "reading asset " << type << endl;
 		ss >> rad.x;
 		ss >> rad.y;
 		ss >> rad.z;
@@ -167,18 +167,21 @@ void ReadAllObjectsWithGeometryChrono(T* mSys, string filename, bool GPU = true)
 	ifstream ifile(filename.c_str());
 	int number_of_objects = 0;
 	string line;
-
+	vector<string> lines;
 	while (std::getline(ifile, line)) {
+		std::replace(line.begin(), line.end(), ',', ' ');
+		lines.push_back(line);
 		++number_of_objects;
 	}
 	ifile.close();
-	ifile.open(filename.c_str());
+	cout<<"done counting"<<endl;
+
 	for (int i = 0; i < number_of_objects; i++) {
-		std::getline(ifile, line);
-		std::replace(line.begin(), line.end(), ',', ' ');
-		stringstream ss(line);
+		if(i%1000==0){cout<<i<<endl;}
+		stringstream ss(lines[i]);
 		ReadBody(mSys, ss);
 	}
+	cout<<"done generating"<<endl;
 	//cout<<"DONE"<<endl;
 }
 void GenAssets(ChBody* abody, CSVGen & csv_output) {

@@ -61,7 +61,7 @@ void RunTimeStep(T* mSys, const int frame) {
 	if (save) {
 		if (layers < 130 && frame % 60 == 0) {
 			cout << layers << endl;
-			layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 14.0, 0), I3(2, 1, 2), R3(0, 0, 0), R3(0, 0, 0));
+			layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 14.0, 0), I3(32, 1, 32), R3(0, 0, 0), R3(0, 0, 0));
 			layers++;
 		}
 	} else {

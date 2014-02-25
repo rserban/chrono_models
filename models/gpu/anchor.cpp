@@ -34,7 +34,8 @@ real anchor_vel = -20;
 real anchor_rot = -30;     //rpm
 int layers = 0;
 ChFunction_Ramp* motionFunc1, *motionFunc2;
-ChSharedPtr<ChLinkLockLock> actuator_anchor;
+ChSharedPtr<ChLinkLockSpherical> actuator_anchor;
+ChSharedPtr<ChLinkEngine> engine_anchor;
 bool once = true;
 bool save;
 template<class T>
@@ -58,9 +59,9 @@ void RunTimeStep(T* mSys, const int frame) {
 //
 
 	if (save) {
-		if (layers < 145 && frame % 60 == 0) {
+		if (layers < 130 && frame % 60 == 0) {
 			cout << layers << endl;
-			layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 8.0, 0), I3(32, 1, 32), R3(0, 0, 0), R3(0, 0, 0));
+			layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 14.0, 0), I3(2, 1, 2), R3(0, 0, 0), R3(0, 0, 0));
 			layers++;
 		}
 	} else {
@@ -69,9 +70,11 @@ void RunTimeStep(T* mSys, const int frame) {
 		if (ANCHOR->GetPos().y <= 300 - 457.2 && once) {
 			motionFunc1->Set_y0(time * -anchor_vel);
 			motionFunc1->Set_ang(-2);
-			motionFunc2->Set_y0(time * -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
-			motionFunc2->Set_ang(0);
-
+//			motionFunc2->Set_y0(time * -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
+//			motionFunc2->Set_ang(0);
+			if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(engine_anchor->Get_spe_funct())) {
+						mfun->Set_yconst(0);     // rad/s  angular speed
+			}
 			once = false;
 		}
 	}
@@ -80,7 +83,7 @@ void RunTimeStep(T* mSys, const int frame) {
 
 int main(int argc, char* argv[]) {
 	save = atoi(argv[1]);
-	cout<<save<<endl;
+	cout << save << endl;
 	if (save) {
 
 		seconds_to_simulate = 5;
@@ -104,7 +107,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter/2.0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(40);
 	system_gpu->SetTol(tolerance);
@@ -188,20 +191,26 @@ int main(int argc, char* argv[]) {
 				ChVector<>(1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R), 1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
 						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
 
-		actuator_anchor = ChSharedPtr<ChLinkLockLock>(new ChLinkLockLock());
+		actuator_anchor = ChSharedPtr<ChLinkLockSpherical>(new ChLinkLockSpherical());
 		actuator_anchor->Initialize(CONTAINER, ANCHOR, ChCoordsys<>(ChVector<>(0, 0, 0), QUNIT));
 		system_gpu->AddLink(actuator_anchor);
 
 		// apply motion
 		motionFunc1 = new ChFunction_Ramp(0, -anchor_vel);
 		actuator_anchor->SetMotion_Y(motionFunc1);
-		motionFunc2 = new ChFunction_Ramp(0, -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
-
-		actuator_anchor->SetMotion_ang(motionFunc2);
 		actuator_anchor->SetMotion_axis(ChVector<>(0, 1, 0));
 
+		engine_anchor = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
+		engine_anchor->Initialize(CONTAINER, ANCHOR, ChCoordsys<>(ANCHOR->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
+		engine_anchor->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_PRISM);     // also works as revolute support
+		engine_anchor->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
+
+		system_gpu->AddLink(engine_anchor);
+		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(engine_anchor->Get_spe_funct())) {
+			mfun->Set_yconst(anchor_rot * 1 / 60.0 * 2 * CH_C_PI);     // rad/s  angular speed
+		}
 		ReadAllObjectsWithGeometryChrono(system_gpu, "data/anchor/anchor.dat");
-	}else {
+	} else {
 		layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 		layer_gen->SetDensity(particle_density);
 		layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));

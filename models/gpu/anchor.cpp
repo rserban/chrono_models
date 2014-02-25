@@ -36,7 +36,7 @@ int layers = 0;
 ChFunction_Ramp* motionFunc1, *motionFunc2;
 ChSharedPtr<ChLinkLockLock> actuator_anchor;
 bool once = true;
-bool save = false;
+bool save;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
@@ -79,8 +79,8 @@ void RunTimeStep(T* mSys, const int frame) {
 }
 
 int main(int argc, char* argv[]) {
-	bool save = atoi(argv[1]);
-
+	save = atoi(argv[1]);
+	cout<<save<<endl;
 	if (save) {
 
 		seconds_to_simulate = 5;
@@ -201,9 +201,7 @@ int main(int argc, char* argv[]) {
 		actuator_anchor->SetMotion_axis(ChVector<>(0, 1, 0));
 
 		ReadAllObjectsWithGeometryChrono(system_gpu, "data/anchor/anchor.dat");
-	}
-
-	if (save) {
+	}else {
 		layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 		layer_gen->SetDensity(particle_density);
 		layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));

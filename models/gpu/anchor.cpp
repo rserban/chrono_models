@@ -41,7 +41,7 @@ bool save;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	Vector force = actuator_anchor->Get_react_force() / 1e6;
+	Vector force = engine_anchor->Get_react_force() / 1e6;
 	Vector torque = engine_anchor->Get_react_torque() / 1e6;
 	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << ANCHOR->GetPos().y << " " << ANCHOR->GetPos_dt().y << endl;
 
@@ -70,17 +70,17 @@ void RunTimeStep(T* mSys, const int frame) {
 		}
 	} else {
 		//300 - 457.2
-		double time = actuator_anchor->GetChTime();
-		if (ANCHOR->GetPos().y <= 300 - 457.2 && once) {
-			motionFunc1->Set_y0(time * -anchor_vel);
-			motionFunc1->Set_ang(-2);
-//			motionFunc2->Set_y0(time * -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
-//			motionFunc2->Set_ang(0);
-			if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(engine_anchor->Get_spe_funct())) {
-				mfun->Set_yconst(0);     // rad/s  angular speed
-			}
-			once = false;
-		}
+//		double time = actuator_anchor->GetChTime();
+//		if (ANCHOR->GetPos().y <= 300 - 457.2 && once) {
+//			motionFunc1->Set_y0(time * -anchor_vel);
+//			motionFunc1->Set_ang(-2);
+////			motionFunc2->Set_y0(time * -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
+////			motionFunc2->Set_ang(0);
+//			if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(engine_anchor->Get_spe_funct())) {
+//				mfun->Set_yconst(0);     // rad/s  angular speed
+//			}
+//			once = false;
+//		}
 	}
 
 }
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter / 2.0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
 	system_gpu->SetMaxPenetrationRecoverySpeed(1000);
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
 		real number_sections = 150;
 
 		ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-		InitObject(ANCHOR, anchor_mass/2, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -1);
+		InitObject(ANCHOR, anchor_mass, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -1);
 		AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(ANCHOR, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
 //
@@ -207,23 +207,23 @@ int main(int argc, char* argv[]) {
 				1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
 				1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
 
-		BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-		InitObject(BLOCK, anchor_mass/2, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, false, false, -20, -20);
-		AddCollisionGeometry(BLOCK, BOX, ChVector<>(1, 1, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-		FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
+		//BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+		//InitObject(BLOCK, anchor_mass/2, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, false, false, -20, -20);
+		//AddCollisionGeometry(BLOCK, BOX, ChVector<>(1, 1, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+		//FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
 
-		actuator_anchor = ChSharedPtr<ChLinkLockLock>(new ChLinkLockLock());
-		actuator_anchor->Initialize(CONTAINER, BLOCK, ChCoordsys<>(ChVector<>(0, 0, 0), QUNIT));
-		system_gpu->AddLink(actuator_anchor);
+		//actuator_anchor = ChSharedPtr<ChLinkLockLock>(new ChLinkLockLock());
+		//actuator_anchor->Initialize(CONTAINER, BLOCK, ChCoordsys<>(ChVector<>(0, 0, 0), QUNIT));
+		//system_gpu->AddLink(actuator_anchor);
 
 		// apply motion
-		motionFunc1 = new ChFunction_Ramp(0, -anchor_vel);
-		actuator_anchor->SetMotion_Y(motionFunc1);
-		actuator_anchor->SetMotion_axis(ChVector<>(0, 1, 0));
+		//motionFunc1 = new ChFunction_Ramp(0, -anchor_vel);
+		//actuator_anchor->SetMotion_Y(motionFunc1);
+		//actuator_anchor->SetMotion_axis(ChVector<>(0, 1, 0));
 
 		engine_anchor = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
-		engine_anchor->Initialize(BLOCK, ANCHOR, ChCoordsys<>(ANCHOR->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
-		engine_anchor->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
+		engine_anchor->Initialize(CONTAINER, ANCHOR, ChCoordsys<>(ANCHOR->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
+		engine_anchor->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_PRISM);     // also works as revolute support
 		engine_anchor->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 
 		system_gpu->AddLink(engine_anchor);
@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
 			file++;
 		}
 		if (save == false) {
-			Vector force = actuator_anchor->Get_react_force() / 1e6;
+			Vector force = engine_anchor->Get_react_force() / 1e6;
 			Vector torque = engine_anchor->Get_react_torque() / 1e6;
 			reactionfile << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << ANCHOR->GetPos().y << " " << ANCHOR->GetPos_dt().y << endl;
 		}

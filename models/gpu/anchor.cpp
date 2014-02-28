@@ -6,7 +6,7 @@
 real gravity = -9806.65;
 real timestep = .0005;
 real seconds_to_simulate = 5;
-real tolerance = 1;
+real tolerance = 0;
 
 int max_iter = 40;
 int num_steps = seconds_to_simulate / timestep;
@@ -34,12 +34,16 @@ real anchor_vel = -20;
 real anchor_rot = -30;     //rpm
 int layers = 0;
 ChFunction_Ramp* motionFunc1, *motionFunc2;
-ChSharedPtr<ChLinkLockSpherical> actuator_anchor;
+ChSharedPtr<ChLinkLockLock> actuator_anchor;
 ChSharedPtr<ChLinkEngine> engine_anchor;
 bool once = true;
 bool save;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
+
+	Vector force = actuator_anchor->Get_react_force() / 1e6;
+	Vector torque = engine_anchor->Get_react_torque() / 1e6;
+	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << ANCHOR->GetPos().y << " " << ANCHOR->GetPos_dt().y << endl;
 
 //	real t = frame * timestep * PI * 2 * frequency;
 //
@@ -73,7 +77,7 @@ void RunTimeStep(T* mSys, const int frame) {
 //			motionFunc2->Set_y0(time * -anchor_rot * 1 / 60.0 * 2 * CH_C_PI);
 //			motionFunc2->Set_ang(0);
 			if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(engine_anchor->Get_spe_funct())) {
-						mfun->Set_yconst(0);     // rad/s  angular speed
+				mfun->Set_yconst(0);     // rad/s  angular speed
 			}
 			once = false;
 		}
@@ -107,7 +111,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter/2.0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter / 2.0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(50);
 	system_gpu->SetTol(tolerance);
@@ -138,13 +142,25 @@ int main(int argc, char* argv[]) {
 	InitObject(CONTAINER, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 
 	if (save) {
-		AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z),
-				Vector(-container_size.x + container_thickness, container_height - container_thickness, 0), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(CONTAINER, BOX, Vector(container_thickness, container_size.y, container_size.z), Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
+		AddCollisionGeometry(CONTAINER,
+				BOX,
+				Vector(container_thickness, container_size.y, container_size.z),
+				Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
 				Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness),
-				Vector(0, container_height - container_thickness, -container_size.z + container_thickness), Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_size.y, container_thickness), Vector(0, container_height - container_thickness, container_size.z - container_thickness),
+		AddCollisionGeometry(CONTAINER,
+				BOX,
+				Vector(container_thickness, container_size.y, container_size.z),
+				Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
+				Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(CONTAINER,
+				BOX,
+				Vector(container_size.x, container_size.y, container_thickness),
+				Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
+				Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(CONTAINER,
+				BOX,
+				Vector(container_size.x, container_size.y, container_thickness),
+				Vector(0, container_height - container_thickness, container_size.z - container_thickness),
 				Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0));
 		//AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0));
@@ -165,7 +181,7 @@ int main(int argc, char* argv[]) {
 		real number_sections = 150;
 
 		ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-		InitObject(ANCHOR, anchor_mass, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -1);
+		InitObject(ANCHOR, anchor_mass/2, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, true, false, -1, -1);
 		AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(ANCHOR, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
 //
@@ -187,12 +203,17 @@ int main(int argc, char* argv[]) {
 //	cout<<vol<<" "<<anchor_mass<<endl;
 //	ANCHOR->SetMass(anchor_mass);
 
-		ANCHOR->SetInertiaXX(
-				ChVector<>(1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R), 1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
-						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
+		ANCHOR->SetInertiaXX(ChVector<>(1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R),
+				1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
+				1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
 
-		actuator_anchor = ChSharedPtr<ChLinkLockSpherical>(new ChLinkLockSpherical());
-		actuator_anchor->Initialize(CONTAINER, ANCHOR, ChCoordsys<>(ChVector<>(0, 0, 0), QUNIT));
+		BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+		InitObject(BLOCK, anchor_mass/2, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, false, false, -20, -20);
+		AddCollisionGeometry(BLOCK, BOX, ChVector<>(1, 1, 1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+		FinalizeObject(BLOCK, (ChSystemParallel *) system_gpu);
+
+		actuator_anchor = ChSharedPtr<ChLinkLockLock>(new ChLinkLockLock());
+		actuator_anchor->Initialize(CONTAINER, BLOCK, ChCoordsys<>(ChVector<>(0, 0, 0), QUNIT));
 		system_gpu->AddLink(actuator_anchor);
 
 		// apply motion
@@ -201,8 +222,8 @@ int main(int argc, char* argv[]) {
 		actuator_anchor->SetMotion_axis(ChVector<>(0, 1, 0));
 
 		engine_anchor = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
-		engine_anchor->Initialize(CONTAINER, ANCHOR, ChCoordsys<>(ANCHOR->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
-		engine_anchor->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_PRISM);     // also works as revolute support
+		engine_anchor->Initialize(BLOCK, ANCHOR, ChCoordsys<>(ANCHOR->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
+		engine_anchor->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
 		engine_anchor->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 
 		system_gpu->AddLink(engine_anchor);
@@ -257,7 +278,7 @@ int main(int argc, char* argv[]) {
 		int CNTC = system_gpu->GetNcontacts();
 		int REQ_ITS = ((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->GetTotalIterations();
 
-		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP,SHUR, UPDT, BODS, CNTC, REQ_ITS, RESID);
+		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, SHUR, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
 		int save_every = 1.0 / timestep / 60.0;     //save data every n steps
 		if (i % save_every == 0) {
@@ -272,9 +293,9 @@ int main(int argc, char* argv[]) {
 			file++;
 		}
 		if (save == false) {
-			Vector force = actuator_anchor->Get_react_force();
-			Vector torque = actuator_anchor->Get_react_torque();
-			reactionfile << force.x << " " << force.y << " " << force.z << torque.x << " " << torque.y << " " << torque.z << " " << ANCHOR->GetPos().y << endl;
+			Vector force = actuator_anchor->Get_react_force() / 1e6;
+			Vector torque = engine_anchor->Get_react_torque() / 1e6;
+			reactionfile << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << ANCHOR->GetPos().y << " " << ANCHOR->GetPos_dt().y << endl;
 		}
 		RunTimeStep(system_gpu, i);
 	}

@@ -41,9 +41,11 @@ bool save;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	Vector force = engine_anchor->Get_react_force() / 1e6;
-	Vector torque = engine_anchor->Get_react_torque() / 1e6;
-	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << ANCHOR->GetPos().y << " " << ANCHOR->GetPos_dt().y << endl;
+	Vector force = engine_anchor->Get_react_force();
+	Vector torque = engine_anchor->Get_react_torque();
+	double motor_torque = engine_anchor->Get_mot_torque();
+	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << " " << ANCHOR->GetPos().y << " "
+			<< ANCHOR->GetPos_dt().y << endl;
 
 //	real t = frame * timestep * PI * 2 * frequency;
 //
@@ -108,6 +110,7 @@ int main(int argc, char* argv[]) {
 	ChSystemParallelDVI * system_gpu = new ChSystemParallelDVI;
 
 //=========================================================================================================
+	system_gpu->SetMinThreads(32);
 	system_gpu->SetMaxiter(max_iter);
 	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
@@ -142,27 +145,36 @@ int main(int argc, char* argv[]) {
 	InitObject(CONTAINER, 100000, Vector(0, 0, 0), Quaternion(1, 0, 0, 0), material, true, true, -20, -20);
 
 	if (save) {
-		AddCollisionGeometry(CONTAINER,
+		AddCollisionGeometry(
+				CONTAINER,
 				BOX,
 				Vector(container_thickness, container_size.y, container_size.z),
 				Vector(-container_size.x + container_thickness, container_height - container_thickness, 0),
 				Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(CONTAINER,
+		AddCollisionGeometry(
+				CONTAINER,
 				BOX,
 				Vector(container_thickness, container_size.y, container_size.z),
 				Vector(container_size.x - container_thickness, container_height - container_thickness, 0),
 				Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(CONTAINER,
+		AddCollisionGeometry(
+				CONTAINER,
 				BOX,
 				Vector(container_size.x, container_size.y, container_thickness),
 				Vector(0, container_height - container_thickness, -container_size.z + container_thickness),
 				Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(CONTAINER,
+		AddCollisionGeometry(
+				CONTAINER,
 				BOX,
 				Vector(container_size.x, container_size.y, container_thickness),
 				Vector(0, container_height - container_thickness, container_size.z - container_thickness),
 				Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height - container_size.y, 0), Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(
+				CONTAINER,
+				BOX,
+				Vector(container_size.x, container_thickness, container_size.z),
+				Vector(0, container_height - container_size.y, 0),
+				Quaternion(1, 0, 0, 0));
 		//AddCollisionGeometry(CONTAINER, BOX, Vector(container_size.x, container_thickness, container_size.z), Vector(0, container_height + container_size.y, 0), Quaternion(1, 0, 0, 0));
 	}
 	CONTAINER->GetMaterialSurface()->SetCohesion(container_cohesion);
@@ -181,7 +193,7 @@ int main(int argc, char* argv[]) {
 		real number_sections = 150;
 
 		ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-		InitObject(ANCHOR, anchor_mass, Vector(0, 200, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
+		InitObject(ANCHOR, anchor_mass, Vector(0, 100, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
 		AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(ANCHOR, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
 //
@@ -203,9 +215,11 @@ int main(int argc, char* argv[]) {
 //	cout<<vol<<" "<<anchor_mass<<endl;
 //	ANCHOR->SetMass(anchor_mass);
 
-		ANCHOR->SetInertiaXX(ChVector<>(1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R),
-				1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
-				1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
+		ANCHOR->SetInertiaXX(
+				ChVector<>(
+						1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R),
+						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
+						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
 
 		//BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		//InitObject(BLOCK, anchor_mass/2, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, false, false, -20, -20);
@@ -295,9 +309,13 @@ int main(int argc, char* argv[]) {
 			file++;
 		}
 		if (save == false) {
-			Vector force = engine_anchor->Get_react_force() / 1e6;
-			Vector torque = engine_anchor->Get_react_torque() / 1e6;
-			reactionfile << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << ANCHOR->GetPos().y << " " << ANCHOR->GetPos_dt().y << endl;
+
+			Vector force = engine_anchor->Get_react_force();
+			Vector torque = engine_anchor->Get_react_torque();
+			double motor_torque = engine_anchor->Get_mot_torque();
+			reactionfile << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << " " << ANCHOR->GetPos().y
+					<< " " << ANCHOR->GetPos_dt().y << endl;
+
 		}
 		RunTimeStep(system_gpu, i);
 	}

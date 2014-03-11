@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
 		real number_sections = 150;
 
 		ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-		InitObject(ANCHOR, anchor_mass, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
+		InitObject(ANCHOR, anchor_mass, Vector(0, 200, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
 		AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(ANCHOR, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
 //

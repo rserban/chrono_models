@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .0005;
+real timestep = .00025;
 real seconds_to_simulate = 5;
 real tolerance = 0;
 
@@ -111,15 +111,15 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 	system_gpu->SetMinThreads(32);
-	system_gpu->SetMaxiter(max_iter);
-	system_gpu->SetIterLCPmaxItersSpeed(max_iter);
+	//system_gpu->SetMaxiter(max_iter);
+	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(max_iter);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
-	system_gpu->SetMaxPenetrationRecoverySpeed(1000);
+	system_gpu->SetMaxPenetrationRecoverySpeed(500);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(500);

@@ -33,6 +33,9 @@ real anchor_density = 0.00785;
 real anchor_vel = -20;
 real anchor_rot = -30;     //rpm
 int layers = 0;
+
+string data_folder = "data/anchor/";
+
 ChFunction_Ramp* motionFunc1, *motionFunc2;
 ChSharedPtr<ChLinkLockLock> actuator_anchor;
 ChSharedPtr<ChLinkEngine> engine_anchor;
@@ -99,12 +102,13 @@ int main(int argc, char* argv[]) {
 		num_steps = seconds_to_simulate / timestep;
 	}
 
-//	if (argc > 1) {
-//		particle_slide_friction = atof(argv[1]);
-//		particle_roll_friction = atof(argv[2]);
-//		particle_std_dev = atof(argv[3]);
-//		amplitude = atof(argv[4]);
-//	}
+	if (argc > 2) {
+		particle_slide_friction = atof(argv[2]);
+		particle_roll_friction = atof(argv[3]);
+		particle_cohesion = atof(argv[4]);
+		data_folder = argv[5];
+		cout<<particle_slide_friction<<" "<<particle_roll_friction<<" "<<particle_roll_friction<<endl;
+	}
 
 //=========================================================================================================
 	ChSystemParallelDVI * system_gpu = new ChSystemParallelDVI;
@@ -115,7 +119,7 @@ int main(int argc, char* argv[]) {
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(max_iter);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
@@ -245,6 +249,18 @@ int main(int argc, char* argv[]) {
 			mfun->Set_yconst(anchor_rot * 1 / 60.0 * 2 * CH_C_PI);     // rad/s  angular speed
 		}
 		ReadAllObjectsWithGeometryChrono(system_gpu, "data/anchor/anchor.dat");
+		ChSharedPtr<ChMaterialSurface> material_read;
+		material_read = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
+		material_read->SetFriction(particle_slide_friction);
+		material_read->SetRollingFriction(particle_roll_friction);
+		material_read->SetSpinningFriction(particle_roll_friction);
+		material_read->SetCompliance(0);
+		material_read->SetCohesion(particle_cohesion*timestep);
+
+		for (int i = 0; i < system_gpu->Get_bodylist()->size(); i++) {
+			system_gpu->Get_bodylist()->at(i)->SetMaterialSurface(material_read);
+		}
+
 	} else {
 		layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
 		layer_gen->SetDensity(particle_density);
@@ -300,7 +316,8 @@ int main(int argc, char* argv[]) {
 		if (i % save_every == 0) {
 			stringstream ss;
 			cout << "Frame: " << file << endl;
-			ss << "data/anchor/" << "/" << file << ".txt";
+			ss << data_folder << "/" << file << ".txt";
+
 			if (save) {
 				DumpAllObjectsWithGeometryChrono(system_gpu, "data/anchor/anchor.dat");
 			} else {

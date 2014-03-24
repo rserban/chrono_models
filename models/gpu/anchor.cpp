@@ -292,7 +292,9 @@ int main(int argc, char* argv[]) {
 	ofstream reactionfile;
 
 	if (save == false) {
-		reactionfile.open("data/anchor/reactions.txt");
+		stringstream ss;
+		ss << data_folder << "reactions.txt";
+		reactionfile.open(ss.str());
 	}
 	for (int i = 0; i < num_steps; i++) {
 		system_gpu->DoStepDynamics(timestep);

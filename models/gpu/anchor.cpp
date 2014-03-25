@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 		particle_roll_friction = atof(argv[3]);
 		particle_cohesion = atof(argv[4]);
 		data_folder = argv[5];
-		cout<<particle_slide_friction<<" "<<particle_roll_friction<<" "<<particle_roll_friction<<endl;
+		cout << particle_slide_friction << " " << particle_roll_friction << " " << particle_roll_friction << endl;
 	}
 
 //=========================================================================================================
@@ -191,21 +191,21 @@ int main(int argc, char* argv[]) {
 		real anchor_R = 150 / 4.0;
 		real anchor_h = 50;
 		real anchor_thickness = 6 / 2.0;
-		real anchor_blade_width = 4;
+		real anchor_blade_width = 8;
 		ChVector<> p1(0, 0, 0);
 		ChVector<> p2(0, anchor_length, 0);
 		real anchor_mass = 6208;
-		real number_sections = 150;
+		real number_sections = 30;
 
 		ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-		InitObject(ANCHOR, anchor_mass, Vector(0, 100, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
+		InitObject(ANCHOR, anchor_mass, Vector(0, 200, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
 		AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
 		AddCollisionGeometry(ANCHOR, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
 //
 		for (int i = 0; i < number_sections; i++) {
 			ChQuaternion<> quat, quat2;
 			quat.Q_from_AngAxis(i / number_sections * 2 * PI, ChVector<>(0, 1, 0));
-			quat2.Q_from_AngAxis(6 * 2 * PI / 360.0, ChVector<>(0, 0, 1));
+			quat2.Q_from_AngAxis(6.5 * 2 * PI / 360.0, ChVector<>(0, 0, 1));
 			quat = quat % quat2;
 			ChVector<> pos(sin(i / number_sections * 2 * PI) * anchor_R, i / number_sections * anchor_h, cos(i / number_sections * 2 * PI) * anchor_R);
 			//ChMatrix33<> mat(quat);
@@ -220,11 +220,13 @@ int main(int argc, char* argv[]) {
 //	cout<<vol<<" "<<anchor_mass<<endl;
 //	ANCHOR->SetMass(anchor_mass);
 
-		ANCHOR->SetInertiaXX(
-				ChVector<>(
-						1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R),
-						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
-						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
+		ANCHOR->SetInertiaXX(ChVector<>(12668786.72, 5637598.31, 12682519.69));
+
+//		ANCHOR->SetInertiaXX(
+//				ChVector<>(
+//						1 / 12.0 * anchor_mass * (1 * 1 + anchor_R * anchor_R),
+//						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + anchor_R * anchor_R),
+//						1 / 12.0 * anchor_mass * (anchor_R * anchor_R + 1 * 1)));
 
 		//BLOCK = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		//InitObject(BLOCK, anchor_mass/2, Vector(0, 300, 0), Quaternion(1, 0, 0, 0), material, false, false, -20, -20);
@@ -256,7 +258,7 @@ int main(int argc, char* argv[]) {
 		material_read->SetRollingFriction(particle_roll_friction);
 		material_read->SetSpinningFriction(particle_roll_friction);
 		material_read->SetCompliance(0);
-		material_read->SetCohesion(particle_cohesion*timestep);
+		material_read->SetCohesion(particle_cohesion * timestep);
 
 		for (int i = 0; i < system_gpu->Get_bodylist()->size(); i++) {
 			system_gpu->Get_bodylist()->at(i)->SetMaterialSurface(material_read);

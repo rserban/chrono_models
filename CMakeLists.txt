@@ -79,7 +79,7 @@ IF(ENABLE_UNIT_MPI)
     )
 ENDIF()
 
-include_directories(${INC_DIRS})
+include_directories(${INC_DIRS} ${GLM_INCLUDE_DIRS})
 
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 #SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ")

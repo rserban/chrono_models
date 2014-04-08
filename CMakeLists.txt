@@ -2,16 +2,24 @@ cmake_minimum_required(VERSION 2.8)
 project(chrono_models)
 include(SBELUtils.cmake)
 
+#set path for local find modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
+
 SET(ENABLE_UNIT_GPU FALSE   CACHE   BOOL    "Turn on for GPU models")
 SET(ENABLE_UNIT_MPI FALSE   CACHE   BOOL    "Turn on for GPU models")
 
 # Additional packages
 enable_openmp_support()
+#enable_mpi_support()
 FIND_PACKAGE(hdf5)
+FIND_PACKAGE(GLM)
 # User specified path to ChronoEngine
 SET(CHRONO_INC       ""   CACHE PATH "Where is ChronoEngine Source located")
 SET(CHRONO_PARALLEL_INC       ""   CACHE PATH "Where is ChronoEngine Source located")
 SET(CHRONO_OPENGL_INC  ""   CACHE PATH "Where is CHRONOOPENGL located")
+
+
+
 
 
 
@@ -26,7 +34,21 @@ SET(CHRONO_OPENGL_LIB_PATH  ""   CACHE PATH "Where is CHRONOOPENGL located")
 FIND_LIBRARY(CHRONO_LIB NAMES ChronoEngine PATHS ${CHRONO_LIB_PATH} REQUIRED)
 
 
-
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  # using Clang
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	SET(GCC_OPT "sse" CACHE STRING "gcc optimizations")
+	SET_PROPERTY(CACHE GCC_OPT PROPERTY STRINGS "mmx" "sse" "sse2" "sse3" "ssse3" "sse4.1" "sse4.2" "avx")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m${GCC_OPT}")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${GCC_OPT}")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+	SET(INTEL_OPT "SSE2" CACHE STRING "intel optimizations")
+	SET_PROPERTY(CACHE INTEL_OPT PROPERTY STRINGS "SSE2" "SSE3" "SSSE3" "SSE4.1" "SSE4.2" "AVX" "CORE-AVX-I" "CORE-AVX2")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -x${INTEL_OPT}")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -x${INTEL_OPT}")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # using Visual Studio C++
+endif()
 
 
 # Set unit-specific options
@@ -43,6 +65,7 @@ IF(ENABLE_UNIT_GPU)
         ${CHRONO_LIB_PARALLEL}
         ${CHRONO_LIB_OPENGL}
         ${HDF5_LIBRARIES}
+        ${MPI_LIBRARIES}
     )
 ENDIF()
 
@@ -125,6 +148,10 @@ IF (ENABLE_UNIT_GPU)
     
     ADD_EXECUTABLE(mixer models/gpu/mixer.cpp)		
     TARGET_LINK_LIBRARIES(mixer	${CHRONO_LIB} ${GPU_LIBS})
+    
+    
+    ADD_EXECUTABLE(math models/gpu/math.cpp)		
+    TARGET_LINK_LIBRARIES(math	${CHRONO_LIB} ${GPU_LIBS})
     
     #ADD_EXECUTABLE(rollers models/gpu/rollers.cpp)		
     #TARGET_LINK_LIBRARIES(rollers	${CHRONO_LIB} ${GPU_LIBS})

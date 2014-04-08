@@ -125,6 +125,7 @@ int main(int argc, char* argv[]) {
 	//system_gpu->SetMinThreads(32);
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
+	((ChSystemParallelDVI*) system_gpu)->DoThreadTuning(false);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter);

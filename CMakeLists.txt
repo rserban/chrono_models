@@ -11,7 +11,7 @@ SET(ENABLE_UNIT_MPI FALSE   CACHE   BOOL    "Turn on for GPU models")
 # Additional packages
 enable_openmp_support()
 #enable_mpi_support()
-FIND_PACKAGE(hdf5)
+#FIND_PACKAGE(hdf5)
 FIND_PACKAGE(GLM)
 # User specified path to ChronoEngine
 SET(CHRONO_INC       ""   CACHE PATH "Where is ChronoEngine Source located")

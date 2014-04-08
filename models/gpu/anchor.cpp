@@ -50,10 +50,13 @@ void RunTimeStep(T* mSys, const int frame) {
 	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << " " << ANCHOR->GetPos().y << " "
 			<< ANCHOR->GetPos_dt().y << endl;
 
-	ANCHOR->SetPos(ChVector<>(REFERENCE->GetPos().x,ANCHOR->GetPos().y,REFERENCE->GetPos().z));
-	ANCHOR->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x,ANCHOR->GetPos_dt().y,REFERENCE->GetPos_dt().z));
+	ANCHOR->SetPos(ChVector<>(REFERENCE->GetPos().x, ANCHOR->GetPos().y, REFERENCE->GetPos().z));
+	ANCHOR->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x, ANCHOR->GetPos_dt().y, REFERENCE->GetPos_dt().z));
 	ANCHOR->SetRot(REFERENCE->GetRot());
 	ANCHOR->SetWvel_loc(REFERENCE->GetWvel_loc());
+
+	REFERENCE->SetPos(ChVector<>(REFERENCE->GetPos().x, ANCHOR->GetPos().y, REFERENCE->GetPos().z));
+	REFERENCE->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x, ANCHOR->GetPos_dt().y, REFERENCE->GetPos_dt().z));
 
 //	real t = frame * timestep * PI * 2 * frequency;
 //
@@ -204,17 +207,17 @@ int main(int argc, char* argv[]) {
 
 		REFERENCE = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		InitObject(REFERENCE, anchor_mass, Vector(0, 200, 0), Quaternion(1, 0, 0, 0), material, false, false, -15, -15);
-		AddCollisionGeometry(REFERENCE, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
-		AddCollisionGeometry(REFERENCE, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
-		for (int i = 0; i < number_sections; i++) {
-			ChQuaternion<> quat, quat2;
-			quat.Q_from_AngAxis(i / number_sections * 2 * PI, ChVector<>(0, 1, 0));
-			quat2.Q_from_AngAxis(6.5 * 2 * PI / 360.0, ChVector<>(0, 0, 1));
-			quat = quat % quat2;
-			ChVector<> pos(sin(i / number_sections * 2 * PI) * anchor_R, i / number_sections * anchor_h, cos(i / number_sections * 2 * PI) * anchor_R);
-			//ChMatrix33<> mat(quat);
-			AddCollisionGeometry(REFERENCE, BOX, ChVector<>(anchor_blade_width, anchor_thickness, anchor_R), pos, quat);
-		}
+//		AddCollisionGeometry(REFERENCE, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
+//		AddCollisionGeometry(REFERENCE, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
+//		for (int i = 0; i < number_sections; i++) {
+//			ChQuaternion<> quat, quat2;
+//			quat.Q_from_AngAxis(i / number_sections * 2 * PI, ChVector<>(0, 1, 0));
+//			quat2.Q_from_AngAxis(6.5 * 2 * PI / 360.0, ChVector<>(0, 0, 1));
+//			quat = quat % quat2;
+//			ChVector<> pos(sin(i / number_sections * 2 * PI) * anchor_R, i / number_sections * anchor_h, cos(i / number_sections * 2 * PI) * anchor_R);
+//			//ChMatrix33<> mat(quat);
+//			AddCollisionGeometry(REFERENCE, BOX, ChVector<>(anchor_blade_width, anchor_thickness, anchor_R), pos, quat);
+//		}
 
 		ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		InitObject(ANCHOR, anchor_mass, Vector(0, 200, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
@@ -271,7 +274,7 @@ int main(int argc, char* argv[]) {
 		system_gpu->AddLink(engine_anchor);
 
 		reference_engine = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
-		reference_engine->Initialize(CONTAINER, REFERENCE, ChCoordsys<>(ANCHOR->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
+		reference_engine->Initialize(CONTAINER, REFERENCE, ChCoordsys<>(REFERENCE->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
 		reference_engine->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_PRISM);     // also works as revolute support
 		reference_engine->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 

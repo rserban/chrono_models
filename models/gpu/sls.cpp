@@ -186,8 +186,8 @@ int main(int argc, char* argv[]) {
 	if (visualize) {
 		ChOpenGLManager * window_manager = new ChOpenGLManager();
 		ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-		openGLView.render_camera->camera_pos = Vector(-50, 0, -50);
-		openGLView.render_camera->look_at = Vector(0, 0, 0);
+		openGLView.render_camera->camera_position = glm::vec3(-50, 0, -50);
+		openGLView.render_camera->camera_look_at = glm::vec3(0, 0, 0);
 		openGLView.SetCustomCallback(RunTimeStep);
 		openGLView.StartSpinning(window_manager);
 		window_manager->CallGlutMainLoop();

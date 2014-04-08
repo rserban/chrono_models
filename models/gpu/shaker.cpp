@@ -45,7 +45,7 @@ void RunTimeStep(T* mSys, const int frame) {
 int main(int argc, char* argv[]) {
 	bool warm_start = false;
 	if (argc == 7) {
-		omp_set_num_threads(atoi(argv[1]));
+		//omp_set_num_threads(atoi(argv[1]));
 
 		fstar = atof(argv[2]);
 		Gamma = atof(argv[3]);
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0, 0, 0);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(ceil(2 * PI * frequency * amplitude));     //IMPORTANT: this is the max velocity of the plate!!
-	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverGPU *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(warm_start);
 	((ChCollisionSystemGPU *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(R3(num_per_dir.x * 2, num_per_dir.y * 2, num_per_dir.z * 2));
@@ -156,9 +156,9 @@ int main(int argc, char* argv[]) {
 	//////Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();
 //	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//	openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-//	openGLView.render_camera->mScale = .1;
+//	openGLView.render_camera->camera_position = glm::vec3(0, -5, -10);
+//	openGLView.render_camera->camera_look_at = glm::vec3(0, -5, 0);
+//	openGLView.render_camera->camera_scale = .1;
 //	openGLView.SetCustomCallback(RunTimeStep);
 //	openGLView.StartSpinning(window_manager);
 //	window_manager->CallGlutMainLoop();

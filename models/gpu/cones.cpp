@@ -7,7 +7,7 @@ real timestep = .005;
 real seconds_to_simulate = 30;
 
 int max_iter = 30;
-real tolerance = .0001;
+real tolerance = 0;
 int num_steps = seconds_to_simulate / timestep;
 
 real3 container_size = R3(6, 6, 6);
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(tolerance);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -96,8 +96,8 @@ int main(int argc, char* argv[]) {
 	material = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material->SetFriction(container_friction);
 
-	material->SetRollingFriction(.01);
-	material->SetSpinningFriction(.01);
+	material->SetRollingFriction(1);
+	material->SetSpinningFriction(1);
 	material->SetCompliance(0);
 
 	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -139,8 +139,8 @@ int main(int argc, char* argv[]) {
 	material2 = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material2->SetFriction(.1);
 
-	material2->SetRollingFriction(.5);
-	material2->SetSpinningFriction(.5);
+	material2->SetRollingFriction(1);
+	material2->SetSpinningFriction(1);
 	material2->SetCohesion(0);
 	material2->SetCompliance(0);
 
@@ -151,23 +151,24 @@ int main(int argc, char* argv[]) {
 	// q.Q_from_AngX(PI);
 	 InitObject(body, 1, Vector(0, 1, 0), q, material2, true, false, -1, 1);
 
-	 AddCollisionGeometry(body, CONE, ChVector<>(1,2,1), Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
+	 AddCollisionGeometry(body, CONE, ChVector<>(1,2,1), Vector(0, 0, 0), chrono::Q_from_AngAxis(CH_C_PI , VECT_X));
 	 body->SetWvel_loc(Vector(0,20,0));
-	 body->SetPos_dt(Vector(5,0,0));
+	 body->SetPos_dt(Vector(0,0,0));
 	 FinalizeObject(body, (ChSystemParallel *) system_gpu);
-
+	// MPI_Init(&argc,&argv);
 //=========================================================================================================
 //Rendering specific stuff:
 	ChOpenGLManager * window_manager = new ChOpenGLManager();
 	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	//	openGLView.render_camera->look_at = Vector(0, -5, 0);
-	//	openGLView.render_camera->mScale = .1;
+	//openGLView.render_camera->camera_position = glm::vec3(0, -5, -10);
+	//	openGLView.render_camera->camera_look_at = glm::vec3(0, -5, 0);
+	//	openGLView.render_camera->camera_scale = .1;
 	openGLView.SetCustomCallback(RunTimeStep);
 	openGLView.StartSpinning(window_manager);
 	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
+
 	for (int i = 0; i < num_steps; i++) {
 		system_gpu->DoStepDynamics(timestep);
 		double TIME = system_gpu->GetChTime();
@@ -195,7 +196,7 @@ int main(int argc, char* argv[]) {
 		}
 		RunTimeStep(system_gpu, i);
 	}
-
+	//MPI_Finalize();
 	//DumpObjects(system_gpu, "diagonal_impact_settled.txt", "\t");
 
 }

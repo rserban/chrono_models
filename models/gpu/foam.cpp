@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(.001);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance( 0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(10);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(ACCELERATED_PROJECTED_GRADIENT_DESCENT);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	mcollisionengine->setBinsPerAxis(I3(30, 30, 30));
 	mcollisionengine->setBodyPerBin(100, 50);
@@ -141,9 +141,9 @@ int main(int argc, char* argv[]) {
 //Rendering specific stuff:
 	ChOpenGLManager * window_manager = new ChOpenGLManager();
 	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	//openGLView.render_camera->camera_pos = Vector(0, -5, -10);
-	//openGLView.render_camera->look_at = Vector(0, -5, 0);
-	//openGLView.render_camera->mScale = .5;
+	//openGLView.render_camera->camera_position = glm::vec3(0, -5, -10);
+	//openGLView.render_camera->camera_look_at = glm::vec3(0, -5, 0);
+	//openGLView.render_camera->camera_scale = .5;
 	openGLView.SetCustomCallback(RunTimeStep);
 	openGLView.StartSpinning(window_manager);
 	window_manager->CallGlutMainLoop();

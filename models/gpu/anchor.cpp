@@ -6,7 +6,7 @@
 real gravity = -9806.65;
 real timestep = .00025;
 real seconds_to_simulate = 5;
-real tolerance = 0;
+real tolerance = 1e-8;
 
 int max_iter = 40;
 int num_steps = seconds_to_simulate / timestep;
@@ -24,7 +24,7 @@ real particle_roll_friction = .3;
 real particle_cohesion = 0;
 real particle_std_dev = .5 * 2;
 
-ChSharedBodyPtr BLOCK, CONTAINER, ANCHOR;
+ChSharedBodyPtr BLOCK, CONTAINER, ANCHOR, REFERENCE;
 ParticleGenerator<ChSystemParallel>* layer_gen;
 real amplitude = particle_radius;
 real frequency = 10;
@@ -38,7 +38,7 @@ string data_folder = "data/anchor/";
 
 ChFunction_Ramp* motionFunc1, *motionFunc2;
 ChSharedPtr<ChLinkLockLock> actuator_anchor;
-ChSharedPtr<ChLinkEngine> engine_anchor;
+ChSharedPtr<ChLinkEngine> engine_anchor, reference_engine;
 bool once = true;
 bool save;
 template<class T>
@@ -49,6 +49,11 @@ void RunTimeStep(T* mSys, const int frame) {
 	double motor_torque = engine_anchor->Get_mot_torque();
 	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << " " << ANCHOR->GetPos().y << " "
 			<< ANCHOR->GetPos_dt().y << endl;
+
+	ANCHOR->SetPos(ChVector<>(REFERENCE->GetPos().x,ANCHOR->GetPos().y,REFERENCE->GetPos().z));
+	ANCHOR->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x,ANCHOR->GetPos_dt().y,REFERENCE->GetPos_dt().z));
+	ANCHOR->SetRot(REFERENCE->GetRot());
+	ANCHOR->SetWvel_loc(REFERENCE->GetWvel_loc());
 
 //	real t = frame * timestep * PI * 2 * frequency;
 //
@@ -114,21 +119,21 @@ int main(int argc, char* argv[]) {
 	ChSystemParallelDVI * system_gpu = new ChSystemParallelDVI;
 
 //=========================================================================================================
-	system_gpu->SetMinThreads(32);
+	//system_gpu->SetMinThreads(32);
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(0);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter * 3);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
-	system_gpu->SetMaxPenetrationRecoverySpeed(10000);
+	system_gpu->SetMaxPenetrationRecoverySpeed(1e9);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(500);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(true);
+	//((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(true);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBinsPerAxis(I3(30, 60, 30));
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(100, 50);
@@ -197,6 +202,20 @@ int main(int argc, char* argv[]) {
 		real anchor_mass = 6208;
 		real number_sections = 30;
 
+		REFERENCE = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
+		InitObject(REFERENCE, anchor_mass, Vector(0, 200, 0), Quaternion(1, 0, 0, 0), material, false, false, -15, -15);
+		AddCollisionGeometry(REFERENCE, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
+		AddCollisionGeometry(REFERENCE, CYLINDER, Vector(anchor_r, anchor_length, anchor_r), p2, Quaternion(1, 0, 0, 0));
+		for (int i = 0; i < number_sections; i++) {
+			ChQuaternion<> quat, quat2;
+			quat.Q_from_AngAxis(i / number_sections * 2 * PI, ChVector<>(0, 1, 0));
+			quat2.Q_from_AngAxis(6.5 * 2 * PI / 360.0, ChVector<>(0, 0, 1));
+			quat = quat % quat2;
+			ChVector<> pos(sin(i / number_sections * 2 * PI) * anchor_R, i / number_sections * anchor_h, cos(i / number_sections * 2 * PI) * anchor_R);
+			//ChMatrix33<> mat(quat);
+			AddCollisionGeometry(REFERENCE, BOX, ChVector<>(anchor_blade_width, anchor_thickness, anchor_R), pos, quat);
+		}
+
 		ANCHOR = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 		InitObject(ANCHOR, anchor_mass, Vector(0, 200, 0), Quaternion(1, 0, 0, 0), material, true, false, -15, -15);
 		AddCollisionGeometry(ANCHOR, SPHERE, ChVector<>(anchor_r, 0, 0), p1, Quaternion(1, 0, 0, 0));
@@ -213,6 +232,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		FinalizeObject(ANCHOR, (ChSystemParallel *) system_gpu);
+		FinalizeObject(REFERENCE, (ChSystemParallel *) system_gpu);
 
 //	real vol = ((ChCollisionModelParallel *) ANCHOR->GetCollisionModel())->getVolume();
 //	real den = .00785;
@@ -221,6 +241,7 @@ int main(int argc, char* argv[]) {
 //	ANCHOR->SetMass(anchor_mass);
 
 		ANCHOR->SetInertiaXX(ChVector<>(12668786.72, 5637598.31, 12682519.69));
+		REFERENCE->SetInertiaXX(ChVector<>(12668786.72, 5637598.31, 12682519.69));
 
 //		ANCHOR->SetInertiaXX(
 //				ChVector<>(
@@ -248,9 +269,22 @@ int main(int argc, char* argv[]) {
 		engine_anchor->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
 
 		system_gpu->AddLink(engine_anchor);
+
+		reference_engine = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
+		reference_engine->Initialize(CONTAINER, REFERENCE, ChCoordsys<>(ANCHOR->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
+		reference_engine->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_PRISM);     // also works as revolute support
+		reference_engine->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
+
+		system_gpu->AddLink(reference_engine);
+
 		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(engine_anchor->Get_spe_funct())) {
 			mfun->Set_yconst(anchor_rot * 1 / 60.0 * 2 * CH_C_PI);     // rad/s  angular speed
 		}
+
+		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(reference_engine->Get_spe_funct())) {
+			mfun->Set_yconst(anchor_rot * 1 / 60.0 * 2 * CH_C_PI);     // rad/s  angular speed
+		}
+
 		ReadAllObjectsWithGeometryChrono(system_gpu, "data/anchor/anchor.dat");
 		ChSharedPtr<ChMaterialSurface> material_read;
 		material_read = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);

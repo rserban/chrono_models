@@ -4,7 +4,7 @@
 #include "../../common/input_output.h"
 
 real gravity = -9806.65;
-real timestep = .00001;
+real timestep = .0001;
 real seconds_to_simulate = 5;
 real tolerance = 1e-8;
 
@@ -25,7 +25,7 @@ real particle_cohesion = 0;
 real particle_std_dev = .5 * 2;
 
 ChSharedBodyPtr BLOCK, CONTAINER, ANCHOR, REFERENCE;
-ParticleGenerator<ChSystemParallel>* layer_gen;
+ParticleGenerator<ChSystemParallelDVI>* layer_gen;
 real amplitude = particle_radius;
 real frequency = 10;
 
@@ -43,21 +43,21 @@ bool once = true;
 bool save;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
+	if (!save) {
+		Vector force = engine_anchor->Get_react_force();
+		Vector torque = engine_anchor->Get_react_torque();
+		double motor_torque = engine_anchor->Get_mot_torque();
+		cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << " " << ANCHOR->GetPos().y << " "
+				<< ANCHOR->GetPos_dt().y << endl;
 
-	Vector force = engine_anchor->Get_react_force();
-	Vector torque = engine_anchor->Get_react_torque();
-	double motor_torque = engine_anchor->Get_mot_torque();
-	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << " " << ANCHOR->GetPos().y << " "
-			<< ANCHOR->GetPos_dt().y << endl;
+		ANCHOR->SetPos(ChVector<>(REFERENCE->GetPos().x, ANCHOR->GetPos().y, REFERENCE->GetPos().z));
+		ANCHOR->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x, ANCHOR->GetPos_dt().y, REFERENCE->GetPos_dt().z));
+		ANCHOR->SetRot(REFERENCE->GetRot());
+		ANCHOR->SetWvel_loc(REFERENCE->GetWvel_loc());
 
-	ANCHOR->SetPos(ChVector<>(REFERENCE->GetPos().x, ANCHOR->GetPos().y, REFERENCE->GetPos().z));
-	ANCHOR->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x, ANCHOR->GetPos_dt().y, REFERENCE->GetPos_dt().z));
-	ANCHOR->SetRot(REFERENCE->GetRot());
-	ANCHOR->SetWvel_loc(REFERENCE->GetWvel_loc());
-
-	REFERENCE->SetPos(ChVector<>(REFERENCE->GetPos().x, ANCHOR->GetPos().y, REFERENCE->GetPos().z));
-	REFERENCE->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x, ANCHOR->GetPos_dt().y, REFERENCE->GetPos_dt().z));
-
+		REFERENCE->SetPos(ChVector<>(REFERENCE->GetPos().x, ANCHOR->GetPos().y, REFERENCE->GetPos().z));
+		REFERENCE->SetPos_dt(ChVector<>(REFERENCE->GetPos_dt().x, ANCHOR->GetPos_dt().y, REFERENCE->GetPos_dt().z));
+	}
 //	real t = frame * timestep * PI * 2 * frequency;
 //
 //	BLOCK->SetRot(ChQuaternion<>(1, 0, 0, 0));
@@ -76,7 +76,7 @@ void RunTimeStep(T* mSys, const int frame) {
 //
 
 	if (save) {
-		if (layers < 130 && frame % 60 == 0) {
+		if (layers < 130 && frame % 80 == 0) {
 			cout << layers << endl;
 			layer_gen->addPerturbedVolumeMixture(R3(0, -container_size.y + container_thickness + particle_radius * 5 + frame / 14.0, 0), I3(32, 1, 32), R3(0, 0, 0), R3(0, 0, 0));
 			layers++;
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
 	//system_gpu->SetMinThreads(32);
 	//system_gpu->SetMaxiter(max_iter);
 	//system_gpu->SetIterLCPmaxItersSpeed(max_iter);
-	((ChSystemParallelDVI*) system_gpu)->DoThreadTuning(false);
+	((ChSystemParallelDVI*) system_gpu)->DoThreadTuning(true);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(max_iter);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(max_iter);
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetMaxPenetrationRecoverySpeed(1e9);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(200);
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(100);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	//((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->DoStabilization(true);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);
@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
 		}
 
 	} else {
-		layer_gen = new ParticleGenerator<ChSystemParallel>((ChSystemParallel *) system_gpu);
+		layer_gen = new ParticleGenerator<ChSystemParallelDVI>((ChSystemParallelDVI *) system_gpu);
 		layer_gen->SetDensity(particle_density);
 		layer_gen->SetRadius(R3(particle_radius, particle_radius * .5, particle_radius));
 		layer_gen->SetNormalDistribution(particle_radius, particle_std_dev, 1);
@@ -319,14 +319,14 @@ int main(int argc, char* argv[]) {
 
 //=========================================================================================================
 //Rendering specific stuff:
-//		ChOpenGLManager * window_manager = new ChOpenGLManager();
-//		ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-//		openGLView.render_camera->camera_position = glm::vec3(0, -5, -10);
-//		openGLView.render_camera->camera_look_at = glm::vec3(0, 0, 0);
-//		openGLView.render_camera->camera_scale = 2;
-//		openGLView.SetCustomCallback(RunTimeStep);
-//		openGLView.StartSpinning(window_manager);
-//		window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_position = glm::vec3(0, -5, -10);
+//	openGLView.render_camera->camera_look_at = glm::vec3(0, 0, 0);
+//	openGLView.render_camera->camera_scale = 2;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 //=========================================================================================================
 	int file = 0;
 

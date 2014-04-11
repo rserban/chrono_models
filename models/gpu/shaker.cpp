@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 	system_gpu->SetTolSpeeds(tolerance);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(0);
-	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(ceil(2 * PI * frequency * amplitude));     //IMPORTANT: this is the max velocity of the plate!!
+	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(ceil(2 * PI * frequency * amplitude)*2);     //IMPORTANT: this is the max velocity of the plate!!
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetSolverType(APGDRS);
 	((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetWarmStart(false);
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->SetCollisionEnvelope(particle_radius * .05);

@@ -36,22 +36,31 @@ ChSharedPtr<ChLinkEngine> engine_anchor;
 template<class T>
 void RunTimeStep(T* mSys, const int frame) {
 
-	Vector force = engine_anchor->Get_react_force();
-	Vector torque = engine_anchor->Get_react_torque();
-	double motor_torque = engine_anchor->Get_mot_torque();
-	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << endl;
-
-	R->SetPos(REF->GetPos());
-	R->SetPos_dt(REF->GetPos_dt());
-	R->SetRot(REF->GetRot());
-	R->SetWvel_loc(REF->GetWvel_loc());
+//	Vector force = engine_anchor->Get_react_force();
+//	Vector torque = engine_anchor->Get_react_torque();
+//	double motor_torque = engine_anchor->Get_mot_torque();
+//	cout << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << endl;
+//
+//	R->SetPos(REF->GetPos());
+//	R->SetPos_dt(REF->GetPos_dt());
+//	R->SetRot(REF->GetRot());
+//	R->SetWvel_loc(REF->GetWvel_loc());
 }
 
 int main(int argc, char* argv[]) {
 	omp_set_num_threads(4);
 	bool useparallel = false;
-
+	int normal = 30, sliding = 0, rolling = 0, bilat = 0;
 	useparallel = atoi(argv[1]);
+
+	//if (argc > 2) {
+	normal = atoi(argv[2]);
+	sliding = atoi(argv[3]);
+	rolling = atoi(argv[4]);
+	bilat = atoi(argv[5]);
+
+	//}
+
 	ChSystem * system_gpu;
 //=========================================================================================================
 	if (useparallel) {
@@ -68,10 +77,10 @@ int main(int argc, char* argv[]) {
 //=========================================================================================================
 	if (useparallel) {
 		((ChSystemParallelDVI*) system_gpu)->DoThreadTuning(false);
-		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(0);
-		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(30);
-		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(0);
+		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(normal);
+		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(sliding);
+		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(rolling);
+		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(bilat);
 		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetTolerance(tolerance);
 		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetCompliance(tolerance);
 		((ChLcpSolverParallelDVI *) (system_gpu->GetLcpSolverSpeed()))->SetContactRecoverySpeed(1);
@@ -146,7 +155,7 @@ int main(int argc, char* argv[]) {
 		BB->SetInertiaXX(ChVector<>(2 / 5.0 * mass * radius * radius, 2 / 5.0 * mass * radius * radius, 2 / 5.0 * mass * radius * radius));
 
 	}
-	 engine_anchor = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
+	engine_anchor = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
 	engine_anchor->Initialize(L, R, ChCoordsys<>(R->GetPos(), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X)));
 	engine_anchor->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
 	engine_anchor->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
@@ -243,17 +252,23 @@ int main(int argc, char* argv[]) {
 	}
 //=========================================================================================================
 //Rendering specific stuff:
-	ChOpenGLManager * window_manager = new ChOpenGLManager();
-	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
-	openGLView.render_camera->camera_position = glm::vec3(0, -5, -10);
-	openGLView.render_camera->camera_look_at = glm::vec3(0, 0, 0);
-	openGLView.render_camera->camera_scale = .5;
-	openGLView.SetCustomCallback(RunTimeStep);
-	openGLView.StartSpinning(window_manager);
-	window_manager->CallGlutMainLoop();
+//	ChOpenGLManager * window_manager = new ChOpenGLManager();
+//	ChOpenGL openGLView(window_manager, system_gpu, 800, 600, 0, 0, "Test_Solvers");
+//	openGLView.render_camera->camera_position = glm::vec3(0, -5, -10);
+//	openGLView.render_camera->camera_look_at = glm::vec3(0, 0, 0);
+//	openGLView.render_camera->camera_scale = .5;
+//	openGLView.SetCustomCallback(RunTimeStep);
+//	openGLView.StartSpinning(window_manager);
+//	window_manager->CallGlutMainLoop();
 
 //=========================================================================================================
 	int file = 0;
+	stringstream ss1;
+	ss1 << "dif_" << normal << "_" << sliding << "_" << rolling << "_" << bilat << ".txt";
+	stringstream ss2;
+	ss2 << "react_" << normal << "_" << sliding << "_" << rolling << "_" << bilat << ".txt";
+	ofstream diffile(ss1.str());
+	ofstream reactionfile(ss2.str());
 	for (int i = 0; i < num_steps; i++) {
 		system_gpu->DoStepDynamics(timestep);
 		double TIME = system_gpu->GetChTime();
@@ -273,7 +288,19 @@ int main(int argc, char* argv[]) {
 
 		printf("%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7.4f|%7d|%7d|%7d|%7.4f\n", TIME, STEP, BROD, NARR, LCP, UPDT, BODS, CNTC, REQ_ITS, RESID);
 
+		Vector force = engine_anchor->Get_react_force();
+		Vector torque = engine_anchor->Get_react_torque();
+		double motor_torque = engine_anchor->Get_mot_torque();
+		reactionfile << force.x << " " << force.y << " " << force.z << " " << torque.x << " " << torque.y << " " << torque.z << " " << motor_torque << " " << R->GetPos().y << " "
+				<< R->GetPos_dt().y << endl;
+
+		diffile << R->GetRot().Q_to_NasaAngles().x - REF->GetRot().Q_to_NasaAngles().x << " " << R->GetRot().Q_to_NasaAngles().y - REF->GetRot().Q_to_NasaAngles().y << " "
+				<< R->GetRot().Q_to_NasaAngles().z - REF->GetRot().Q_to_NasaAngles().z << " " << R->GetWvel_loc().x - REF->GetWvel_loc().x << " "
+				<< R->GetWvel_loc().y - REF->GetWvel_loc().y << " " << R->GetWvel_loc().z - REF->GetWvel_loc().z << " " << endl;
+
 		RunTimeStep(system_gpu, i);
 	}
+	reactionfile.close();
+	diffile.close();
 	//DumpAllObjectsWithGeometryChrono(system_gpu, "bilateral_sphere_set.dat");
 }

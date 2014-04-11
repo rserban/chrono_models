@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
 	water_generator->material->SetRollingFriction(0);
 	water_generator->material->SetSpinningFriction(0);
 	water_generator->material->SetCompliance(0);
-	water_generator->AddMixtureType(MIX_ELLIPSOID);
+	water_generator->AddMixtureType(MIX_SPHERE);
 //=========================================================================================================
 ////Rendering specific stuff:
 //	ChOpenGLManager * window_manager = new ChOpenGLManager();
